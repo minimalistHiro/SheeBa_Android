@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">SheeBa</string>
+
+    // Screens
+    <string name="entry_screen">entryScreen</string>
+    <string name="set_up_username_screen">setUpUsernameScreen</string>
+
+    // InputText
+    <string name="hide_password">Hide password</string>
+    <string name="show_password">Show password</string>
+</resources>
