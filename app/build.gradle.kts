@@ -1,14 +1,15 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.sheeba"
+    namespace = "com.hiroki.sheeba"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.sheeba"
+        applicationId = "com.hiroki.sheeba"
         minSdk = 29
         targetSdk = 34
         versionCode = 1
@@ -69,4 +70,7 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.5.0")                         // ImagePicker
     implementation("androidx.navigation:navigation-compose:2.7.2")          // Navigation
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))     // Firebase
+    implementation("com.google.firebase:firebase-auth")                     // Firebase Auth
+    implementation("com.google.firebase:firebase-analytics")                // Firebase Analytics
 }

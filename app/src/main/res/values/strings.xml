@@ -1,6 +1,12 @@
 <resources>
     <string name="app_name">SheeBa</string>
 
+    // DB
+    <string name="email">email</string>
+    <string name="password">password</string>
+    <string name="username">username</string>
+
+
     // Screens
     <string name="entry_screen">entryScreen</string>
     <string name="set_up_username_screen">setUpUsernameScreen</string>

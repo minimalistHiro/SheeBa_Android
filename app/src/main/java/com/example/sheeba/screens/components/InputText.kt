@@ -1,6 +1,7 @@
 package com.example.sheeba.screens.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -14,10 +15,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
@@ -25,17 +24,18 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.sheeba.R
+import androidx.compose.ui.unit.dp
+import com.hiroki.sheeba.R
 
 @ExperimentalMaterial3Api
 @Composable
-fun InputTextField(text: String, label: String, errorStatus: Boolean) {
+fun InputTextField(label: String, onTextSelected: (String) -> Unit, errorStatus: Boolean) {
     val textValue = remember {
         mutableStateOf("")
     }
 
     OutlinedTextField(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp),
         label = { Text(text = label) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = Color.Black,
@@ -48,6 +48,7 @@ fun InputTextField(text: String, label: String, errorStatus: Boolean) {
         value = textValue.value,
         onValueChange = {
             textValue.value = it
+            onTextSelected(it)
         },
         isError = errorStatus,
     )
@@ -55,7 +56,7 @@ fun InputTextField(text: String, label: String, errorStatus: Boolean) {
 
 @ExperimentalMaterial3Api
 @Composable
-fun InputPasswordTextField(text: String, label: String, errorStatus: Boolean) {
+fun InputPasswordTextField(label: String, onTextSelected: (String) -> Unit, errorStatus: Boolean) {
     val localFocusManager = LocalFocusManager.current
     val textValue = remember {
         mutableStateOf("")
@@ -65,8 +66,8 @@ fun InputPasswordTextField(text: String, label: String, errorStatus: Boolean) {
     }
 
     OutlinedTextField(
-        modifier = Modifier.fillMaxWidth(),
-        label = { Text(text = text) },
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp),
+        label = { Text(text = label) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = Color.Black,
             focusedLabelColor = Color.Black,
@@ -81,6 +82,7 @@ fun InputPasswordTextField(text: String, label: String, errorStatus: Boolean) {
         value = textValue.value,
         onValueChange = {
             textValue.value = it
+            onTextSelected(it)
         },
         trailingIcon =  {
             val iconImage = if(passwordVisible.value) {
@@ -108,12 +110,12 @@ fun InputPasswordTextField(text: String, label: String, errorStatus: Boolean) {
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfInputTextField() {
-    InputTextField(text = "test@gmail.com", label = "メールアドレス", errorStatus = false)
+    InputTextField(label = "メールアドレス", onTextSelected = {}, errorStatus = false)
 }
 
 @Preview
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfInputPasswordTextField() {
-    InputPasswordTextField(text = "test@gmail.com", label = "メールアドレス", errorStatus = false)
+    InputPasswordTextField(label = "パスワード", onTextSelected = {}, errorStatus = false)
 }

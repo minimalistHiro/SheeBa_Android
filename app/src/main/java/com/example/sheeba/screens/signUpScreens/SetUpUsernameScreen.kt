@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -20,14 +19,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.sheeba.app.PostOfficeAppRouter
+import com.example.sheeba.app.Screen
+import com.example.sheeba.data.SignUpUIEvent
 import com.example.sheeba.screens.components.CustomCapsuleButton
 import com.example.sheeba.screens.components.CustomIcon
+import com.example.sheeba.screens.components.CustomTopAppBar
 import com.example.sheeba.screens.components.InputTextField
-import com.example.sheeba.util.Setting
+import com.example.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
 @Composable
-fun SetUpUsernameScreen(onButtonClicked: () -> Unit = {}) {
+fun SetUpUsernameScreen(viewModel: ViewModel) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
@@ -35,10 +38,19 @@ fun SetUpUsernameScreen(onButtonClicked: () -> Unit = {}) {
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(Setting.surfacePadding.dp),
+            .background(Color.White),
     ) {
-        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CustomTopAppBar(
+                title = "新規アカウントを作成",
+                onButtonClicked = { 
+                    PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
+                }
+            )
+
             Spacer(modifier = Modifier.height((screenHeight / 10).dp))
 
             Text(
@@ -60,21 +72,41 @@ fun SetUpUsernameScreen(onButtonClicked: () -> Unit = {}) {
 
             Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
-            InputTextField(text = "test", label = "ユーザー名", errorStatus = false)
+            InputTextField(
+                label = "ユーザー名",
+                onTextSelected = {
+                    viewModel.onEvent(SignUpUIEvent.UsernameChange(it))
+                },
+                errorStatus = viewModel.signUpUIState.value.usernameError
+            )
 
             Spacer(modifier = Modifier.height((screenHeight / 25).dp))
 
-            InputTextField(text = "test", label = "年代", errorStatus = false)
+            InputTextField(
+                label = "年代",
+                onTextSelected = {
+                    viewModel.onEvent(SignUpUIEvent.UsernameChange(it))
+                },
+                errorStatus = viewModel.signUpUIState.value.usernameError
+            )
 
             Spacer(modifier = Modifier.height((screenHeight / 25).dp))
 
-            InputTextField(text = "test", label = "住所", errorStatus = false)
+            InputTextField(
+                label = "住所",
+                onTextSelected = {
+                    viewModel.onEvent(SignUpUIEvent.UsernameChange(it))
+                },
+                errorStatus = viewModel.signUpUIState.value.usernameError
+            )
 
             Spacer(modifier = Modifier.height((screenHeight / 10).dp))
 
             CustomCapsuleButton(
                 value = "次へ",
-                onButtonClicked = { onButtonClicked.invoke() },
+                onButtonClicked = {
+                    PostOfficeAppRouter.navigateTo(Screen.SetUpEmailScreen)
+                },
                 isEnabled = true
             )
         }
@@ -84,6 +116,6 @@ fun SetUpUsernameScreen(onButtonClicked: () -> Unit = {}) {
 @Preview
 @ExperimentalMaterial3Api
 @Composable
-fun DefaultPreviewOfSignUpScreen() {
-    SetUpUsernameScreen()
+fun DefaultPreviewOfSetUpUsernameScreen() {
+    SetUpUsernameScreen(viewModel = ViewModel())
 }

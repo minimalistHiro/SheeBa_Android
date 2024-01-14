@@ -2,10 +2,13 @@ package com.example.sheeba.viewModel
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import com.example.sheeba.app.PostOfficeAppRouter
+import com.example.sheeba.app.Screen
+import com.example.sheeba.data.SignUpUIEvent
 import com.example.sheeba.data.SignUpUIState
 import com.example.sheeba.util.Validator
-import androidx.lifecycle.ViewModel
-import com.example.sheeba.data.SignUpUIEvent
+import com.google.firebase.auth.FirebaseAuth
 
 class ViewModel: ViewModel() {
     private val TAG = ViewModel::class.simpleName
@@ -52,7 +55,7 @@ class ViewModel: ViewModel() {
             }
 
             is SignUpUIEvent.RegisterButtonClicked -> {
-                signUp()
+                createNewAccount(email = signUpUIState.value.email, password = signUpUIState.value.password)
             }
         }
     }
@@ -95,7 +98,23 @@ class ViewModel: ViewModel() {
         Log.d(TAG, signUpUIState.value.toString())
     }
 
-    private fun signUp() {
+    private fun createNewAccount(email: String, password: String) {
+        progress.value = true
 
+        FirebaseAuth
+            .getInstance()
+            .createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener {
+                Log.d(TAG, "isSuccessful = ${it.isSuccessful}")
+
+                if(it.isSuccessful) {
+                    PostOfficeAppRouter.navigateTo(Screen.HomeScreen)
+                }
+                progress.value = false
+            }
+            .addOnFailureListener {
+                Log.d(TAG, "Exception = ${it.localizedMessage}")
+                progress.value = false
+            }
     }
 }

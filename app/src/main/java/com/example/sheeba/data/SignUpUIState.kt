@@ -3,6 +3,7 @@ package com.example.sheeba.data
 data class SignUpUIState (
     var email: String = "",
     var password: String = "",
+    var password2: String = "",
     var username: String = "",
     var age: String = "",
     var address: String = "",

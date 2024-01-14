@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sheeba.screens.components.CustomBorderCapsuleButton
 import com.example.sheeba.screens.components.CustomCapsuleButton
-import com.example.sheeba.util.Setting
 
 @ExperimentalMaterial3Api
 @Composable
@@ -36,8 +34,7 @@ fun EntryScreen(onButtonClicked: () -> Unit = {}) {
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(Setting.surfacePadding.dp),
+            .background(Color.White),
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height((screenHeight / 3).dp))

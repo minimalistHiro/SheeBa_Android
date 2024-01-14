@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "681591644825",
+    "project_id": "sheeba-925a7",
+    "storage_bucket": "sheeba-925a7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681591644825:android:7c70c45b9142a791f1ce08",
+        "android_client_info": {
+          "package_name": "com.hiroki.sheeba"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBn3K3reszpGtCAE84tw_UrY05Ja5zOZ8E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
