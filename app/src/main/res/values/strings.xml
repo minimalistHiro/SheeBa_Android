@@ -4,8 +4,21 @@
     // DB
     <string name="email">email</string>
     <string name="password">password</string>
-    <string name="username">username</string>
 
+    // Models
+    <string name="users">users</string>
+
+    // ChatUser
+    <string name="uid">uid</string>
+    <string name="profileImageUrl">profileImageUrl</string>
+    <string name="money">money</string>
+    <string name="username">username</string>
+    <string name="age">age</string>
+    <string name="address">address</string>
+    <string name="isConfirmEmail">isConfirmEmail</string>
+    <string name="isFirstLogin">isFirstLogin</string>
+    <string name="isStore">isStore</string>
+    <string name="isOwner">isOwner</string>
 
     // Screens
     <string name="entry_screen">entryScreen</string>
@@ -14,4 +27,7 @@
     // InputText
     <string name="hide_password">Hide password</string>
     <string name="show_password">Show password</string>
+
+    // error
+<!--    <string name="failureFetchUID">UIDの取得に失敗しました。</string>-->
 </resources>
