@@ -28,6 +28,13 @@ class ViewModel: ViewModel() {
 //    val users: StateFlow<List<ChatUser>> = _users.asStateFlow()
     var currentUser = mutableStateOf(ChatUser())
 
+    // ダイアログ
+    var isShowDialog = mutableStateOf(false)
+    var dialogTitle = mutableStateOf("")
+    var dialogText = mutableStateOf("")
+    var isShowDialogForLogout = mutableStateOf(false)           // ログアウトへと誘導するダイアログ
+    var isShowCompulsionLogoutDialog = mutableStateOf(false)    // 強制ログアウトダイアログ
+
     /**
      * 新規作成イベント。各イベントごとに処理を分ける。
      *
@@ -194,9 +201,8 @@ class ViewModel: ViewModel() {
                 }
                 progress.value = false
             }
-            .addOnFailureListener { exception ->
-                Log.d(TAG, "get failed with ", exception)
-                progress.value = false
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureFetchUser, exception = it)
             }
     }
 
@@ -226,8 +232,7 @@ class ViewModel: ViewModel() {
                 progress.value = false
             }
             .addOnFailureListener {
-                Log.d(TAG, "Exception = ${it.localizedMessage}")
-                progress.value = false
+                handleError(title = "", text = Setting.failureCreateAccount, exception = it)
             }
     }
 
@@ -246,16 +251,13 @@ class ViewModel: ViewModel() {
             .getInstance()
             .signInWithEmailAndPassword(email, password)
             .addOnCompleteListener {
-                Log.d(TAG, "${it.isSuccessful}")
-
                 if(it.isSuccessful) {
                     PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
                 }
                 progress.value = false
             }
             .addOnFailureListener {
-                Log.d(TAG, "${it.localizedMessage}")
-                progress.value = false
+                handleError(title = "", text = Setting.failureLogin, exception = it)
             }
     }
 
@@ -276,6 +278,46 @@ class ViewModel: ViewModel() {
     }
 
     /**
+     * エラー処理
+     *
+     * @param title エラータイトル
+     * @param text エラーメッセージ
+     * @param exception エラー内容
+     * @return なし
+     */
+    fun handleError(title: String, text: String, exception: Exception?) {
+        progress.value = false
+        isShowDialog.value = true
+        dialogTitle.value = title
+        dialogText.value = text
+        if (exception == null) {
+            Log.d(TAG, text)
+        } else {
+            Log.d(TAG, "${exception.localizedMessage}")
+        }
+    }
+
+    /**
+     * ログアウトへと誘導するエラー処理
+     *
+     * @param title エラータイトル
+     * @param text エラーメッセージ
+     * @param exception エラー内容
+     * @return なし
+     */
+    fun handleErrorForLogout(title: String, text: String, exception: Exception?) {
+        progress.value = false
+        isShowDialogForLogout.value = true
+        dialogTitle.value = title
+        dialogText.value = text
+        if (exception == null) {
+            Log.d(TAG, text)
+        } else {
+            Log.d(TAG, "${exception.localizedMessage}")
+        }
+    }
+
+    /**
      * ユーザー情報を保存
      *
      * @param email メールアドレス
@@ -286,7 +328,7 @@ class ViewModel: ViewModel() {
      */
     fun persistUser(email: String, username: String, age: String, address: String) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
-            println(Setting.failureFetchUID)
+            handleErrorForLogout(title = "", text = Setting.failureFetchUID, exception = null)
             return
         }
 

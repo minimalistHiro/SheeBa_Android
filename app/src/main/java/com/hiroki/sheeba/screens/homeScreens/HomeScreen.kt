@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.hiroki.sheeba.R
+import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
@@ -46,88 +47,119 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-    ) {
-        Column(
+    Box(modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center) {
+
+        Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .background(Color.White),
         ) {
-            Spacer(modifier = Modifier.height((screenHeight / 20).dp))
-
-            Box(
+            Column(
                 modifier = Modifier
-                    .padding(horizontal = 30.dp)
-                    .clip(RoundedCornerShape(size = 30.dp))
-                    .background(Color.LightGray)
-//                    .shadow(elevation = 10.dp, shape = RoundedCornerShape(size = 30.dp), clip = false)
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                Spacer(modifier = Modifier.height((screenHeight / 20).dp))
+
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 30.dp)
+                        .clip(RoundedCornerShape(size = 30.dp))
+                        .background(Color.LightGray)
+//                    .shadow(elevation = 10.dp, shape = RoundedCornerShape(size = 30.dp), clip = false)
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Spacer(modifier = Modifier.height(5.dp))
-
-                    Text(
-                        text = "獲得ポイント",
-                        style = TextStyle(
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Normal,
-                            fontStyle = FontStyle.Normal,
-                        ),
-                        textAlign = TextAlign.Center,
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Spacer(modifier = Modifier.width((screenWidth / 5).dp))
-                        if(viewModel.progress.value) {
-                            CircularProgressIndicator()
-                        } else {
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        Text(
+                            text = "獲得ポイント",
+                            style = TextStyle(
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Normal,
+                                fontStyle = FontStyle.Normal,
+                            ),
+                            textAlign = TextAlign.Center,
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Spacer(modifier = Modifier.width((screenWidth / 5).dp))
+                            if(viewModel.progress.value) {
+                                CircularProgressIndicator()
+                            } else {
+                                Text(
+                                    text = viewModel.currentUser.value.money,
+                                    style = TextStyle(
+                                        fontSize = 35.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontStyle = FontStyle.Normal,
+                                    ),
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(5.dp))
                             Text(
-                                text = viewModel.currentUser.value.money,
+                                text = "pt",
                                 style = TextStyle(
-                                    fontSize = 35.sp,
+                                    fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
                                     fontStyle = FontStyle.Normal,
                                 ),
                                 textAlign = TextAlign.Center,
                             )
+                            Spacer(modifier = Modifier.width((screenWidth / 15).dp))
+                            IconButton(
+                                onClick = {
+                                    viewModel.fetchCurrentUser()
+                                },
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_replay_24),
+                                    contentDescription = ""
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text(
-                            text = "pt",
-                            style = TextStyle(
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                fontStyle = FontStyle.Normal,
-                            ),
-                            textAlign = TextAlign.Center,
-                        )
-                        Spacer(modifier = Modifier.width((screenWidth / 15).dp))
-                        IconButton(
-                            onClick = { 
-                                viewModel.fetchCurrentUser()
-                            },
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_replay_24),
-                                contentDescription = ""
-                            )
-                        }
-                    }
 
-                    Spacer(modifier = Modifier.height(30.dp))
+                        Spacer(modifier = Modifier.height(30.dp))
+                    }
                 }
+            }
+        }
+
+        // ダイアログ
+        if(viewModel.isShowDialog.value) {
+            CustomAlertDialog(
+                title = viewModel.dialogTitle.value,
+                text = viewModel.dialogText.value) {
+                viewModel.isShowDialog.value = false
+            }
+        }
+        // ログアウトへと誘導するダイアログ
+        if(viewModel.isShowDialogForLogout.value) {
+            CustomAlertDialog(
+                title = viewModel.dialogTitle.value,
+                text = viewModel.dialogText.value) {
+                viewModel.isShowDialogForLogout.value = false
+                viewModel.isShowCompulsionLogoutDialog.value = true
+            }
+        }
+        // 強制ログアウトダイアログ
+        if(viewModel.isShowCompulsionLogoutDialog.value) {
+            CustomAlertDialog(
+                title = "",
+                text = "エラーが発生したためログアウトします。") {
+                viewModel.handleLogout()
+                viewModel.isShowCompulsionLogoutDialog.value = false
             }
         }
     }

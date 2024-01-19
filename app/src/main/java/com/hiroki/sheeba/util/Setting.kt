@@ -18,5 +18,8 @@ object Setting {
     val users = "users"
 
     // ErrorCode
+    val failureLogin = "ログインに失敗しました。"
     val failureFetchUID = "UIDの取得に失敗しました。"
+    val failureFetchUser = "ユーザー情報の取得に失敗しました。"
+    val failureCreateAccount = "アカウントの作成に失敗しました。"
 }

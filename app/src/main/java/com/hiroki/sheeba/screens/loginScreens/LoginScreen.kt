@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.data.LoginUIEvent
+import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
 import com.hiroki.sheeba.screens.components.CustomTextButton
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
@@ -88,9 +89,17 @@ fun LoginScreen(viewModel: ViewModel) {
                 )
             }
         }
-
+        // インジケーター
         if(viewModel.progress.value) {
             CircularProgressIndicator()
+        }
+        // ダイアログ
+        if(viewModel.isShowDialog.value) {
+            CustomAlertDialog(
+                title = viewModel.dialogTitle.value,
+                text = viewModel.dialogText.value) {
+                viewModel.isShowDialog.value = false
+            }
         }
     }
 }
