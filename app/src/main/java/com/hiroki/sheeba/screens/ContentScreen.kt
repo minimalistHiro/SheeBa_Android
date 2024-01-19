@@ -1,0 +1,122 @@
+package com.hiroki.sheeba.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.hiroki.sheeba.R
+import com.hiroki.sheeba.data.BottomNavigationItem
+import com.hiroki.sheeba.screens.accountScreens.AccountScreen
+import com.hiroki.sheeba.screens.accountScreens.UpdateUsernameScreen
+import com.hiroki.sheeba.screens.cameraScreens.CameraScreen
+import com.hiroki.sheeba.screens.homeScreens.HomeScreen
+import com.hiroki.sheeba.util.Setting
+import com.hiroki.sheeba.viewModel.ViewModel
+
+@ExperimentalMaterial3Api
+@Composable
+fun ContentScreen(viewModel: ViewModel) {
+    val navController = rememberNavController()
+    var selectedTabIndex by remember { mutableStateOf(0) }          // 選択されたタブ番号
+    // ボトムタブ
+    val items = listOf(
+        BottomNavigationItem(
+            title = "ホーム",
+            navTitle = Setting.homeScreen,
+            selectedIcon = painterResource(id = R.drawable.baseline_home_24),
+            unselectedIcon = painterResource(id = R.drawable.baseline_home_24),
+        ),
+        BottomNavigationItem(
+            title = "スキャン",
+            navTitle = Setting.cameraScreen,
+            selectedIcon = painterResource(id = R.drawable.baseline_qr_code_scanner_24),
+            unselectedIcon = painterResource(id = R.drawable.baseline_qr_code_scanner_24),
+        ),
+        BottomNavigationItem(
+            title = "アカウント",
+            navTitle = Setting.accountScreen,
+            selectedIcon = painterResource(id = R.drawable.baseline_person_24),
+            unselectedIcon = painterResource(id = R.drawable.baseline_person_24),
+        ),
+    )
+    // 画面遷移の状態を扱う変数を追加
+    var selectedItemIndex by rememberSaveable {
+        mutableStateOf(0)
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+    ) {
+        viewModel.fetchCurrentUser()
+
+        Scaffold(
+            bottomBar = {
+                NavigationBar {
+                    items.forEachIndexed { index, item ->
+                        NavigationBarItem(
+                            selected = selectedItemIndex == index,
+                            onClick = {
+                                selectedItemIndex = index
+                                navController.navigate(item.navTitle)
+                            },
+                            label = { Text(text = item.title) },
+                            icon = {
+                                Icon(
+                                    painter = if(index == selectedItemIndex) {
+                                        item.selectedIcon
+                                    } else item.unselectedIcon,
+                                    contentDescription = item.title
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+        ) { padding ->
+            NavHost(
+                navController = navController,
+                startDestination = items[selectedItemIndex].navTitle
+            ) {
+                composable(items[0].navTitle) {
+                    HomeScreen(viewModel = viewModel, padding = padding, navController = navController)
+                }
+                composable(items[1].navTitle) {
+                    CameraScreen(viewModel = viewModel, padding = padding, navController = navController)
+                }
+                composable(items[2].navTitle) {
+                    AccountScreen(viewModel = viewModel, padding = padding, navController = navController)
+                }
+                composable(Setting.updateUsernameScreen) {
+                    UpdateUsernameScreen(viewModel = viewModel, navController = navController)
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@ExperimentalMaterial3Api
+@Composable
+fun DefaultPreviewOfContentScreen() {
+    ContentScreen(viewModel = ViewModel())
+}

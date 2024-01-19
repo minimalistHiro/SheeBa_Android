@@ -45,7 +45,7 @@ fun LoginScreen(viewModel: ViewModel) {
                 CustomTopAppBar(
                     title = "ログイン",
                     onButtonClicked = {
-                        PostOfficeAppRouter.navigateTo(Screen.SetUpUsernameScreen)
+                        PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
                     }
                 )
 

@@ -9,6 +9,10 @@ object Setting {
     val entryScreen = "entryScreen"
     val setUpUsernameScreen = "setUpUsernameScreen"
     val setUpEmailScreen = "setUpEmailScreen"
+    val homeScreen = "homeScreen"
+    val cameraScreen = "cameraScreen"
+    val accountScreen = "accountScreen"
+    val updateUsernameScreen = "updateUsernameScreen"
 
     // Model
     val users = "users"

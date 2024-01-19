@@ -25,10 +25,11 @@ import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.screens.components.CustomBorderCapsuleButton
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
+import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
 @Composable
-fun EntryScreen(onButtonClicked: () -> Unit = {}) {
+fun EntryScreen(viewModel: ViewModel) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
@@ -38,6 +39,15 @@ fun EntryScreen(onButtonClicked: () -> Unit = {}) {
             .fillMaxSize()
             .background(Color.White),
     ) {
+        // エラーを初期化する
+        viewModel.signUpUIState.value.emailError = false
+        viewModel.signUpUIState.value.passwordError = false
+        viewModel.signUpUIState.value.usernameError = false
+        viewModel.signUpUIState.value.ageError = false
+        viewModel.signUpUIState.value.addressError = false
+        viewModel.loginUIState.value.emailError = false
+        viewModel.loginUIState.value.passwordError = false
+
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height((screenHeight / 3).dp))
 
@@ -81,5 +91,5 @@ fun EntryScreen(onButtonClicked: () -> Unit = {}) {
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfEntryScreen() {
-    EntryScreen()
+    EntryScreen(viewModel = ViewModel())
 }

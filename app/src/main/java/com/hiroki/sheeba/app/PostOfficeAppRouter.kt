@@ -8,7 +8,7 @@ sealed class Screen {
     object SetUpUsernameScreen: Screen()
     object SetUpEmailScreen: Screen()
     object LoginScreen: Screen()
-    object HomeScreen: Screen()
+    object ContentScreen: Screen()
 }
 
 object PostOfficeAppRouter {

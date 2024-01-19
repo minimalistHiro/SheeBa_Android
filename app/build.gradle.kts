@@ -68,10 +68,13 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")      // ViewModel
     implementation("io.coil-kt:coil-compose:2.5.0")                         // ImagePicker
     implementation("androidx.navigation:navigation-compose:2.7.2")          // Navigation
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))     // Firebase
     implementation("com.google.firebase:firebase-auth")                     // Firebase Auth
     implementation("com.google.firebase:firebase-firestore-ktx")            // Firebase Firestore
     implementation("com.google.firebase:firebase-analytics")                // Firebase Analytics
+    implementation("com.google.accompanist:accompanist-insets:0.11.0")      // Navigation BottomBar
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.11.0")// Navigation BottomBar
 }

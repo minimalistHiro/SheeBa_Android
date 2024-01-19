@@ -26,8 +26,7 @@ class ViewModel: ViewModel() {
     var progress = mutableStateOf(false)
 
 //    val users: StateFlow<List<ChatUser>> = _users.asStateFlow()
-//    var currentUser: MutableState<ChatUser> = mutableStateOf(ChatUser())
-    var currentUser: ChatUser = ChatUser()
+    var currentUser = mutableStateOf(ChatUser())
 
     /**
      * 新規作成イベント。各イベントごとに処理を分ける。
@@ -170,9 +169,12 @@ class ViewModel: ViewModel() {
      *
      * @return なし
      */
-    private fun fetchCurrentUser() {
+    fun fetchCurrentUser() {
+        progress.value = true
+
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
             println(Setting.failureFetchUID)
+            progress.value = false
             return
         }
 
@@ -184,15 +186,17 @@ class ViewModel: ViewModel() {
             .addOnSuccessListener { document ->
                 if (document != null) {
                     document.toObject(ChatUser::class.java)?.let {
-                        currentUser = it
+                        currentUser = mutableStateOf(it)
                     }
                     Log.d(TAG, "DocumentSnapshot data: ${document.data}")
                 } else {
                     Log.d(TAG, "No such document")
                 }
+                progress.value = false
             }
             .addOnFailureListener { exception ->
                 Log.d(TAG, "get failed with ", exception)
+                progress.value = false
             }
     }
 
@@ -217,7 +221,7 @@ class ViewModel: ViewModel() {
 
                 if(it.isSuccessful) {
                     persistUser(email = email, username = username, age = age, address = address)
-                    PostOfficeAppRouter.navigateTo(Screen.HomeScreen)
+                    PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
                 }
                 progress.value = false
             }
@@ -245,7 +249,7 @@ class ViewModel: ViewModel() {
                 Log.d(TAG, "${it.isSuccessful}")
 
                 if(it.isSuccessful) {
-                    PostOfficeAppRouter.navigateTo(Screen.HomeScreen)
+                    PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
                 }
                 progress.value = false
             }
@@ -303,8 +307,7 @@ class ViewModel: ViewModel() {
         FirebaseFirestore
             .getInstance()
             .collection(Setting.users)
-            .document()
+            .document(uid)
             .set(user)
-        // TODO: - 実行して確認
     }
 }

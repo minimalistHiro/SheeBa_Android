@@ -18,29 +18,6 @@ import com.hiroki.sheeba.R
 @ExperimentalMaterial3Api
 @Composable
 fun CustomIcon() {
-//    IconButton(
-//        modifier = Modifier
-//            .widthIn(100.dp)
-//            .heightIn(100.dp),
-//        onClick = {
-//
-//        },
-//        colors = IconButtonDefaults.iconButtonColors(
-//            containerColor = Color(R.string.chat_log_background_color),
-//            contentColor = Color(R.string.chat_log_background_color),
-//            disabledContainerColor = Color(R.string.chat_log_background_color),
-//            disabledContentColor = Color(R.string.chat_log_background_color),
-//        ),
-//    ) {
-//        Icon(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .heightIn(60.dp),
-//            painter = painterResource(id = R.drawable.baseline_person_24),
-//            contentDescription = "",
-//            tint = Color.Black,
-//        )
-//    }
     Button(
         modifier = Modifier
             .widthIn(120.dp)
