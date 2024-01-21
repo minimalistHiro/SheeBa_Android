@@ -74,6 +74,38 @@ fun InputTextField(label: String, onTextSelected: (String) -> Unit, errorStatus:
 
 @ExperimentalMaterial3Api
 @Composable
+fun InputEmailTextField(label: String, onTextSelected: (String) -> Unit, errorStatus: Boolean) {
+    val textValue = remember {
+        mutableStateOf("")
+    }
+
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 30.dp),
+        label = { Text(text = label) },
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Color.Black,
+            focusedLabelColor = Color.Black,
+            cursorColor = Color.Black,
+        ),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Next,
+        ),
+        singleLine = true,
+        maxLines = 1,
+        value = textValue.value,
+        onValueChange = {
+            textValue.value = it
+            onTextSelected(it)
+        },
+        isError = !errorStatus,
+    )
+}
+
+@ExperimentalMaterial3Api
+@Composable
 fun InputPasswordTextField(label: String, onTextSelected: (String) -> Unit, errorStatus: Boolean) {
     val localFocusManager = LocalFocusManager.current
     val textValue = remember {
@@ -209,7 +241,14 @@ fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (Strin
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfInputTextField() {
-    InputTextField(label = "メールアドレス", onTextSelected = {}, errorStatus = true)
+    InputTextField(label = "ユーザー名", onTextSelected = {}, errorStatus = true)
+}
+
+@Preview
+@ExperimentalMaterial3Api
+@Composable
+fun DefaultPreviewOfInputEmailTextField() {
+    InputEmailTextField(label = "メールアドレス", onTextSelected = {}, errorStatus = true)
 }
 
 @Preview

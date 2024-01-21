@@ -5,34 +5,82 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun CustomAlertDialog(title: String, text: String, onButtonClicked: () -> Unit) {
-//    val openDialog = remember { mutableStateOf(true) }
-
-//    if (openDialog.value) {
-        AlertDialog(
-            onDismissRequest = {},
-            title = {
-                Text(text = title)
-            },
-            text = {
-                Text(text)
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-//                        openDialog.value = false
-                        onButtonClicked.invoke()
-                    }
-                ) {
-                    Text("OK")
+fun CustomAlertDialog(
+    title: String,
+    text: String,
+    onButtonClicked: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = {},
+        title = {
+            Text(text = title)
+        },
+        text = {
+            Text(text)
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onButtonClicked.invoke()
                 }
-            },
-            dismissButton = null
-        )
-//    }
+            ) {
+                Text(text = "OK",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                    ),
+                )
+            }
+        },
+        dismissButton = null
+    )
+}
+
+@Composable
+fun CustomDoubleAlertDialog(
+    title: String,
+    text: String,
+    okText: String,
+    onOkButtonClicked: () -> Unit,
+    onCancelButtonClicked: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = {},
+        title = {
+            Text(text = title)
+        },
+        text = {
+            Text(text)
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onOkButtonClicked.invoke()
+                }
+            ) {
+                Text(text = okText,
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    color = Color.Red
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onCancelButtonClicked.invoke()
+                }
+            ) {
+                Text(text = "キャンセル")
+            }
+        }
+    )
 }
 
 @Preview
@@ -43,5 +91,18 @@ fun DefaultPreviewOfCustomAlertDialog() {
         title = "テストエラー",
         text = "情報の取得に失敗しました。",
         onButtonClicked = {},
+    )
+}
+
+@Preview
+@ExperimentalMaterial3Api
+@Composable
+fun DefaultPreviewOfCustomDoubleAlertDialog() {
+    CustomDoubleAlertDialog(
+        title = "テストエラー",
+        text = "削除しますか？",
+        okText = "削除",
+        onOkButtonClicked = {},
+        onCancelButtonClicked = {},
     )
 }

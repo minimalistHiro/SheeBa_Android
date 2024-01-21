@@ -135,7 +135,6 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                 }
             }
         }
-
         // ダイアログ
         if(viewModel.isShowDialog.value) {
             CustomAlertDialog(

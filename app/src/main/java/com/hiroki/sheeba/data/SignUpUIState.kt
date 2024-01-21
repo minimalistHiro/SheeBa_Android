@@ -14,6 +14,7 @@ data class SignUpUIState (
 
     var emailError: Boolean = false,
     var passwordError: Boolean = false,
+    var password2Error: Boolean = false,
     var usernameError: Boolean = false,
     var ageError: Boolean = false,
     var addressError: Boolean = false,

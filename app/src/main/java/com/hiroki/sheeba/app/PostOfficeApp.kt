@@ -34,6 +34,9 @@ fun PostOfficeApp() {
                         ContentScreen(viewModel = viewModel)
                     }
                 }
+                is Screen.CompulsionEntryScreen -> {
+                    EntryScreen(viewModel = viewModel)
+                }
                 is Screen.SetUpUsernameScreen -> {
                     SetUpUsernameScreen(viewModel = viewModel)
                 }

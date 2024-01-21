@@ -3,6 +3,7 @@ package com.hiroki.sheeba.viewModel
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.firestore.FirebaseFirestore
@@ -13,8 +14,11 @@ import com.hiroki.sheeba.data.LoginUIState
 import com.hiroki.sheeba.data.SignUpUIEvent
 import com.hiroki.sheeba.data.SignUpUIState
 import com.hiroki.sheeba.model.ChatUser
+import com.hiroki.sheeba.util.FirebaseConstants
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.util.Validator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ViewModel: ViewModel() {
     private val TAG = ViewModel::class.simpleName
@@ -56,6 +60,12 @@ class ViewModel: ViewModel() {
                 )
             }
 
+            is SignUpUIEvent.Password2Change -> {
+                signUpUIState.value = signUpUIState.value.copy(
+                    password2 = event.password2
+                )
+            }
+
             is SignUpUIEvent.UsernameChange -> {
                 signUpUIState.value = signUpUIState.value.copy(
                     username = event.username
@@ -78,6 +88,7 @@ class ViewModel: ViewModel() {
                 createNewAccount(
                     email = signUpUIState.value.email,
                     password = signUpUIState.value.password,
+                    password2 = signUpUIState.value.password2,
                     username = signUpUIState.value.username,
                     age = signUpUIState.value.age,
                     address = signUpUIState.value.address,
@@ -125,6 +136,10 @@ class ViewModel: ViewModel() {
             password = signUpUIState.value.password
         )
 
+        val password2Result = Validator.validatePassword(
+            password = signUpUIState.value.password2
+        )
+
         val usernameResult = Validator.validateUsername(
             username = signUpUIState.value.username
         )
@@ -140,13 +155,14 @@ class ViewModel: ViewModel() {
         signUpUIState.value = signUpUIState.value.copy(
             emailError = emailResult.status,
             passwordError = passwordResult.status,
+            password2Error = password2Result.status,
             usernameError =  usernameResult.status,
             ageError =  ageResult.status,
             addressError =  addressResult.status,
         )
 
         signUpUsernameValidationPassed.value = usernameResult.status && ageResult.status && addressResult.status
-        signUpAllValidationPassed.value = emailResult.status && passwordResult.status
+        signUpAllValidationPassed.value = emailResult.status && passwordResult.status && password2Result.status
     }
 
     /**
@@ -187,7 +203,7 @@ class ViewModel: ViewModel() {
 
         FirebaseFirestore
             .getInstance()
-            .collection(Setting.users)
+            .collection(FirebaseConstants.users)
             .document(uid)
             .get()
             .addOnSuccessListener { document ->
@@ -211,13 +227,27 @@ class ViewModel: ViewModel() {
      *
      * @param email メールアドレス
      * @param password パスワード
+     * @param password2 パスワード（確認用）
      * @param username ユーザー名
      * @param age 年代
      * @param address 住所
      * @return なし
      */
-    private fun createNewAccount(email: String, password: String, username: String, age: String, address: String) {
+    private fun createNewAccount(
+        email: String,
+        password: String,
+        password2: String,
+        username: String,
+        age: String,
+        address: String
+    ) {
         progress.value = true
+
+        // 2つのパスワードが一致しない場合、エラーを出す。
+        if(password != password2) {
+            handleError(title = "", text = Setting.mismatchPassword, exception = null)
+            return
+        }
 
         FirebaseAuth
             .getInstance()
@@ -233,6 +263,7 @@ class ViewModel: ViewModel() {
             }
             .addOnFailureListener {
                 handleError(title = "", text = Setting.failureCreateAccount, exception = it)
+                return@addOnFailureListener
             }
     }
 
@@ -271,10 +302,29 @@ class ViewModel: ViewModel() {
 
         val authStateListener = AuthStateListener {
             if(it.currentUser == null) {
-                PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
+                // バックグラウンド処理
+                viewModelScope.launch(Dispatchers.IO) {
+                    PostOfficeAppRouter.navigateTo(Screen.CompulsionEntryScreen)
+                }
             }
         }
         FirebaseAuth.getInstance().addAuthStateListener(authStateListener)
+    }
+
+    /**
+     * 退会処理
+     *
+     * @return なし
+     */
+    fun handleWithdrawal() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            handleErrorForLogout(title = "", text = Setting.failureFetchUID, exception = null)
+            return
+        }
+        // ユーザー情報削除
+        deleteUser(uid)
+        // 認証情報削除
+        deleteAuth()
     }
 
     /**
@@ -348,8 +398,37 @@ class ViewModel: ViewModel() {
 
         FirebaseFirestore
             .getInstance()
-            .collection(Setting.users)
+            .collection(FirebaseConstants.users)
             .document(uid)
             .set(user)
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failurePersistUser, exception = it)
+            }
+    }
+
+    /**
+     * ユーザー情報を削除
+     *
+     * @param document ドキュメント
+     * @return なし
+     */
+    fun deleteUser(document: String) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.users)
+            .document(document)
+            .delete()
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureDeleteUser, exception = it)
+            }
+    }
+
+    /**
+     * 認証情報削除
+     *
+     * @return なし
+     */
+    fun deleteAuth() {
+        FirebaseAuth.getInstance().currentUser?.delete()
     }
 }

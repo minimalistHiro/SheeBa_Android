@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 
 sealed class Screen {
     object EntryScreen: Screen()
+    object CompulsionEntryScreen: Screen()
     object SetUpUsernameScreen: Screen()
     object SetUpEmailScreen: Screen()
     object LoginScreen: Screen()

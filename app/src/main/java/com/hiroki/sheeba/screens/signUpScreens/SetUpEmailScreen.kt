@@ -19,10 +19,11 @@ import androidx.compose.ui.unit.dp
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.data.SignUpUIEvent
+import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
+import com.hiroki.sheeba.screens.components.InputEmailTextField
 import com.hiroki.sheeba.screens.components.InputPasswordTextField
-import com.hiroki.sheeba.screens.components.InputTextField
 import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
@@ -50,7 +51,7 @@ fun SetUpEmailScreen(viewModel: ViewModel) {
 
                 Spacer(modifier = Modifier.height((screenHeight / 7).dp))
 
-                InputTextField(
+                InputEmailTextField(
                     label = "メールアドレス",
                     onTextSelected = {
                         viewModel.onSignUpEvent(SignUpUIEvent.EmailChange(it))
@@ -73,9 +74,9 @@ fun SetUpEmailScreen(viewModel: ViewModel) {
                 InputPasswordTextField(
                     label = "パスワード（確認用）",
                     onTextSelected = {
-                        viewModel.onSignUpEvent(SignUpUIEvent.PasswordChange(it))
+                        viewModel.onSignUpEvent(SignUpUIEvent.Password2Change(it))
                     },
-                    errorStatus = viewModel.signUpUIState.value.passwordError
+                    errorStatus = viewModel.signUpUIState.value.password2Error
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 5).dp))
@@ -89,9 +90,17 @@ fun SetUpEmailScreen(viewModel: ViewModel) {
                 )
             }
         }
-
+        // インジケーター
         if(viewModel.progress.value) {
             CircularProgressIndicator()
+        }
+        // ダイアログ
+        if(viewModel.isShowDialog.value) {
+            CustomAlertDialog(
+                title = viewModel.dialogTitle.value,
+                text = viewModel.dialogText.value) {
+                viewModel.isShowDialog.value = false
+            }
         }
     }
 }
