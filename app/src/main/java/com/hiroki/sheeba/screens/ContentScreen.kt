@@ -27,7 +27,9 @@ import com.hiroki.sheeba.data.BottomNavigationItem
 import com.hiroki.sheeba.screens.accountScreens.AccountScreen
 import com.hiroki.sheeba.screens.accountScreens.UpdateUsernameScreen
 import com.hiroki.sheeba.screens.cameraScreens.CameraScreen
+import com.hiroki.sheeba.screens.cameraScreens.QrCodeOverlay
 import com.hiroki.sheeba.screens.homeScreens.HomeScreen
+import com.hiroki.sheeba.screens.homeScreens.SendPayScreen
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
@@ -101,13 +103,19 @@ fun ContentScreen(viewModel: ViewModel) {
                     HomeScreen(viewModel = viewModel, padding = padding, navController = navController)
                 }
                 composable(items[1].navTitle) {
-                    CameraScreen(viewModel = viewModel, padding = padding, navController = navController)
+                    CameraScreen(viewModel = viewModel, padding = padding, navController = navController, viewModel.qrCodeAnalyzeUseCase)
+                    viewModel.qrCode.value?.let {
+                        QrCodeOverlay(qrCode = it)
+                    }
                 }
                 composable(items[2].navTitle) {
                     AccountScreen(viewModel = viewModel, padding = padding, navController = navController)
                 }
                 composable(Setting.updateUsernameScreen) {
                     UpdateUsernameScreen(viewModel = viewModel, navController = navController)
+                }
+                composable(Setting.sendPayScreen) {
+                    SendPayScreen(viewModel = viewModel, navController = navController)
                 }
             }
         }

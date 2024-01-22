@@ -1,15 +1,21 @@
 package com.hiroki.sheeba.util
 
+import android.util.Size
+
 object Setting {
-//    val surfacePadding = 30
     // キャンペーン値
     val newRegistrationBenefits = "20"              // 新規登録特典。プレゼントポイント
+
+    // 各種設定
+    val maxNumberOfDigits = 6                       // 最大送金桁数
+    val IMAGE_SIZE = Size(1080, 1920)   // 画像の解析サイズ
 
     // Screens
     val entryScreen = "entryScreen"
     val setUpUsernameScreen = "setUpUsernameScreen"
     val setUpEmailScreen = "setUpEmailScreen"
     val homeScreen = "homeScreen"
+    val sendPayScreen = "sendPayScreen"
     val cameraScreen = "cameraScreen"
     val accountScreen = "accountScreen"
     val updateUsernameScreen = "updateUsernameScreen"

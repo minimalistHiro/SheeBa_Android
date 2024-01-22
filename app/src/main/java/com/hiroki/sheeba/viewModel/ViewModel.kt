@@ -1,12 +1,15 @@
 package com.hiroki.sheeba.viewModel
 
 import android.util.Log
+import androidx.camera.core.ImageAnalysis
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.hiroki.sheeba.QrCodeAnalyzer
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.data.LoginUIEvent
@@ -19,6 +22,7 @@ import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.util.Validator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 
 class ViewModel: ViewModel() {
     private val TAG = ViewModel::class.simpleName
@@ -38,6 +42,33 @@ class ViewModel: ViewModel() {
     var dialogText = mutableStateOf("")
     var isShowDialogForLogout = mutableStateOf(false)           // ログアウトへと誘導するダイアログ
     var isShowCompulsionLogoutDialog = mutableStateOf(false)    // 強制ログアウトダイアログ
+
+    // キーボード関連
+    var sendPayText = mutableStateOf("0")                       // 送金テキスト
+    var isTappedAC = mutableStateOf(false)                      // ACボタンがタップされたか否か
+
+    // ImageAnalyzer.Analyzerを継承したQrCodeAnalyzerを内包したUseCaseを作成
+    val qrCodeAnalyzeUseCase = ImageAnalysis.Builder()
+        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+        .setTargetResolution(Setting.IMAGE_SIZE)
+        .build()
+        .also {
+            it.setAnalyzer(
+                Executors.newSingleThreadExecutor(),
+                QrCodeAnalyzer { qrCode ->
+                    _qrCode.value = qrCode
+                    val chatUserUid = qrCode.rawValue.toString()
+
+                    // 同アカウントのQRコードを読み取ってしまった場合、エラーを発動。
+                    if(currentUser.value.uid == chatUserUid) {
+                        handleError(title = "", text = "", exception = null)
+                    }
+//                    Log.d("qrCodeAnalyzeUseCase_rawValue", qrCode.rawValue.toString())
+                },
+            )
+        }
+    private val _qrCode = mutableStateOf<Barcode?>(null)
+    val qrCode: androidx.compose.runtime.State<Barcode?> = _qrCode
 
     /**
      * 新規作成イベント。各イベントごとに処理を分ける。
@@ -430,5 +461,71 @@ class ViewModel: ViewModel() {
      */
     fun deleteAuth() {
         FirebaseAuth.getInstance().currentUser?.delete()
+    }
+
+    /**
+     * キーボード入力から実行処理を分配する
+     *
+     * @param keyboard 入力されたキーボード
+     * @return なし
+     */
+    fun applyKeyboard(keyboard: String) {
+        // 入力したキーボードからテータスを振り分ける。
+        if(keyboard == "AC") {
+            sendPayText.value = "0"
+            isTappedAC.value = true
+        } else {
+            tappedNumberPadProcess(keyboard)
+        }
+    }
+
+    /**
+     * 数字キーボード実行処理
+     *
+     * @param keyboard 入力されたキーボード
+     * @return なし
+     */
+    fun tappedNumberPadProcess(keyboard: String) {
+        // テキストが初期値"0"の時に、"0"若しくは"00"が入力された時、何もしない。
+        if((sendPayText.value == "0") && (keyboard == "0" || keyboard == "00")) {
+            return
+        }
+
+        // 連続で数字が入力された場合と、"AC"入力後に数字が入力された場合に分ける。
+        if(!isTappedAC.value) {
+            // テキストに表示できる最大数字を超えないように制御
+            if(isCheckOverMaxNumberOfDigits((sendPayText.value + keyboard))) {
+                Log.d(TAG, "true")
+                return
+            }
+
+            if(sendPayText.value == "0") {
+                sendPayText.value = keyboard
+            } else {
+                sendPayText.value += keyboard
+                Log.d(TAG, "false")
+            }
+        } else {
+            // AC押下後に、"00"が入力された時、"0"と表記する。
+            if(keyboard == "00") {
+                sendPayText.value = "0"
+            } else {
+                sendPayText.value = keyboard
+            }
+        }
+        isTappedAC.value = false
+    }
+
+    /**
+     * 計算結果がテキスト最大文字数を超えているかをチェックする
+     *
+     * @param numberText 入力されたキーボード
+     * @return なし
+     */
+    fun isCheckOverMaxNumberOfDigits(numberText: String): Boolean {
+        if(numberText.length > Setting.maxNumberOfDigits) {
+            return true
+        }
+        return false
     }
 }

@@ -67,6 +67,47 @@ fun CustomDoubleAlertDialog(
                     style = TextStyle(
                         fontWeight = FontWeight.Bold,
                     ),
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onCancelButtonClicked.invoke()
+                }
+            ) {
+                Text(text = "キャンセル")
+            }
+        }
+    )
+}
+
+@Composable
+fun CustomDestructiveAlertDialog(
+    title: String,
+    text: String,
+    okText: String,
+    onOkButtonClicked: () -> Unit,
+    onCancelButtonClicked: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = {},
+        title = {
+            Text(text = title)
+        },
+        text = {
+            Text(text)
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onOkButtonClicked.invoke()
+                }
+            ) {
+                Text(text = okText,
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                    ),
                     color = Color.Red
                 )
             }
@@ -99,6 +140,20 @@ fun DefaultPreviewOfCustomAlertDialog() {
 @Composable
 fun DefaultPreviewOfCustomDoubleAlertDialog() {
     CustomDoubleAlertDialog(
+        title = "テストエラー",
+        text = "削除しますか？",
+        okText = "削除",
+        onOkButtonClicked = {},
+        onCancelButtonClicked = {},
+    )
+}
+
+
+@Preview
+@ExperimentalMaterial3Api
+@Composable
+fun DefaultPreviewOfCustomDestructiveAlertDialog() {
+    CustomDestructiveAlertDialog(
         title = "テストエラー",
         text = "削除しますか？",
         okText = "削除",

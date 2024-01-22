@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,8 +30,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
+import com.hiroki.sheeba.screens.components.CustomDestructiveAlertDialog
 import com.hiroki.sheeba.screens.components.CustomDivider
-import com.hiroki.sheeba.screens.components.CustomDoubleAlertDialog
 import com.hiroki.sheeba.screens.components.CustomIcon
 import com.hiroki.sheeba.screens.components.CustomListNav
 import com.hiroki.sheeba.util.Setting
@@ -54,6 +53,9 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
         mutableStateOf(false)
     }                                   // 退会完了ダイアログの表示有無
 
+    // Screen開示処理
+    viewModel.fetchCurrentUser()
+
     Box(modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center) {
 
@@ -69,35 +71,35 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
 
                 Spacer(modifier = Modifier.height(15.dp))
 
-                if(viewModel.progress.value) {
-                    CircularProgressIndicator()
-                } else {
-                    Text(
-                        text = viewModel.currentUser.value.username,
-                        style = TextStyle(
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontStyle = FontStyle.Normal,
-                        ),
-                        textAlign = TextAlign.Center,
-                    )
-                }
+                Text(
+                    text = if(viewModel.progress.value) {
+                        "読み込み中..."
+                    } else {
+                        viewModel.currentUser.value.username
+                    },
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontStyle = FontStyle.Normal,
+                    ),
+                    textAlign = TextAlign.Center,
+                )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                if(viewModel.progress.value) {
-                    CircularProgressIndicator()
-                } else {
-                    Text(
-                        text = "しばID：${viewModel.currentUser.value.uid}",
-                        style = TextStyle(
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Normal,
-                            fontStyle = FontStyle.Normal,
-                        ),
-                        textAlign = TextAlign.Center,
-                    )
-                }
+                Text(
+                    text = if(viewModel.progress.value) {
+                        "読み込み中..."
+                    } else {
+                        "しばID：${viewModel.currentUser.value.uid}"
+                    },
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal,
+                        fontStyle = FontStyle.Normal,
+                    ),
+                    textAlign = TextAlign.Center,
+                )
 
                 Spacer(modifier = Modifier.height((screenHeight / 15).dp))
 
@@ -118,15 +120,19 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                         textAlign = TextAlign.Center,
                     )
 
+                    // ユーザー名を変更
                     CustomListNav(text = "ユーザー名を変更", color = Color.Black) {
                         navController.navigate(Setting.updateUsernameScreen)
                     }
                     CustomDivider(color = Color.Gray)
 
+                    // ログアウト
                     CustomListNav(text = "ログアウト", color = Color.Red) {
                         isShowConfirmationLogoutDialog.value = true
                     }
                     CustomDivider(color = Color.Gray)
+
+                    // 退会する
                     CustomListNav(text = "退会する", color = Color.Red) {
                         isShowConfirmationWithdrawalDialog.value = true
                     }
@@ -162,7 +168,7 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
         }
         // ログアウト確認ダイアログ
         if(isShowConfirmationLogoutDialog.value) {
-            CustomDoubleAlertDialog(
+            CustomDestructiveAlertDialog(
                 title = "",
                 text = "ログアウトしますか？",
                 okText = "ログアウト",
@@ -177,7 +183,7 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
         }
         // 退会確認ダイアログ
         if(isShowConfirmationWithdrawalDialog.value) {
-            CustomDoubleAlertDialog(
+            CustomDestructiveAlertDialog(
                 title = "",
                 text = "退会しますか？",
                 okText = "退会",

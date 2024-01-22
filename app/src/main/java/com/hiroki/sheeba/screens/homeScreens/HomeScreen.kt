@@ -47,6 +47,9 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
 
+    // Screen開示処理
+    viewModel.fetchCurrentUser()
+
     Box(modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center) {
 
