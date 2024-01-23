@@ -73,7 +73,7 @@ fun LoginScreen(viewModel: ViewModel) {
                 Spacer(modifier = Modifier.height((screenHeight / 5).dp))
 
                 CustomCapsuleButton(
-                    value = "ログイン",
+                    text = "ログイン",
                     onButtonClicked = {
                         viewModel.onLoginEvent(LoginUIEvent.LoginButtonClicked)
                     },

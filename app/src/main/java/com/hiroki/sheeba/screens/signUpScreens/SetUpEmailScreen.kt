@@ -82,7 +82,7 @@ fun SetUpEmailScreen(viewModel: ViewModel) {
                 Spacer(modifier = Modifier.height((screenHeight / 5).dp))
 
                 CustomCapsuleButton(
-                    value = "アカウント作成",
+                    text = "アカウント作成",
                     onButtonClicked = {
                         viewModel.onSignUpEvent(SignUpUIEvent.SignUpButtonClicked)
                     },

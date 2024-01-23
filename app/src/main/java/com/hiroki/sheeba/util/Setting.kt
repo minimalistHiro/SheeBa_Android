@@ -5,6 +5,7 @@ import android.util.Size
 object Setting {
     // キャンペーン値
     val newRegistrationBenefits = "20"              // 新規登録特典。プレゼントポイント
+    val getPointFromStore = "1"                     // 店舗からの取得ポイント
 
     // 各種設定
     val maxNumberOfDigits = 6                       // 最大送金桁数
@@ -17,6 +18,7 @@ object Setting {
     val homeScreen = "homeScreen"
     val sendPayScreen = "sendPayScreen"
     val cameraScreen = "cameraScreen"
+    val getPointScreen = "getPointScreen"
     val accountScreen = "accountScreen"
     val updateUsernameScreen = "updateUsernameScreen"
 
@@ -28,6 +30,8 @@ object Setting {
     val failureFetchUser = "ユーザー情報の取得に失敗しました。"
     val failureFetchStorePoint = "店舗ポイント情報の取得に失敗しました。"
     val failurePersistUser = "ユーザー情報の保存に失敗しました。"
+    val failurePersistStorePoint = "店舗ポイント情報の保存に失敗しました。"
+    val failureUpdateUser = "ユーザー情報の更新に失敗しました。"
     val failureDeleteData = "データ削除に失敗しました。"
     val failureDeleteUser = "ユーザー情報の削除に失敗しました。"
     val failureDeleteMessage = "メッセージの削除に失敗しました。"

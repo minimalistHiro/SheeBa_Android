@@ -119,7 +119,7 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
                 Spacer(modifier = Modifier.height((screenHeight / 10).dp))
 
                 CustomCapsuleButton(
-                    value = "次へ",
+                    text = "次へ",
                     onButtonClicked = {
                         PostOfficeAppRouter.navigateTo(Screen.SetUpEmailScreen)
                     },

@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.sp
 
 @ExperimentalMaterial3Api
 @Composable
-fun CustomCapsuleButton(value: String, onButtonClicked: () -> Unit, isEnabled: Boolean) {
+fun CustomCapsuleButton(text: String, onButtonClicked: () -> Unit, isEnabled: Boolean) {
     Button(
         modifier = Modifier
             .fillMaxWidth()
@@ -63,7 +63,7 @@ fun CustomCapsuleButton(value: String, onButtonClicked: () -> Unit, isEnabled: B
             ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = value,
+            Text(text = text,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White)
@@ -166,7 +166,7 @@ fun CustomListNav(text: String, color: Color, onButtonClicked: () -> Unit) {
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfCustomCapsuleButton() {
-    CustomCapsuleButton(value = "Test", onButtonClicked = {}, isEnabled = false)
+    CustomCapsuleButton(text = "Test", onButtonClicked = {}, isEnabled = false)
 }
 
 @Preview

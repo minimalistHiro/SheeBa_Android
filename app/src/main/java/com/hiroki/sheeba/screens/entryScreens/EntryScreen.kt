@@ -77,7 +77,7 @@ fun EntryScreen(viewModel: ViewModel) {
             Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
             CustomCapsuleButton(
-                value = "ログイン",
+                text = "ログイン",
                 onButtonClicked = {
                     PostOfficeAppRouter.navigateTo(Screen.LoginScreen)
                 },

@@ -27,6 +27,7 @@ import com.hiroki.sheeba.data.BottomNavigationItem
 import com.hiroki.sheeba.screens.accountScreens.AccountScreen
 import com.hiroki.sheeba.screens.accountScreens.UpdateUsernameScreen
 import com.hiroki.sheeba.screens.cameraScreens.CameraScreen
+import com.hiroki.sheeba.screens.cameraScreens.ErrorQRCodeOverlay
 import com.hiroki.sheeba.screens.cameraScreens.QrCodeOverlay
 import com.hiroki.sheeba.screens.homeScreens.HomeScreen
 import com.hiroki.sheeba.screens.homeScreens.SendPayScreen
@@ -106,6 +107,9 @@ fun ContentScreen(viewModel: ViewModel) {
                     CameraScreen(viewModel = viewModel, padding = padding, navController = navController, viewModel.qrCodeAnalyzeUseCase)
                     viewModel.qrCode.value?.let {
                         QrCodeOverlay(qrCode = it)
+                    }
+                    if(viewModel.isQrCodeScanError.value) {
+                        ErrorQRCodeOverlay()
                     }
                 }
                 composable(items[2].navTitle) {

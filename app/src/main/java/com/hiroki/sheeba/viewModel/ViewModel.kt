@@ -1,5 +1,7 @@
 package com.hiroki.sheeba.viewModel
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.compose.runtime.mutableStateOf
@@ -17,6 +19,7 @@ import com.hiroki.sheeba.data.LoginUIState
 import com.hiroki.sheeba.data.SignUpUIEvent
 import com.hiroki.sheeba.data.SignUpUIState
 import com.hiroki.sheeba.model.ChatUser
+import com.hiroki.sheeba.model.StorePoint
 import com.hiroki.sheeba.util.FirebaseConstants
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.util.Validator
@@ -33,8 +36,12 @@ class ViewModel: ViewModel() {
     var loginAllValidationPassed = mutableStateOf(false)
     var progress = mutableStateOf(false)
 
+    // DB
 //    val users: StateFlow<List<ChatUser>> = _users.asStateFlow()
     var currentUser = mutableStateOf(ChatUser())
+    var chatUser = mutableStateOf(ChatUser())
+    var storePoints = mutableListOf<StorePoint>()
+    var storePoint = mutableStateOf(StorePoint())
 
     // ダイアログ
     var isShowDialog = mutableStateOf(false)
@@ -46,6 +53,7 @@ class ViewModel: ViewModel() {
     // キーボード関連
     var sendPayText = mutableStateOf("0")                       // 送金テキスト
     var isTappedAC = mutableStateOf(false)                      // ACボタンがタップされたか否か
+    var getPoint = mutableStateOf("0")                          // 獲得ポイント
 
     // ImageAnalyzer.Analyzerを継承したQrCodeAnalyzerを内包したUseCaseを作成
     val qrCodeAnalyzeUseCase = ImageAnalysis.Builder()
@@ -58,17 +66,15 @@ class ViewModel: ViewModel() {
                 QrCodeAnalyzer { qrCode ->
                     _qrCode.value = qrCode
                     val chatUserUid = qrCode.rawValue.toString()
-
-                    // 同アカウントのQRコードを読み取ってしまった場合、エラーを発動。
-                    if(currentUser.value.uid == chatUserUid) {
-                        handleError(title = "", text = "", exception = null)
-                    }
-//                    Log.d("qrCodeAnalyzeUseCase_rawValue", qrCode.rawValue.toString())
+                    // QRコード読み取り処理
+                    handleScan(chatUserUid = chatUserUid)
                 },
             )
         }
     private val _qrCode = mutableStateOf<Barcode?>(null)
     val qrCode: androidx.compose.runtime.State<Barcode?> = _qrCode
+    var isQrCodeScanError = mutableStateOf(false)               // QRコード読み取りエラー
+    var isSameStoreScanError = mutableStateOf(false)            // 同日同店舗スキャンエラー
 
     /**
      * 新規作成イベント。各イベントごとに処理を分ける。
@@ -242,14 +248,96 @@ class ViewModel: ViewModel() {
                     document.toObject(ChatUser::class.java)?.let {
                         currentUser = mutableStateOf(it)
                     }
-                    Log.d(TAG, "DocumentSnapshot data: ${document.data}")
                 } else {
-                    Log.d(TAG, "No such document")
+                    handleError(title = "", text = Setting.failureFetchUser, exception = null)
                 }
                 progress.value = false
             }
             .addOnFailureListener {
                 handleError(title = "", text = Setting.failureFetchUser, exception = it)
+            }
+    }
+
+    /**
+     * UIDに一致するユーザー情報を取得
+     *
+     * @param uid UID
+     * @return なし
+     */
+    fun fetchUser(uid: String) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.users)
+            .document(uid)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    document.toObject(ChatUser::class.java)?.let {
+                        chatUser = mutableStateOf(it)
+                    }
+                } else {
+                    handleError(title = "", text = Setting.failureFetchUser, exception = null)
+                }
+            }
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureFetchUser, exception = it)
+            }
+    }
+
+    /**
+     * UIDに一致する店舗ポイント情報を取得
+     *
+     * @param document1 ドキュメント1
+     * @param document2 ドキュメント2
+     * @return なし
+     */
+    fun fetchStorePoint(document1: String, document2: String) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.storePoints)
+            .document(document1)
+            .collection(FirebaseConstants.user)
+            .document(document2)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    document.toObject(StorePoint::class.java)?.let {
+                        storePoint = mutableStateOf(it)
+                    }
+                } else {
+                    handleError(title = "", text = Setting.failureFetchStorePoint, exception = null)
+                }
+            }
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureFetchStorePoint, exception = it)
+            }
+    }
+
+    /**
+     * 店舗ポイント情報を取得
+     *
+     * @return なし
+     */
+    fun fetchStorePoints() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            return
+        }
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.storePoints)
+            .document(uid)
+            .collection(FirebaseConstants.user)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(StorePoint::class.java)?.let {
+                        storePoints.add(it)
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchStorePoint, exception = exception)
             }
     }
 
@@ -438,6 +526,45 @@ class ViewModel: ViewModel() {
     }
 
     /**
+     * 店舗ポイント情報を更新
+     *
+     * @param document1 ドキュメント
+     * @param document2 ドキュメント
+     * @param data データ
+     * @return なし
+     */
+    fun persistStorePoint(document1: String, document2: String, data: HashMap<String, Any>) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.storePoints)
+            .document(document1)
+            .collection(FirebaseConstants.user)
+            .document(document2)
+            .set(data)
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failurePersistStorePoint, exception = it)
+            }
+    }
+
+    /**
+     * ユーザー情報を更新
+     *
+     * @param document ドキュメント
+     * @param data データ
+     * @return なし
+     */
+    fun updateUser(document: String, data: HashMap<String, Any>) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.users)
+            .document(document)
+            .update(data)
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureUpdateUser, exception = it)
+            }
+    }
+
+    /**
      * ユーザー情報を削除
      *
      * @param document ドキュメント
@@ -527,5 +654,66 @@ class ViewModel: ViewModel() {
             return true
         }
         return false
+    }
+
+    /**
+     * QRコード読み取り処理
+     *
+     * @param chatUserUid 読み取ったQRコードのUID
+     * @return なし
+     */
+    private fun handleScan(chatUserUid: String) {
+        // 同アカウントのQRコードを読み取ってしまった場合、エラーを発動。
+        if(currentUser.value.uid == chatUserUid) {
+            isQrCodeScanError.value = true
+            return
+        }
+        fetchUser(chatUserUid)
+        fetchStorePoint(document1 = currentUser.value.uid, document2 = chatUserUid)
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            // 店舗QRコードの場合
+            if(chatUser.value.isStore) {
+                handleGetPointFromStore()
+            } else {
+                if(!isQrCodeScanError.value) {
+                    // ユーザーに送ポイント。画面遷移する.
+                }
+            }
+        }, 100)
+//                    Log.d("qrCodeAnalyzeUseCase_rawValue", qrCode.rawValue.toString())
+    }
+
+    /**
+     * 店舗からポイント取得処理
+     *
+     * @return なし
+     */
+    private fun handleGetPointFromStore() {
+        val intCurrentUserMoney = currentUser.value.money.toInt()
+        val intGetPoint = getPoint.value.toInt()
+
+        // 残高に取得ポイントを足す
+        val calculatedCurrentUserMoney = intCurrentUserMoney + intGetPoint
+
+        // 自身のユーザー情報を更新
+        val userData = hashMapOf<String, Any>(
+            FirebaseConstants.money to calculatedCurrentUserMoney.toString(),
+        )
+        updateUser(document = chatUser.value.uid, data = userData)
+
+        // 店舗ポイント情報を更新
+        val storePointData = hashMapOf<String, Any>(
+            FirebaseConstants.uid to chatUser.value.uid,
+            FirebaseConstants.email to chatUser.value.email,
+            FirebaseConstants.profileImageUrl to chatUser.value.profileImageUrl,
+            FirebaseConstants.getPoint to getPoint,
+            FirebaseConstants.username to chatUser.value.username,
+        )
+        persistStorePoint(
+            document1 = currentUser.value.uid,
+            document2 = chatUser.value.uid,
+            data = storePointData
+        )
     }
 }
