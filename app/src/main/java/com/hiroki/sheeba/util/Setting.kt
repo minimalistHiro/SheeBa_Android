@@ -26,6 +26,7 @@ object Setting {
     val mismatchPassword = "パスワードとパスワード（確認用）が一致しません。"
     val failureCreateAccount = "アカウントの作成に失敗しました。"
     val failureLogin = "ログインに失敗しました。"
+    val failureSendEmail = "メール送信に失敗しました。"
     val failureFetchUID = "UIDの取得に失敗しました。"
     val failureFetchUser = "ユーザー情報の取得に失敗しました。"
     val failureFetchStorePoint = "店舗ポイント情報の取得に失敗しました。"

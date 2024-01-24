@@ -26,6 +26,7 @@ import com.hiroki.sheeba.screens.components.InputEmailTextField
 import com.hiroki.sheeba.screens.components.InputPasswordTextField
 import com.hiroki.sheeba.viewModel.ViewModel
 
+
 @ExperimentalMaterial3Api
 @Composable
 fun SetUpEmailScreen(viewModel: ViewModel) {
@@ -104,7 +105,6 @@ fun SetUpEmailScreen(viewModel: ViewModel) {
         }
     }
 }
-
 @Preview
 @ExperimentalMaterial3Api
 @Composable

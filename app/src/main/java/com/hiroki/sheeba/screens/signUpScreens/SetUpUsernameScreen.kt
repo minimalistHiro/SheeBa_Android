@@ -123,7 +123,7 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
                     onButtonClicked = {
                         PostOfficeAppRouter.navigateTo(Screen.SetUpEmailScreen)
                     },
-                    isEnabled = viewModel.signUpUsernameValidationPassed.value
+                    isEnabled = viewModel.signUpUsernameScreenValidationPassed.value
                 )
             }
         }

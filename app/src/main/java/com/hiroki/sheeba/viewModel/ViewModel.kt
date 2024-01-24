@@ -31,9 +31,11 @@ import java.util.concurrent.Executors
 class ViewModel: ViewModel() {
     private val TAG = ViewModel::class.simpleName
     var signUpUIState = mutableStateOf(SignUpUIState())
-    var signUpUsernameValidationPassed = mutableStateOf(false)
+    var signUpUsernameScreenValidationPassed = mutableStateOf(false)
     var signUpAllValidationPassed = mutableStateOf(false)
+    var signUpUsernamePassed = mutableStateOf(false)
     var loginUIState = mutableStateOf(LoginUIState())
+    var loginEmailPassed = mutableStateOf(false)
     var loginAllValidationPassed = mutableStateOf(false)
     var progress = mutableStateOf(false)
 
@@ -89,7 +91,22 @@ class ViewModel: ViewModel() {
     val delayMillis = 300L                                              // 押下後一時的に押下処理を無効化する時間(ms)
     var pushedAt = 0L                                                   // 前回押下時間(タイムスタンプ, ms)
     var isShowHandleScan = mutableStateOf(false)                // スキャン処理を一度したか否か
-
+    
+    /**
+     * 初期化処理
+     *
+     * @param event イベント
+     * @return なし
+     */
+    fun init() {
+        signUpUIState.value = SignUpUIState()
+        loginUIState.value = LoginUIState()
+        signUpUsernameScreenValidationPassed.value = false
+        signUpAllValidationPassed.value = false
+        signUpUsernamePassed.value = false
+        loginEmailPassed.value = false
+        loginAllValidationPassed.value = false
+    }
 
     /**
      * 新規作成イベント。各イベントごとに処理を分ける。
@@ -213,8 +230,9 @@ class ViewModel: ViewModel() {
             addressError =  addressResult.status,
         )
 
-        signUpUsernameValidationPassed.value = usernameResult.status && ageResult.status && addressResult.status
+        signUpUsernameScreenValidationPassed.value = usernameResult.status && ageResult.status && addressResult.status
         signUpAllValidationPassed.value = emailResult.status && passwordResult.status && password2Result.status
+        signUpUsernamePassed.value = usernameResult.status
     }
 
     /**
@@ -237,6 +255,7 @@ class ViewModel: ViewModel() {
         )
 
         loginAllValidationPassed.value = emailResult.status && passwordResult.status
+        loginEmailPassed.value = emailResult.status
     }
 
     /**
@@ -387,13 +406,11 @@ class ViewModel: ViewModel() {
             .getInstance()
             .createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener {
-                Log.d(TAG, "isSuccessful = ${it.isSuccessful}")
-
                 if(it.isSuccessful) {
                     persistUser(email = email, username = username, age = age, address = address)
-                    PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
                 }
                 progress.value = false
+                handleEmailVerification()
             }
             .addOnFailureListener {
                 handleError(
@@ -402,6 +419,26 @@ class ViewModel: ViewModel() {
                     exception = it
                 )
                 return@addOnFailureListener
+            }
+    }
+
+    /**
+     * メール送信処理
+     *
+     * @return なし
+     */
+    fun handleEmailVerification() {
+        val user = FirebaseAuth.getInstance().currentUser ?: run {
+            handleError(title = "", text = Setting.failureFetchUser, exception = null)
+            return
+        }
+
+        user.sendEmailVerification()
+            .addOnCompleteListener {
+                PostOfficeAppRouter.navigateTo(Screen.ConfirmEmailScreen)
+            }
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureSendEmail, exception = it)
             }
     }
 
@@ -421,7 +458,14 @@ class ViewModel: ViewModel() {
             .signInWithEmailAndPassword(email, password)
             .addOnCompleteListener {
                 if(it.isSuccessful) {
-                    PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
+                    val user = it.result.user
+                    user?.let {
+                        if(it.isEmailVerified) {
+                            PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
+                        } else {
+                            PostOfficeAppRouter.navigateTo(Screen.NotConfirmEmailScreen)
+                        }
+                    }
                 }
                 progress.value = false
             }
@@ -431,6 +475,120 @@ class ViewModel: ViewModel() {
                     text = "以下の可能性があります。\n・メールアドレスまたはパスワードが間違えている\n・ネットワークの接続が悪い",
                     exception = it
                 )
+            }
+    }
+
+    /**
+     * ログイン（メールアドレス認証含む）
+     *
+     * @return なし
+     */
+    fun handleLoginWithConfirmEmail() {
+        val email = signUpUIState.value.email
+        val password = signUpUIState.value.password
+
+        progress.value = true
+
+        FirebaseAuth
+            .getInstance()
+            .signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener {
+                progress.value = false
+
+                val user = it.result.user
+                user?.let {
+                    if(!it.isEmailVerified) {
+                        handleError(title = "", text = "メールアドレスの認証が完了していません。" +
+                                "\n再度メールを送信する場合は、下の「メールを再送する」を押してください。", exception = null)
+                        return@let
+                    }
+
+                    // メールアドレス認証済み処理
+                    val data = hashMapOf<String, Any>(
+                        FirebaseConstants.isConfirmEmail to true,
+                    )
+                    updateUser(document = it.uid, data = data)
+                    PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
+                }
+
+                if(user == null) {
+                    handleError(title = "", text = Setting.failureFetchUser, exception = null)
+                    return@addOnCompleteListener
+                }
+            }
+            .addOnFailureListener {
+                handleError(
+                    title = Setting.failureLogin,
+                    text = "以下の可能性があります。\n・メールアドレスまたはパスワードが間違えている\n・ネットワークの接続が悪い",
+                    exception = it
+                )
+            }
+    }
+
+    /**
+     * ログイン（メール送信含む）
+     *
+     * @return なし
+     */
+    fun handleLoginWithEmailVerification() {
+        val email = loginUIState.value.email
+        val password = loginUIState.value.password
+
+        progress.value = true
+
+        FirebaseAuth
+            .getInstance()
+            .signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener {
+                progress.value = false
+
+                val user = it.result.user
+                user?.let {
+                    if(!it.isEmailVerified) {
+                        it.sendEmailVerification()
+                            .addOnSuccessListener {
+                                PostOfficeAppRouter.navigateTo(Screen.ConfirmEmailScreen)
+                            }
+                            .addOnFailureListener {
+                                handleError(title = "", text = Setting.failureSendEmail, exception = it)
+                            }
+                    } else {
+                        handleAlert(title = "", text = "メール認証済みです。")
+                        PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
+                    }
+                }
+
+                if(user == null) {
+                    handleError(title = "", text = Setting.failureFetchUser, exception = null)
+                    return@addOnCompleteListener
+                }
+            }
+            .addOnFailureListener {
+                handleError(
+                    title = Setting.failureLogin,
+                    text = "以下の可能性があります。\n・メールアドレスまたはパスワードが間違えている\n・ネットワークの接続が悪い",
+                    exception = it
+                )
+            }
+    }
+
+    /**
+     * 入力したメールアドレスにパスワード再設定リンクを送る
+     *
+     * @return なし
+     */
+    fun handleSendResetPasswordLink() {
+        val email = loginUIState.value.email
+
+        FirebaseAuth
+            .getInstance()
+            .sendPasswordResetEmail(email)
+            .addOnSuccessListener {
+                handleAlert(title = "", text = "入力したメールアドレスにパスワード再設定用のURLを送信しました。")
+                PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
+            }
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureSendEmail, exception = null)
             }
     }
 
@@ -467,6 +625,22 @@ class ViewModel: ViewModel() {
         deleteUser(uid)
         // 認証情報削除
         deleteAuth()
+    }
+
+    /**
+     * アラート処理
+     *
+     * @param title エラータイトル
+     * @param text エラーメッセージ
+     * @param exception エラー内容
+     * @return なし
+     */
+    fun handleAlert(title: String, text: String) {
+        progress.value = false
+        isShowDialog.value = true
+        dialogTitle.value = title
+        dialogText.value = text
+        Log.d(TAG, text)
     }
 
     /**
@@ -524,19 +698,6 @@ class ViewModel: ViewModel() {
             return
         }
 
-//        val user = ChatUser(
-//            uid = uid,
-//            email = email,
-//            profileImageUrl = "",
-//            money = Setting.newRegistrationBenefits,
-//            username = username,
-//            age = age,
-//            address = address,
-//            isConfirmEmail = false,
-//            isFirstLogin = false,
-//            isStore = false,
-//            isOwner = false,
-//        )
         // ユーザー情報を格納
         val data = hashMapOf<String, Any>(
             FirebaseConstants.uid to uid,
@@ -719,7 +880,6 @@ class ViewModel: ViewModel() {
                     }
                     // スキャンしたQRコードからUIDを取得できた場合、店舗ポイント情報を取得。
                     if(chatUser.value?.uid != "") {
-                        chatUser.value?.let { Log.d(TAG, it.uid) }
                         // 店舗ポイント情報を取得
                         FirebaseFirestore
                             .getInstance()
@@ -823,6 +983,45 @@ class ViewModel: ViewModel() {
                 document2 = it.uid,
                 data = storePointData
             )
+        }
+    }
+
+    /**
+     * 送ポイント処理
+     *
+     * @return なし
+     */
+    fun handleSendPoint() {
+        chatUser.value?.let {
+            val chatUserMoney = it.money.toInt()
+            val currentUserMoney = currentUser.value.money.toInt()
+            val sendPayText = sendPayText.value.toInt()
+
+            // TODO: -  互いに友達登録していない場合、新規友達登録をする。
+
+            // 各ユーザーの残高を計算
+            val calculatedChatUserMoney = chatUserMoney + sendPayText
+            val calculatedCurrentUserMoney = currentUserMoney - sendPayText
+
+            // 各ユーザーの残高が0を下回る場合、アラートを発動
+            if((calculatedChatUserMoney < 0) || (calculatedCurrentUserMoney < 0)) {
+                handleError(title = "", text = "入力数値が残ポイントを超えています。", exception = null)
+                return
+            }
+
+            // 送ポイント相手のデータを更新
+            val chatUserData = hashMapOf<String, Any>(
+                FirebaseConstants.money to calculatedChatUserMoney.toString(),
+            )
+            updateUser(document = it.uid, data = chatUserData)
+
+            // 自身のデータを更新
+            val userData = hashMapOf<String, Any>(
+                FirebaseConstants.money to calculatedCurrentUserMoney.toString(),
+            )
+            updateUser(document = currentUser.value.uid, data = userData)
+
+            PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
         }
     }
 

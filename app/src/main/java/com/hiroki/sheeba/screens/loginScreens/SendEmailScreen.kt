@@ -9,30 +9,42 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.data.LoginUIEvent
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
-import com.hiroki.sheeba.screens.components.CustomTextButton
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
 import com.hiroki.sheeba.screens.components.InputEmailTextField
-import com.hiroki.sheeba.screens.components.InputPasswordTextField
 import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
 @Composable
-fun LoginScreen(viewModel: ViewModel) {
+fun SendEmailScreen(viewModel: ViewModel) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
+    var isShowInvalidLinkCautionDialog = remember {
+        mutableStateOf(false)
+    }                                   // メールリンク無効警告表示有無
+    var isSendEmailDialog = remember {
+        mutableStateOf(false)
+    }                                   // メール送信ダイアログ
 
     Box(modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center) {
@@ -44,50 +56,42 @@ fun LoginScreen(viewModel: ViewModel) {
         ) {
             Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 CustomTopAppBar(
-                    title = "ログイン",
+                    title = "新規アカウントを作成",
                     onButtonClicked = {
-                        PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
+                        PostOfficeAppRouter.navigateTo(Screen.LoginScreen)
                     }
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 7).dp))
+
+                Text(
+                    text = "入力したメールアドレスに\nパスワード再設定用のURLを送信します。",
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Normal,
+                        fontStyle = FontStyle.Normal,
+                    ),
+                    textAlign = TextAlign.Center,
+                )
+
+                Spacer(modifier = Modifier.height((screenHeight / 10).dp))
 
                 InputEmailTextField(
                     label = "メールアドレス",
                     onTextSelected = {
                         viewModel.onLoginEvent(LoginUIEvent.EmailChange(it))
                     },
-                    errorStatus = viewModel.loginUIState.value.emailError
-                )
-
-                Spacer(modifier = Modifier.height((screenHeight / 25).dp))
-
-                InputPasswordTextField(
-                    label = "パスワード",
-                    onTextSelected = {
-                        viewModel.onLoginEvent(LoginUIEvent.PasswordChange(it))
-                    },
-                    errorStatus = viewModel.loginUIState.value.passwordError
+                    errorStatus = viewModel.loginEmailPassed.value
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 5).dp))
 
                 CustomCapsuleButton(
-                    text = "ログイン",
+                    text = "メール送信",
                     onButtonClicked = {
-                        viewModel.onLoginEvent(LoginUIEvent.LoginButtonClicked)
+                        viewModel.handleSendResetPasswordLink()
                     },
-                    isEnabled = viewModel.loginAllValidationPassed.value
-                )
-
-                Spacer(modifier = Modifier.height((screenHeight / 10).dp))
-
-                CustomTextButton(
-                    text = "パスワードを忘れた方はこちら",
-                    onButtonClicked = {
-                        PostOfficeAppRouter.navigateTo(Screen.SendEmailScreen)
-                    },
-                    isEnabled = false
+                    isEnabled = true
                 )
             }
         }
@@ -109,6 +113,6 @@ fun LoginScreen(viewModel: ViewModel) {
 @Preview
 @ExperimentalMaterial3Api
 @Composable
-fun DefaultPreviewOfLoginScreen() {
-    LoginScreen(viewModel = ViewModel())
+fun DefaultPreviewOfSendEmailScreen() {
+    SendEmailScreen(viewModel = ViewModel())
 }

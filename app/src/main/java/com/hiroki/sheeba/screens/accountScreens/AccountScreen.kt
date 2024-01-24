@@ -54,6 +54,7 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
     }                                   // 退会完了ダイアログの表示有無
 
     // Screen開示処理
+    viewModel.init()
     viewModel.fetchCurrentUser()
 
     Box(modifier = Modifier.fillMaxSize(),

@@ -221,6 +221,7 @@ fun SendPayScreen(viewModel: ViewModel) {
                 text = "${viewModel.sendPayText.value}pt送りますか？",
                 okText = "送る",
                 onOkButtonClicked = {
+                    viewModel.handleSendPoint()
                     isShowSendPayDialog.value = false
                 },
                 onCancelButtonClicked = {

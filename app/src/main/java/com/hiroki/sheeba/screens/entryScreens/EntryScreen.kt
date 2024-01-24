@@ -34,20 +34,14 @@ fun EntryScreen(viewModel: ViewModel) {
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
 
+    // 初期化処理
+    viewModel.init()
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
     ) {
-        // エラーを初期化する
-        viewModel.signUpUIState.value.emailError = false
-        viewModel.signUpUIState.value.passwordError = false
-        viewModel.signUpUIState.value.usernameError = false
-        viewModel.signUpUIState.value.ageError = false
-        viewModel.signUpUIState.value.addressError = false
-        viewModel.loginUIState.value.emailError = false
-        viewModel.loginUIState.value.passwordError = false
-
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height((screenHeight / 3).dp))
 
@@ -67,7 +61,7 @@ fun EntryScreen(viewModel: ViewModel) {
             Spacer(modifier = Modifier.height((screenHeight / 5).dp))
 
             CustomBorderCapsuleButton(
-                value = "アカウントを作成する",
+                text = "アカウントを作成する",
                 onButtonClicked = {
                     PostOfficeAppRouter.navigateTo(Screen.SetUpUsernameScreen)
                 },

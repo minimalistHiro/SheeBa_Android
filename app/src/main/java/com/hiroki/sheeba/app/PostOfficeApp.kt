@@ -13,6 +13,9 @@ import com.hiroki.sheeba.screens.cameraScreens.GetPointScreen
 import com.hiroki.sheeba.screens.entryScreens.EntryScreen
 import com.hiroki.sheeba.screens.homeScreens.SendPayScreen
 import com.hiroki.sheeba.screens.loginScreens.LoginScreen
+import com.hiroki.sheeba.screens.loginScreens.SendEmailScreen
+import com.hiroki.sheeba.screens.signUpScreens.ConfirmEmailScreen
+import com.hiroki.sheeba.screens.signUpScreens.NotConfirmEmailScreen
 import com.hiroki.sheeba.screens.signUpScreens.SetUpEmailScreen
 import com.hiroki.sheeba.screens.signUpScreens.SetUpUsernameScreen
 import com.hiroki.sheeba.viewModel.ViewModel
@@ -30,10 +33,14 @@ fun PostOfficeApp() {
         Crossfade(targetState = PostOfficeAppRouter.currentScreen) { currentState ->
             when(currentState.value) {
                 is Screen.EntryScreen -> {
-                    if (FirebaseAuth.getInstance().currentUser == null) {
+                    if(FirebaseAuth.getInstance().currentUser == null) {
                         EntryScreen(viewModel = viewModel)
                     } else {
-                        ContentScreen(viewModel = viewModel)
+                        if(FirebaseAuth.getInstance().currentUser?.isEmailVerified == true) {
+                            ContentScreen(viewModel = viewModel)
+                        } else {
+                            NotConfirmEmailScreen(viewModel = viewModel)
+                        }
                     }
                 }
                 is Screen.CompulsionEntryScreen -> {
@@ -45,8 +52,17 @@ fun PostOfficeApp() {
                 is Screen.SetUpEmailScreen -> {
                     SetUpEmailScreen(viewModel = viewModel)
                 }
+                is Screen.ConfirmEmailScreen -> {
+                    ConfirmEmailScreen(viewModel = viewModel)
+                }
+                is Screen.NotConfirmEmailScreen -> {
+                    NotConfirmEmailScreen(viewModel = viewModel)
+                }
                 is Screen.LoginScreen -> {
                     LoginScreen(viewModel = viewModel)
+                }
+                is Screen.SendEmailScreen -> {
+                    SendEmailScreen(viewModel = viewModel)
                 }
                 is Screen.ContentScreen -> {
                     ContentScreen(viewModel = viewModel)

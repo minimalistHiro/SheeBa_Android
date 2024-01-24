@@ -48,6 +48,7 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
     val screenHeight = configuration.screenHeightDp
 
     // Screen開示処理
+    viewModel.init()
     viewModel.fetchCurrentUser()
 
     Box(modifier = Modifier.fillMaxSize(),

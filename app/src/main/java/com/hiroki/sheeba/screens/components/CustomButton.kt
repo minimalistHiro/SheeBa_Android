@@ -73,7 +73,7 @@ fun CustomCapsuleButton(text: String, onButtonClicked: () -> Unit, isEnabled: Bo
 
 @ExperimentalMaterial3Api
 @Composable
-fun CustomBorderCapsuleButton(value: String, onButtonClicked: () -> Unit, isEnabled: Boolean) {
+fun CustomBorderCapsuleButton(text: String, onButtonClicked: () -> Unit, isEnabled: Boolean) {
     Button(
         modifier = Modifier
             .fillMaxWidth()
@@ -100,7 +100,7 @@ fun CustomBorderCapsuleButton(value: String, onButtonClicked: () -> Unit, isEnab
             ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = value,
+            Text(text = text,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black)
@@ -110,13 +110,13 @@ fun CustomBorderCapsuleButton(value: String, onButtonClicked: () -> Unit, isEnab
 
 @ExperimentalMaterial3Api
 @Composable
-fun CustomTextButton(value: String, onButtonClicked: () -> Unit, isEnabled: Boolean) {
+fun CustomTextButton(text: String, onButtonClicked: () -> Unit, isEnabled: Boolean) {
     TextButton(
         onClick = {
             onButtonClicked.invoke()
         }
     ) {
-        Text(text = value,
+        Text(text = text,
             fontSize = 18.sp,
             color = Color.Blue)
     }
@@ -173,7 +173,7 @@ fun DefaultPreviewOfCustomCapsuleButton() {
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfCustomBorderCapsuleButton() {
-    CustomBorderCapsuleButton(value = "Test", onButtonClicked = {}, isEnabled = false)
+    CustomBorderCapsuleButton(text = "Test", onButtonClicked = {}, isEnabled = false)
 }
 
 
@@ -181,7 +181,7 @@ fun DefaultPreviewOfCustomBorderCapsuleButton() {
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfCustomTextButton() {
-    CustomTextButton(value = "Test", onButtonClicked = {}, isEnabled = false)
+    CustomTextButton(text = "Test", onButtonClicked = {}, isEnabled = false)
 }
 
 @Preview
