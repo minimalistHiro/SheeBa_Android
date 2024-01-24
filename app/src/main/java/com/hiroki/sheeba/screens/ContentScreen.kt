@@ -82,6 +82,11 @@ fun ContentScreen(viewModel: ViewModel) {
                             onClick = {
                                 // スキャン可能状態に戻す
                                 viewModel.isShowHandleScan.value = false
+                                // Screen開示処理
+                                viewModel.chatUser.value = null
+                                viewModel.storePoint.value = null
+
+                                // 画面遷移
                                 selectedItemIndex = index
                                 navController.navigate(item.navTitle)
                             },

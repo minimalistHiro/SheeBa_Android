@@ -86,7 +86,7 @@ fun SendPayScreen(viewModel: ViewModel) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = viewModel.chatUser.value.username,
+                        text = viewModel.chatUser.value?.username?: "エラー",
                         style = TextStyle(
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,

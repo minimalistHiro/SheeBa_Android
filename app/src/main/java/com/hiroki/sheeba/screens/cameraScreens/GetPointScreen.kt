@@ -51,12 +51,14 @@ fun GetPointScreen(viewModel: ViewModel) {
             ) {
                 Spacer(modifier = Modifier.height((screenHeight / 15).dp))
 
-                CustomIcon()
+                if(!viewModel.isQrCodeScanError.value) {
+                    CustomIcon()
+                }
 
                 Spacer(modifier = Modifier.height(15.dp))
 
                 Text(
-                    text = viewModel.chatUser.value.username,
+                    text = viewModel.chatUser.value?.username?: "エラー",
                     style = TextStyle(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
@@ -70,6 +72,16 @@ fun GetPointScreen(viewModel: ViewModel) {
                 if(viewModel.isSameStoreScanError.value) {
                     Text(
                         text = "1店舗につき1日1回のみポイントが貰えます。",
+                        style = TextStyle(
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Normal,
+                        ),
+                        textAlign = TextAlign.Center,
+                    )
+                } else if(viewModel.isQrCodeScanError.value) {
+                    Text(
+                        text = "誤ったQRコードがスキャンされました。",
                         style = TextStyle(
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
@@ -122,7 +134,14 @@ fun GetPointScreen(viewModel: ViewModel) {
                     text = "戻る",
                     onButtonClicked = {
                         // スキャン可能状態に戻す
-                        viewModel.isShowHandleScan.value = false
+                        viewModel.isShowHandleScan.value =false
+                        // エラーを解除する
+                        viewModel.isSameStoreScanError.value = false
+                        viewModel.isQrCodeScanError.value = false
+                        // 取得情報を初期化
+                        viewModel.chatUser.value = null
+                        viewModel.storePoint.value = null
+
                         PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
                     },
                     isEnabled = true
