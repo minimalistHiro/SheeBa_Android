@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,25 +36,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import com.hiroki.sheeba.app.PostOfficeAppRouter
+import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomDoubleAlertDialog
 import com.hiroki.sheeba.screens.components.CustomIcon
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
-import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
 @Composable
-fun SendPayScreen(viewModel: ViewModel, navController: NavHostController) {
+fun SendPayScreen(viewModel: ViewModel) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
     val keyboards = listOf("7", "8", "9", "4", "5", "6", "1", "2", "3", "0", "00", "AC")
     val isShowSendPayDialog = remember {
-        mutableStateOf(false)                       // 送ポイントダイアログ
-    }
+        mutableStateOf(false)
+    }                                                       // 送ポイントダイアログ
 
     Box(modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center) {
@@ -72,7 +72,7 @@ fun SendPayScreen(viewModel: ViewModel, navController: NavHostController) {
                     title = "",
                     onButtonClicked = {
                         viewModel.sendPayText.value = "0"
-                        navController.navigate(Setting.homeScreen)
+                        PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
                     }
                 )
 
@@ -86,7 +86,7 @@ fun SendPayScreen(viewModel: ViewModel, navController: NavHostController) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "芝銀座商店会",
+                        text = viewModel.chatUser.value.username,
                         style = TextStyle(
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
@@ -139,6 +139,14 @@ fun SendPayScreen(viewModel: ViewModel, navController: NavHostController) {
                     onClick = {
                         isShowSendPayDialog.value = true
                     },
+                    enabled = viewModel.sendPayText.value.toInt() > 0,
+                    colors = ButtonDefaults.buttonColors(
+                        if(viewModel.sendPayText.value.toInt() > 0) {
+                            Color.Blue
+                        } else {
+                            Color.Gray
+                        }
+                    )
                 ) {
                     Text(text =  "送る",
                         fontSize = 25.sp,
@@ -229,6 +237,5 @@ fun SendPayScreen(viewModel: ViewModel, navController: NavHostController) {
 fun DefaultPreviewOfSendPayScreen() {
     SendPayScreen(
         viewModel = ViewModel(),
-        navController = rememberNavController(),
     )
 }

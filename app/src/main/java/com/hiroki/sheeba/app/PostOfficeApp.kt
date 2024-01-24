@@ -9,7 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.google.firebase.auth.FirebaseAuth
 import com.hiroki.sheeba.screens.ContentScreen
+import com.hiroki.sheeba.screens.cameraScreens.GetPointScreen
 import com.hiroki.sheeba.screens.entryScreens.EntryScreen
+import com.hiroki.sheeba.screens.homeScreens.SendPayScreen
 import com.hiroki.sheeba.screens.loginScreens.LoginScreen
 import com.hiroki.sheeba.screens.signUpScreens.SetUpEmailScreen
 import com.hiroki.sheeba.screens.signUpScreens.SetUpUsernameScreen
@@ -48,6 +50,12 @@ fun PostOfficeApp() {
                 }
                 is Screen.ContentScreen -> {
                     ContentScreen(viewModel = viewModel)
+                }
+                is Screen.SendPayScreen -> {
+                    SendPayScreen(viewModel = viewModel)
+                }
+                is Screen.GetPointScreen -> {
+                    GetPointScreen(viewModel = viewModel)
                 }
             }
         }

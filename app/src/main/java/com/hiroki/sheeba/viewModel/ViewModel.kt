@@ -1,7 +1,5 @@
 package com.hiroki.sheeba.viewModel
 
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +23,8 @@ import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.util.Validator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.Executors
 
 class ViewModel: ViewModel() {
@@ -38,23 +38,24 @@ class ViewModel: ViewModel() {
 
     // DB
 //    val users: StateFlow<List<ChatUser>> = _users.asStateFlow()
-    var currentUser = mutableStateOf(ChatUser())
-    var chatUser = mutableStateOf(ChatUser())
-    var storePoints = mutableListOf<StorePoint>()
-    var storePoint = mutableStateOf(StorePoint())
+    var currentUser = mutableStateOf(ChatUser())                // 現在のユーザー情報
+    var chatUser = mutableStateOf(ChatUser())                   // 特定のユーザー情報
+    var storePoints = mutableListOf<StorePoint>()               // 全店舗ポイント情報
+    var storePoint = mutableStateOf(StorePoint())               // 特定の店舗ポイント情報
 
     // ダイアログ
-    var isShowDialog = mutableStateOf(false)
-    var dialogTitle = mutableStateOf("")
-    var dialogText = mutableStateOf("")
-    var isShowDialogForLogout = mutableStateOf(false)           // ログアウトへと誘導するダイアログ
-    var isShowCompulsionLogoutDialog = mutableStateOf(false)    // 強制ログアウトダイアログ
+    var isShowDialog = mutableStateOf(false)                    // ダイアログの表示有無
+    var dialogTitle = mutableStateOf("")                        // ダイアログタイトル
+    var dialogText = mutableStateOf("")                         // ダイアログメッセージ
+    var isShowDialogForLogout = mutableStateOf(false)           // ログアウトへと誘導するダイアログの表示有無
+    var isShowCompulsionLogoutDialog = mutableStateOf(false)    // 強制ログアウトダイアログの表示有無
 
     // キーボード関連
     var sendPayText = mutableStateOf("0")                       // 送金テキスト
     var isTappedAC = mutableStateOf(false)                      // ACボタンがタップされたか否か
-    var getPoint = mutableStateOf("0")                          // 獲得ポイント
+    var getPoint = mutableStateOf(Setting.getPointFromStore)        // 獲得ポイント
 
+    // QRコード関連
     // ImageAnalyzer.Analyzerを継承したQrCodeAnalyzerを内包したUseCaseを作成
     val qrCodeAnalyzeUseCase = ImageAnalysis.Builder()
         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -64,10 +65,19 @@ class ViewModel: ViewModel() {
             it.setAnalyzer(
                 Executors.newSingleThreadExecutor(),
                 QrCodeAnalyzer { qrCode ->
+                    // 前回スキャンから規定時間分経過していない場合は実行しない。
+//                    if(System.currentTimeMillis() - pushedAt < delayMillis) {
+//                        return@QrCodeAnalyzer
+//                    }
                     _qrCode.value = qrCode
                     val chatUserUid = qrCode.rawValue.toString()
                     // QRコード読み取り処理
-                    handleScan(chatUserUid = chatUserUid)
+                    if(!isShowHandleScan.value) {
+                        handleScan(chatUserUid = chatUserUid)
+                        isShowHandleScan.value = true
+                    }
+                    // スキャン時間を更新
+//                    pushedAt = System.currentTimeMillis()
                 },
             )
         }
@@ -75,6 +85,10 @@ class ViewModel: ViewModel() {
     val qrCode: androidx.compose.runtime.State<Barcode?> = _qrCode
     var isQrCodeScanError = mutableStateOf(false)               // QRコード読み取りエラー
     var isSameStoreScanError = mutableStateOf(false)            // 同日同店舗スキャンエラー
+    val delayMillis = 300L                                              // 押下後一時的に押下処理を無効化する時間(ms)
+    var pushedAt = 0L                                                   // 前回押下時間(タイムスタンプ, ms)
+    var isShowHandleScan = mutableStateOf(false)                // スキャン処理を一度したか否か
+
 
     /**
      * 新規作成イベント。各イベントごとに処理を分ける。
@@ -381,7 +395,11 @@ class ViewModel: ViewModel() {
                 progress.value = false
             }
             .addOnFailureListener {
-                handleError(title = "", text = Setting.failureCreateAccount, exception = it)
+                handleError(
+                    title = Setting.failureCreateAccount,
+                    text = "以下の可能性があります。\n・メールアドレスが既に使用されている\n・メールアドレスの形式が正しくない\n・ネットワークの接続が悪い",
+                    exception = it
+                )
                 return@addOnFailureListener
             }
     }
@@ -407,7 +425,11 @@ class ViewModel: ViewModel() {
                 progress.value = false
             }
             .addOnFailureListener {
-                handleError(title = "", text = Setting.failureLogin, exception = it)
+                handleError(
+                    title = Setting.failureLogin,
+                    text = "以下の可能性があります。\n・メールアドレスまたはパスワードが間違えている\n・ネットワークの接続が悪い",
+                    exception = it
+                )
             }
     }
 
@@ -501,25 +523,39 @@ class ViewModel: ViewModel() {
             return
         }
 
-        val user = ChatUser(
-            uid = uid,
-            email = email,
-            profileImageUrl = "",
-            money = Setting.newRegistrationBenefits,
-            username = username,
-            age = age,
-            address = address,
-            isConfirmEmail = false,
-            isFirstLogin = false,
-            isStore = false,
-            isOwner = false,
+//        val user = ChatUser(
+//            uid = uid,
+//            email = email,
+//            profileImageUrl = "",
+//            money = Setting.newRegistrationBenefits,
+//            username = username,
+//            age = age,
+//            address = address,
+//            isConfirmEmail = false,
+//            isFirstLogin = false,
+//            isStore = false,
+//            isOwner = false,
+//        )
+        // ユーザー情報を格納
+        val data = hashMapOf<String, Any>(
+            FirebaseConstants.uid to uid,
+            FirebaseConstants.email to email,
+            FirebaseConstants.profileImageUrl to "",
+            FirebaseConstants.money to Setting.newRegistrationBenefits,
+            FirebaseConstants.username to username,
+            FirebaseConstants.age to age,
+            FirebaseConstants.address to address,
+            FirebaseConstants.isConfirmEmail to false,
+            FirebaseConstants.isFirstLogin to false,
+            FirebaseConstants.isStore to false,
+            FirebaseConstants.isOwner to false,
         )
 
         FirebaseFirestore
             .getInstance()
             .collection(FirebaseConstants.users)
             .document(uid)
-            .set(user)
+            .set(data)
             .addOnFailureListener {
                 handleError(title = "", text = Setting.failurePersistUser, exception = it)
             }
@@ -622,7 +658,6 @@ class ViewModel: ViewModel() {
         if(!isTappedAC.value) {
             // テキストに表示できる最大数字を超えないように制御
             if(isCheckOverMaxNumberOfDigits((sendPayText.value + keyboard))) {
-                Log.d(TAG, "true")
                 return
             }
 
@@ -630,7 +665,6 @@ class ViewModel: ViewModel() {
                 sendPayText.value = keyboard
             } else {
                 sendPayText.value += keyboard
-                Log.d(TAG, "false")
             }
         } else {
             // AC押下後に、"00"が入力された時、"0"と表記する。
@@ -668,20 +702,69 @@ class ViewModel: ViewModel() {
             isQrCodeScanError.value = true
             return
         }
-        fetchUser(chatUserUid)
-        fetchStorePoint(document1 = currentUser.value.uid, document2 = chatUserUid)
+        // ユーザーを取得
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.users)
+            .document(chatUserUid)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    document.toObject(ChatUser::class.java)?.let {
+                        chatUser = mutableStateOf(it)
+                    }
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            // 店舗QRコードの場合
-            if(chatUser.value.isStore) {
-                handleGetPointFromStore()
-            } else {
-                if(!isQrCodeScanError.value) {
-                    // ユーザーに送ポイント。画面遷移する.
+                    // 店舗ポイント情報を取得
+                    FirebaseFirestore
+                        .getInstance()
+                        .collection(FirebaseConstants.storePoints)
+                        .document(currentUser.value.uid)
+                        .collection(FirebaseConstants.user)
+                        .document(chatUserUid)
+                        .get()
+                        .addOnSuccessListener { document ->
+                            if (document != null) {
+                                document.toObject(StorePoint::class.java)?.let {
+                                    storePoint = mutableStateOf(it)
+                                }
+//                                // 店舗QRコードの場合
+                                if(chatUser.value.isStore) {
+//                                    // 店舗ポイント情報がある場合は場合分け、ない場合はポイントを獲得する。
+                                    if((storePoint == null) || (storePoint.value.uid == "") || (storePoint.value.uid == "D")) {
+                                        handleGetPointFromStore()
+                                        PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                                    } else {
+                                        // 店舗QRコードが同日に2度以上のスキャンでない場合
+                                        if(storePoint.value.date != dateFormat(LocalDate.now())) {
+                                            isSameStoreScanError.value = false
+                                            handleGetPointFromStore()
+                                            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                                        } else {
+                                            isSameStoreScanError.value = true
+                                            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                                            return@addOnSuccessListener
+                                        }
+                                    }
+                                } else {
+                                    if(!isQrCodeScanError.value) {
+                                        // ユーザーにポイントを送る画面に遷移
+                                        PostOfficeAppRouter.navigateTo(Screen.SendPayScreen)
+                                    }
+                                }
+                            } else {
+                                handleError(title = "", text = Setting.failureFetchStorePoint, exception = null)
+                            }
+                        }
+                        .addOnFailureListener {
+                            handleError(title = "", text = Setting.failureFetchStorePoint, exception = it)
+                        }
+                } else {
+                    handleError(title = "", text = Setting.failureFetchUser, exception = null)
                 }
             }
-        }, 100)
-//                    Log.d("qrCodeAnalyzeUseCase_rawValue", qrCode.rawValue.toString())
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureFetchUser, exception = it)
+            }
     }
 
     /**
@@ -700,20 +783,34 @@ class ViewModel: ViewModel() {
         val userData = hashMapOf<String, Any>(
             FirebaseConstants.money to calculatedCurrentUserMoney.toString(),
         )
-        updateUser(document = chatUser.value.uid, data = userData)
+        updateUser(document = currentUser.value.uid, data = userData)
 
         // 店舗ポイント情報を更新
         val storePointData = hashMapOf<String, Any>(
             FirebaseConstants.uid to chatUser.value.uid,
             FirebaseConstants.email to chatUser.value.email,
             FirebaseConstants.profileImageUrl to chatUser.value.profileImageUrl,
-            FirebaseConstants.getPoint to getPoint,
+            FirebaseConstants.getPoint to getPoint.value,
             FirebaseConstants.username to chatUser.value.username,
+            FirebaseConstants.date to dateFormat(LocalDate.now())
         )
+
         persistStorePoint(
             document1 = currentUser.value.uid,
             document2 = chatUser.value.uid,
             data = storePointData
         )
+    }
+
+    /**
+     * 取得したい日付を（yyyy年MM月dd日）の形で取り出す
+     *
+     * @param date 日付
+     * @return なし
+     */
+    fun dateFormat(date: LocalDate): String {
+        val formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日")
+        val formattedDateTime = date.format(formatter)
+        return formattedDateTime
     }
 }

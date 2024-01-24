@@ -8,9 +8,13 @@ data class ChatUser (
     var username: String = "",
     var age: String = "",
     var address: String = "",
+    @field:JvmField
     var isConfirmEmail: Boolean = false,
+    @field:JvmField
     var isFirstLogin: Boolean = false,
+    @field:JvmField
     var isStore: Boolean = false,
+    @field:JvmField
     var isOwner: Boolean = false,
 )
 

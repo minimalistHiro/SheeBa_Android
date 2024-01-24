@@ -1,6 +1,7 @@
 package com.hiroki.sheeba.screens.cameraScreens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,16 +24,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
+import com.hiroki.sheeba.app.PostOfficeAppRouter
+import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
 import com.hiroki.sheeba.screens.components.CustomIcon
-import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
 @Composable
-fun GetPointScreen(viewModel: ViewModel, navController: NavHostController) {
+fun GetPointScreen(viewModel: ViewModel) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
@@ -49,7 +49,7 @@ fun GetPointScreen(viewModel: ViewModel, navController: NavHostController) {
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height((screenHeight / 20).dp))
+                Spacer(modifier = Modifier.height((screenHeight / 15).dp))
 
                 CustomIcon()
 
@@ -65,14 +65,48 @@ fun GetPointScreen(viewModel: ViewModel, navController: NavHostController) {
                     textAlign = TextAlign.Center,
                 )
 
-                Spacer(modifier = Modifier.height(15.dp))
+                Spacer(modifier = Modifier.height((screenHeight / 10).dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(modifier = Modifier.width((screenWidth / 5).dp))
+                if(viewModel.isSameStoreScanError.value) {
                     Text(
-                        text = viewModel.getPoint.value,
+                        text = "1店舗につき1日1回のみポイントが貰えます。",
+                        style = TextStyle(
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Normal,
+                        ),
+                        textAlign = TextAlign.Center,
+                    )
+                } else {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = viewModel.getPoint.value,
+                            style = TextStyle(
+                                fontSize = 70.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontStyle = FontStyle.Normal,
+                            ),
+                            textAlign = TextAlign.Center,
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "pt",
+                            style = TextStyle(
+                                fontSize = 30.sp,
+                                fontWeight = FontWeight.Normal,
+                                fontStyle = FontStyle.Normal,
+                            ),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(15.dp))
+
+                    Text(
+                        text = "ゲット！",
                         style = TextStyle(
                             fontSize = 35.sp,
                             fontWeight = FontWeight.Bold,
@@ -80,36 +114,16 @@ fun GetPointScreen(viewModel: ViewModel, navController: NavHostController) {
                         ),
                         textAlign = TextAlign.Center,
                     )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text(
-                        text = "pt",
-                        style = TextStyle(
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontStyle = FontStyle.Normal,
-                        ),
-                        textAlign = TextAlign.Center,
-                    )
                 }
 
-                Spacer(modifier = Modifier.height(15.dp))
-
-                Text(
-                    text = "ゲット！",
-                    style = TextStyle(
-                        fontSize = 35.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontStyle = FontStyle.Normal,
-                    ),
-                    textAlign = TextAlign.Center,
-                )
-
-                Spacer(modifier = Modifier.height(15.dp))
+                Spacer(modifier = Modifier.height((screenHeight / 10).dp))
 
                 CustomCapsuleButton(
                     text = "戻る",
                     onButtonClicked = {
-                        navController.navigate(Setting.cameraScreen)
+                        // スキャン可能状態に戻す
+                        viewModel.isShowHandleScan.value = false
+                        PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
                     },
                     isEnabled = true
                 )
@@ -124,6 +138,5 @@ fun GetPointScreen(viewModel: ViewModel, navController: NavHostController) {
 fun DefaultPreviewOfGetPointScreen() {
     GetPointScreen(
         viewModel = ViewModel(),
-        navController = rememberNavController()
     )
 }

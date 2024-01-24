@@ -126,6 +126,12 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                     }
                     CustomDivider(color = Color.Gray)
 
+//                    // GetPointScreenへ
+//                    CustomListNav(text = "GetPointScreen", color = Color.Black) {
+//                        navController.navigate(Setting.getPointScreen)
+//                    }
+//                    CustomDivider(color = Color.Gray)
+
                     // ログアウト
                     CustomListNav(text = "ログアウト", color = Color.Red) {
                         isShowConfirmationLogoutDialog.value = true

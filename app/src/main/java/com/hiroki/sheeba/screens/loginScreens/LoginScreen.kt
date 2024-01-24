@@ -23,8 +23,8 @@ import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
 import com.hiroki.sheeba.screens.components.CustomTextButton
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
+import com.hiroki.sheeba.screens.components.InputEmailTextField
 import com.hiroki.sheeba.screens.components.InputPasswordTextField
-import com.hiroki.sheeba.screens.components.InputTextField
 import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
@@ -52,7 +52,7 @@ fun LoginScreen(viewModel: ViewModel) {
 
                 Spacer(modifier = Modifier.height((screenHeight / 7).dp))
 
-                InputTextField(
+                InputEmailTextField(
                     label = "メールアドレス",
                     onTextSelected = {
                         viewModel.onLoginEvent(LoginUIEvent.EmailChange(it))

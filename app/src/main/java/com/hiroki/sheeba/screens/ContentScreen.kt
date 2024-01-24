@@ -30,7 +30,6 @@ import com.hiroki.sheeba.screens.cameraScreens.CameraScreen
 import com.hiroki.sheeba.screens.cameraScreens.ErrorQRCodeOverlay
 import com.hiroki.sheeba.screens.cameraScreens.QrCodeOverlay
 import com.hiroki.sheeba.screens.homeScreens.HomeScreen
-import com.hiroki.sheeba.screens.homeScreens.SendPayScreen
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
@@ -65,12 +64,14 @@ fun ContentScreen(viewModel: ViewModel) {
         mutableStateOf(0)
     }
 
+    // Screen開示処理
+    viewModel.fetchCurrentUser()
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
     ) {
-        viewModel.fetchCurrentUser()
 
         Scaffold(
             bottomBar = {
@@ -79,6 +80,8 @@ fun ContentScreen(viewModel: ViewModel) {
                         NavigationBarItem(
                             selected = selectedItemIndex == index,
                             onClick = {
+                                // スキャン可能状態に戻す
+                                viewModel.isShowHandleScan.value = false
                                 selectedItemIndex = index
                                 navController.navigate(item.navTitle)
                             },
@@ -115,11 +118,14 @@ fun ContentScreen(viewModel: ViewModel) {
                 composable(items[2].navTitle) {
                     AccountScreen(viewModel = viewModel, padding = padding, navController = navController)
                 }
+//                composable(Setting.sendPayScreen) {
+//                    SendPayScreen(viewModel = viewModel, navController = navController)
+//                }
+//                composable(Setting.getPointScreen) {
+//                    GetPointScreen(viewModel = viewModel, navController = navController)
+//                }
                 composable(Setting.updateUsernameScreen) {
                     UpdateUsernameScreen(viewModel = viewModel, navController = navController)
-                }
-                composable(Setting.sendPayScreen) {
-                    SendPayScreen(viewModel = viewModel, navController = navController)
                 }
             }
         }
