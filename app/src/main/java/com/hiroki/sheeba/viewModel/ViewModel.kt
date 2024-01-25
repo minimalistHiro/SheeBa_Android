@@ -864,6 +864,14 @@ class ViewModel: ViewModel() {
             isQrCodeScanError.value = true
             return
         }
+
+        // URL、またはUIDの文字数（28文字）以外を読み取ったら、スキャンエラーを表示する
+        if(chatUserUid.contains("http") || chatUserUid.length != 28) {
+            isQrCodeScanError.value = true
+            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+            return
+        }
+
         // ユーザーを取得
         FirebaseFirestore
             .getInstance()
@@ -871,7 +879,7 @@ class ViewModel: ViewModel() {
             .document(chatUserUid)
             .get()
             .addOnSuccessListener { document ->
-//                Log.d(TAG, document.toString())
+                Log.d(TAG, document.toString())
                 if (document != null) {
                     document.toObject(ChatUser::class.java)?.let {
                         if(it.uid != "") {
@@ -941,11 +949,15 @@ class ViewModel: ViewModel() {
                         PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
                     }
                 } else {
-                    handleError(title = "", text = Setting.failureFetchUser, exception = null)
+                    // documentを取得できなかった場合、スキャンエラー画面を表示する。
+                    isQrCodeScanError.value = true
+                    PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
                 }
             }
             .addOnFailureListener {
-                handleError(title = "", text = Setting.failureFetchUser, exception = it)
+                // uidを取得できなかった場合、スキャンエラー画面を表示する。
+                isQrCodeScanError.value = true
+                PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
             }
     }
 
