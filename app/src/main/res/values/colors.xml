@@ -8,4 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="chatLogBackground">#E6E6E6</color>
+    <color name="sheebaYellow">#FFFBD2</color>
+    <color name="sheebaGreen">#8EFF77</color>
+    <color name="sheebaDarkGreen">#AD7045</color>
+    <color name="sheebaBrown">#61A746</color>
 </resources>

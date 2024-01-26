@@ -12,10 +12,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.hiroki.sheeba.R
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.data.LoginUIEvent
@@ -39,10 +40,14 @@ fun LoginScreen(viewModel: ViewModel) {
 
         Surface(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
+                .fillMaxSize(),
         ) {
-            Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(colorResource(id = R.color.sheebaYellow)),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 CustomTopAppBar(
                     title = "ログイン",
                     onButtonClicked = {

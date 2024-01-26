@@ -1,26 +1,22 @@
 package com.hiroki.sheeba.screens.entryScreens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.hiroki.sheeba.R
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.screens.components.CustomBorderCapsuleButton
@@ -39,24 +35,22 @@ fun EntryScreen(viewModel: ViewModel) {
 
     Surface(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
+            .fillMaxSize(),
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+            .fillMaxSize()
+            .background(colorResource(id = R.color.sheebaYellow)),
+        ) {
             Spacer(modifier = Modifier.height((screenHeight / 3).dp))
 
-            Text(
-                text = "SheeBa",
+            Image(
+                painter = painterResource(id = R.drawable.title),
+                contentDescription = "",
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 60.dp),
-                style = TextStyle(
-                    fontSize = 50.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontStyle = FontStyle.Normal,
-                ),
-                textAlign = TextAlign.Center,
+                    .padding(horizontal = 60.dp)
             )
+
 
             Spacer(modifier = Modifier.height((screenHeight / 5).dp))
 
