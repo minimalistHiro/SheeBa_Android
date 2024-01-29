@@ -1,5 +1,6 @@
 package com.hiroki.sheeba.screens.components
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -19,10 +21,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withAnnotation
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,7 +62,7 @@ fun CustomCapsuleButton(text: String, onButtonClicked: () -> Unit, isEnabled: Bo
             .heightIn(48.dp)
             .background(
                 color =
-                if(isEnabled) {
+                if (isEnabled) {
                     Color.Black
                 } else {
                     Color.Gray
@@ -162,6 +170,66 @@ fun CustomListNav(text: String, color: Color, onButtonClicked: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalTextApi::class)
+@Composable
+fun CustomTextWithLink(
+    text: String,
+    onClickTextLink: (url: String) -> Unit,
+) {
+    val url = "https://shibaginzadori.com/SheeBa/"
+
+    val annotatedText = buildAnnotatedString {
+
+        withAnnotation(tag = "linkTag", annotation = url) {
+            withStyle(
+                style = SpanStyle(color = Color.Black, textDecoration = TextDecoration.Underline),
+            ) {
+                append(text)
+            }
+        }
+    }
+
+    ClickableText(
+        modifier = Modifier
+            .padding(vertical = 12.dp)
+            .padding(horizontal = 25.dp),
+        text = annotatedText,
+        onClick = { offset ->
+            val linkAnnotation = annotatedText.getStringAnnotations(
+                tag = "linkTag", start = offset, end = offset,
+            ).firstOrNull() ?: return@ClickableText
+
+            onClickTextLink(linkAnnotation.item)
+        },
+    )
+}
+
+@Composable
+fun CustomTextWithLink(text: String, url: String) {
+    val annotatedText = buildAnnotatedString {
+
+        pushStringAnnotation(
+            tag = "URL", annotation = url
+        )
+        withStyle(
+            style = SpanStyle(
+                color = Color.Black, fontWeight = FontWeight.Bold
+            )
+        ) {
+            append(text)
+        }
+        pop()
+    }
+
+    ClickableText(text = annotatedText, onClick = { offset ->
+        annotatedText.getStringAnnotations(
+            tag = "URL", start = offset, end = offset
+        ).firstOrNull()?.let { annotation ->
+            Log.d("Clicked URL", annotation.item)
+        }
+    })
+}
+
 @Preview
 @ExperimentalMaterial3Api
 @Composable
@@ -196,4 +264,18 @@ fun DefaultPreviewOfCustomDivider() {
 @Composable
 fun DefaultPreviewOfCustomListNav() {
     CustomListNav(text = "Test", color = Color.Black, onButtonClicked = {})
+}
+
+@Preview
+@ExperimentalMaterial3Api
+@Composable
+fun DefaultPreviewOfCustomTextWithLink2() {
+    CustomTextWithLink(text = "Test", onClickTextLink = {})
+}
+
+@Preview
+@ExperimentalMaterial3Api
+@Composable
+fun DefaultPreviewOfCustomTextWithLink() {
+    CustomTextWithLink(text = "Test", url = "https://shibaginzadori.com/SheeBa/")
 }

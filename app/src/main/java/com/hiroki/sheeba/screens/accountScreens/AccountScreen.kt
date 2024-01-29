@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +33,7 @@ import androidx.navigation.compose.rememberNavController
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomDestructiveAlertDialog
 import com.hiroki.sheeba.screens.components.CustomDivider
+import com.hiroki.sheeba.screens.components.CustomDoubleAlertDialog
 import com.hiroki.sheeba.screens.components.CustomIcon
 import com.hiroki.sheeba.screens.components.CustomListNav
 import com.hiroki.sheeba.util.Setting
@@ -52,6 +54,10 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
     var isShowSuccessWithdrawalDialog = remember {
         mutableStateOf(false)
     }                                   // 退会完了ダイアログの表示有無
+    var isShowPrivacyPolicyDialog = remember {
+        mutableStateOf(false)
+    }                                   // プライバシーポリシー表示有無
+    val uriHandler = LocalUriHandler.current            // URL開示用変数
 
     // Screen開示処理
     viewModel.init()
@@ -127,11 +133,11 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                     }
                     CustomDivider(color = Color.Gray)
 
-//                    // GetPointScreenへ
-//                    CustomListNav(text = "GetPointScreen", color = Color.Black) {
-//                        navController.navigate(Setting.getPointScreen)
-//                    }
-//                    CustomDivider(color = Color.Gray)
+                    // プライバシーポリシー
+                    CustomListNav(text = "プライバシーポリシー", color = Color.Black) {
+                        isShowPrivacyPolicyDialog.value = true
+                    }
+                    CustomDivider(color = Color.Gray)
 
                     // ログアウト
                     CustomListNav(text = "ログアウト", color = Color.Red) {
@@ -172,6 +178,21 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                 viewModel.isShowCompulsionLogoutDialog.value = false
                 viewModel.handleLogout()
             }
+        }
+        // プライバシーポリシー開示確認ダイアログ
+        if(isShowPrivacyPolicyDialog.value) {
+            CustomDoubleAlertDialog(
+                title = "",
+                text = "外部リンクに飛びます。よろしいですか？",
+                okText = "はい",
+                onOkButtonClicked = {
+                    isShowPrivacyPolicyDialog.value = false
+                    uriHandler.openUri(Setting.privacyPolicyURL)
+                },
+                onCancelButtonClicked = {
+                    isShowPrivacyPolicyDialog.value = false
+                },
+            )
         }
         // ログアウト確認ダイアログ
         if(isShowConfirmationLogoutDialog.value) {

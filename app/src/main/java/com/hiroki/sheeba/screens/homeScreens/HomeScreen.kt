@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -71,8 +72,7 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                     modifier = Modifier
                         .padding(horizontal = 30.dp)
                         .clip(RoundedCornerShape(size = 30.dp))
-                        .background(Color.LightGray)
-//                    .shadow(elevation = 10.dp, shape = RoundedCornerShape(size = 30.dp), clip = false)
+                        .background(colorResource(id = R.color.sheebaYellow))
                         .fillMaxWidth()
                         .height(200.dp),
                     contentAlignment = Alignment.Center

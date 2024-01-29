@@ -79,6 +79,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")                // Firebase Analytics
     implementation("com.google.accompanist:accompanist-insets:0.11.0")      // Navigation BottomBar
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.11.0")// Navigation BottomBar
+    implementation("com.google.accompanist:accompanist-webview:0.28.0")     // WebView
 
     // QRCodeScanner
     implementation("androidx.camera:camera-core:1.3.1")

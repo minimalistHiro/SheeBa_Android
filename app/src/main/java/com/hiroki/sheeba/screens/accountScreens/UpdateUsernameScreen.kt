@@ -16,11 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.firestore.FirebaseFirestore
+import com.hiroki.sheeba.R
 import com.hiroki.sheeba.data.SignUpUIEvent
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
@@ -48,7 +50,11 @@ fun UpdateUsernameScreen(viewModel: ViewModel, navController: NavHostController)
                 .fillMaxSize()
                 .background(Color.White),
         ) {
-            Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+                    .background(colorResource(id = R.color.sheebaYellow)),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 CustomTopAppBar(
                     title = "ユーザー名を変更",
                     onButtonClicked = {

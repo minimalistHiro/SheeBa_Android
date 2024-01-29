@@ -10,6 +10,7 @@ object Setting {
     // 各種設定
     val maxNumberOfDigits = 6                       // 最大送金桁数
     val IMAGE_SIZE = Size(1080, 1920)   // 画像の解析サイズ
+    val privacyPolicyURL = "https://shibaginzadori.com/SheeBa/" // プライバシーポリシーURL
 
     // Screens
     val entryScreen = "entryScreen"
