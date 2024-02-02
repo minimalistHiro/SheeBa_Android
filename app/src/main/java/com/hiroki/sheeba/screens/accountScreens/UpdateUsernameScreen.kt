@@ -77,10 +77,12 @@ fun UpdateUsernameScreen(viewModel: ViewModel, navController: NavHostController)
                 CustomCapsuleButton(
                     text = "ユーザー名を変更",
                     onButtonClicked = {
-                        // 自身のユーザー情報を更新
+                        viewModel.progress.value = true
+                        //　更新データ
                         val userData = hashMapOf<String, Any>(
                             FirebaseConstants.username to viewModel.signUpUIState.value.username,
                         )
+
                         FirebaseFirestore
                             .getInstance()
                             .collection(FirebaseConstants.users)
@@ -88,6 +90,7 @@ fun UpdateUsernameScreen(viewModel: ViewModel, navController: NavHostController)
                             .update(userData)
                             .addOnSuccessListener {
                                 isShowSuccessUpdateDialog.value = true
+                                viewModel.progress.value = false
                             }
                             .addOnFailureListener {
                                 viewModel.handleError(title = "", text = Setting.failureUpdateUser, exception = it)

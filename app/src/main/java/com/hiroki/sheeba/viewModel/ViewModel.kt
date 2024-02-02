@@ -1,5 +1,6 @@
 package com.hiroki.sheeba.viewModel
 
+import android.net.Uri
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.compose.runtime.MutableState
@@ -9,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.hiroki.sheeba.QrCodeAnalyzer
 import com.hiroki.sheeba.app.PostOfficeAppRouter
@@ -30,7 +32,7 @@ import java.util.concurrent.Executors
 
 class ViewModel: ViewModel() {
     private val TAG = ViewModel::class.simpleName
-    var signUpUIState = mutableStateOf(SignUpUIState())
+    var signUpUIState = mutableStateOf(SignUpUIState(imageUri = null))
     var signUpUsernameScreenValidationPassed = mutableStateOf(false)
     var signUpAllValidationPassed = mutableStateOf(false)
     var signUpUsernamePassed = mutableStateOf(false)
@@ -52,6 +54,7 @@ class ViewModel: ViewModel() {
     var dialogText = mutableStateOf("")                         // ダイアログメッセージ
     var isShowDialogForLogout = mutableStateOf(false)           // ログアウトへと誘導するダイアログの表示有無
     var isShowCompulsionLogoutDialog = mutableStateOf(false)    // 強制ログアウトダイアログの表示有無
+    var isShowSuccessUpdateDialog = mutableStateOf(false)       // 更新完了ダイアログの表示有無
 
     // キーボード関連
     var sendPayText = mutableStateOf("0")                       // 送金テキスト
@@ -68,10 +71,6 @@ class ViewModel: ViewModel() {
             it.setAnalyzer(
                 Executors.newSingleThreadExecutor(),
                 QrCodeAnalyzer { qrCode ->
-                    // 前回スキャンから規定時間分経過していない場合は実行しない。
-//                    if(System.currentTimeMillis() - pushedAt < delayMillis) {
-//                        return@QrCodeAnalyzer
-//                    }
                     _qrCode.value = qrCode
                     val chatUserUid = qrCode.rawValue.toString()
                     // QRコード読み取り処理
@@ -79,8 +78,6 @@ class ViewModel: ViewModel() {
                         handleScan(chatUserUid = chatUserUid)
                         isShowHandleScan.value = true
                     }
-                    // スキャン時間を更新
-//                    pushedAt = System.currentTimeMillis()
                 },
             )
         }
@@ -99,7 +96,7 @@ class ViewModel: ViewModel() {
      * @return なし
      */
     fun init() {
-        signUpUIState.value = SignUpUIState()
+        signUpUIState.value = SignUpUIState(imageUri = null)
         loginUIState.value = LoginUIState()
         signUpUsernameScreenValidationPassed.value = false
         signUpAllValidationPassed.value = false
@@ -135,6 +132,12 @@ class ViewModel: ViewModel() {
                 )
             }
 
+            is SignUpUIEvent.ProfileImageUrlChange -> {
+                signUpUIState.value = signUpUIState.value.copy(
+                    imageUri = event.imageUri
+                )
+            }
+
             is SignUpUIEvent.UsernameChange -> {
                 signUpUIState.value = signUpUIState.value.copy(
                     username = event.username
@@ -158,6 +161,7 @@ class ViewModel: ViewModel() {
                     email = signUpUIState.value.email,
                     password = signUpUIState.value.password,
                     password2 = signUpUIState.value.password2,
+                    imageUri = signUpUIState.value.imageUri,
                     username = signUpUIState.value.username,
                     age = signUpUIState.value.age,
                     address = signUpUIState.value.address,
@@ -390,6 +394,7 @@ class ViewModel: ViewModel() {
         email: String,
         password: String,
         password2: String,
+        imageUri: Uri?,
         username: String,
         age: String,
         address: String
@@ -407,7 +412,23 @@ class ViewModel: ViewModel() {
             .createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener {
                 if(it.isSuccessful) {
-                    persistUser(email = email, username = username, age = age, address = address)
+                    if(imageUri == null) {
+                        persistUser(
+                            email = email,
+                            profileImageUrl = "",
+                            username = username,
+                            age = age,
+                            address = address
+                        )
+                    } else {
+                        persistImage(
+                            email = email,
+                            imageUri = imageUri,
+                            username = username,
+                            age = age,
+                            address = address
+                        )
+                    }
                 }
                 progress.value = false
                 handleEmailVerification()
@@ -623,6 +644,8 @@ class ViewModel: ViewModel() {
         }
         // ユーザー情報削除
         deleteUser(uid)
+        // 画像の削除
+        deleteImage(uid)
         // 認証情報削除
         deleteAuth()
     }
@@ -692,7 +715,13 @@ class ViewModel: ViewModel() {
      * @param address 住所
      * @return なし
      */
-    fun persistUser(email: String, username: String, age: String, address: String) {
+    fun persistUser(
+        email: String,
+        profileImageUrl: String,
+        username: String,
+        age: String,
+        address: String
+    ) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
             handleErrorForLogout(title = "", text = Setting.failureFetchUID, exception = null)
             return
@@ -702,7 +731,7 @@ class ViewModel: ViewModel() {
         val data = hashMapOf<String, Any>(
             FirebaseConstants.uid to uid,
             FirebaseConstants.email to email,
-            FirebaseConstants.profileImageUrl to "",
+            FirebaseConstants.profileImageUrl to profileImageUrl,
             FirebaseConstants.money to Setting.newRegistrationBenefits,
             FirebaseConstants.username to username,
             FirebaseConstants.age to age,
@@ -722,6 +751,53 @@ class ViewModel: ViewModel() {
                 handleError(title = "", text = Setting.failurePersistUser, exception = it)
             }
     }
+
+    /**
+     * 画像を保存
+     *
+     * @param email メールアドレス
+     * @param imageUri 画像Uri
+     * @param username ユーザー名
+     * @param age 年代
+     * @param address 住所
+     * @return なし
+     */
+    fun persistImage(
+        email: String,
+        imageUri: Uri?,
+        username: String,
+        age: String,
+        address: String,
+    ) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            handleErrorForLogout(title = "", text = Setting.failureFetchUID, exception = null)
+            return
+        }
+        val imageUri = imageUri ?: run {
+            handleError(title = "", text = Setting.failurePersistImage, exception = null)
+            return
+        }
+
+        val storageRef = FirebaseStorage.getInstance().reference.child(uid)
+
+        storageRef
+            .putFile(imageUri)
+            .continueWithTask { task ->
+                storageRef.downloadUrl
+                    .addOnSuccessListener {
+                        persistUser(email = email, profileImageUrl = it.toString(), username = username, age = age, address = address)
+                    }
+                    .addOnFailureListener {
+                        persistUser(email = email, profileImageUrl = "", username = username, age = age, address = address)
+                        handleError(title = "", text = Setting.failurePersistImage, exception = it)
+                    }
+            }
+            .addOnFailureListener {
+                persistUser(email = email, profileImageUrl = "", username = username, age = age, address = address)
+                handleError(title = "", text = Setting.failurePersistImage, exception = it)
+            }
+    }
+
 
     /**
      * 店舗ポイント情報を更新
@@ -763,6 +839,21 @@ class ViewModel: ViewModel() {
     }
 
     /**
+     * 画像を更新
+     *
+     * @param uid UID
+     * @param profileImageUrl 画像URL
+     * @return なし
+     */
+    fun updateImage(uid: String, profileImageUrl: String) {
+        // 自身のユーザー情報を更新
+        val data = hashMapOf<String, Any>(
+            FirebaseConstants.profileImageUrl to profileImageUrl,
+        )
+        updateUser(document = uid, data = data)
+    }
+
+    /**
      * ユーザー情報を削除
      *
      * @param document ドキュメント
@@ -776,6 +867,23 @@ class ViewModel: ViewModel() {
             .delete()
             .addOnFailureListener {
                 handleError(title = "", text = Setting.failureDeleteUser, exception = it)
+            }
+    }
+
+    /**
+     * 画像を削除
+     *
+     * @param uid UID
+     * @return なし
+     */
+    fun deleteImage(uid: String) {
+        FirebaseStorage
+            .getInstance()
+            .reference
+            .child(uid)
+            .delete()
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureDeleteImage, exception = it)
             }
     }
 
@@ -901,41 +1009,7 @@ class ViewModel: ViewModel() {
                                     document.toObject(StorePoint::class.java)?.let {
                                         storePoint = mutableStateOf(it)
                                     }
-//                                // 店舗QRコードの場合
-                                    if(chatUser.value?.isStore == true) {
-//                                      // 店舗ポイント情報がある場合。
-                                        storePoint.value?.let {
-                                            // uidの取得がうまくいかない場合があるので、ここでも条件分岐をする。
-                                            if(it.uid == "" || it.uid == "D") {
-                                                handleGetPointFromStore()
-                                                PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
-                                            } else {
-                                                // 店舗QRコードが同日に2度以上のスキャンでない場合
-                                                if(it.date != dateFormat(LocalDate.now())) {
-                                                    handleGetPointFromStore()
-                                                    PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
-                                                } else {
-                                                    isSameStoreScanError.value = true
-                                                    PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
-                                                    return@addOnSuccessListener
-                                                }
-                                            }
-                                        }
-                                        // 店舗ポイント情報がない場合、ポイントを獲得する。
-                                        if(storePoint.value == null) {
-                                            handleGetPointFromStore()
-                                            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
-                                        }
-                                    } else if(chatUser.value?.isStore == false) {
-                                        if(!isQrCodeScanError.value) {
-                                            // ユーザーにポイントを送る画面に遷移
-                                            PostOfficeAppRouter.navigateTo(Screen.SendPayScreen)
-                                        }
-                                    } else {
-                                        // スキャンエラー画面を表示する
-                                        isQrCodeScanError.value = true
-                                        PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
-                                    }
+                                    divideScanProcess()
                                 } else {
                                     handleError(title = "", text = Setting.failureFetchStorePoint, exception = null)
                                 }
@@ -959,6 +1033,43 @@ class ViewModel: ViewModel() {
                 isQrCodeScanError.value = true
                 PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
             }
+    }
+
+    private fun divideScanProcess() {
+        // 店舗ポイントアカウントの場合
+        if(chatUser.value?.isStore == true) {
+            // 店舗ポイント情報がある場合。
+            storePoint.value?.let {
+                // uidの取得がうまくいかない場合があるので、ここでも条件分岐をする。
+                if(it.uid == "" || it.uid == "D") {
+                    handleGetPointFromStore()
+                    PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                } else {
+                    // 店舗QRコードが同日に2度以上のスキャンでない場合
+                    if(it.date != dateFormat(LocalDate.now())) {
+                        handleGetPointFromStore()
+                        PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                    } else {
+                        isSameStoreScanError.value = true
+                        PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                    }
+                }
+            }
+            // 店舗ポイント情報がない場合、ポイントを獲得する。
+            if(storePoint.value == null) {
+                handleGetPointFromStore()
+                PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+            }
+        } else if(chatUser.value?.isStore == false) {
+//            if(!isQrCodeScanError.value) {
+                // ユーザーにポイントを送る画面に遷移
+                PostOfficeAppRouter.navigateTo(Screen.SendPayScreen)
+//            }
+        } else {
+            // スキャンエラー画面を表示する
+            isQrCodeScanError.value = true
+            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+        }
     }
 
     /**
@@ -1037,14 +1148,50 @@ class ViewModel: ViewModel() {
         }
     }
 
+    fun handleUpdateImage(imageUri: Uri?) {
+        progress.value = true
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            handleErrorForLogout(title = "", text = Setting.failureFetchUID, exception = null)
+            return
+        }
+
+        // 画像削除
+        deleteImage(uid = uid.toString())
+
+        // FIreStorageに保存
+        val imageUri = imageUri ?: run {
+            handleError(title = "", text = Setting.failurePersistImage, exception = null)
+            return
+        }
+
+        val storageRef = FirebaseStorage.getInstance().reference.child(uid)
+
+        storageRef
+            .putFile(imageUri)
+            .continueWithTask { task ->
+                storageRef.downloadUrl
+                    .addOnSuccessListener {
+                        updateImage(uid = uid, profileImageUrl = it.toString())
+                        progress.value = false
+                        isShowSuccessUpdateDialog.value = true
+                    }
+                    .addOnFailureListener {
+                        handleError(title = "", text = Setting.failureUpdateImage, exception = it)
+                    }
+            }
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureUpdateImage, exception = it)
+            }
+    }
+
     /**
-     * 取得したい日付を（yyyy年MM月dd日）の形で取り出す
+     * 取得したい日付を（yyyy年M月dd日）の形で取り出す
      *
      * @param date 日付
      * @return なし
      */
     fun dateFormat(date: LocalDate): String {
-        val formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日")
+        val formatter = DateTimeFormatter.ofPattern("yyyy年M月dd日")
         val formattedDateTime = date.format(formatter)
         return formattedDateTime
     }

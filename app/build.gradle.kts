@@ -12,7 +12,7 @@ android {
         applicationId = "com.hiroki.sheeba"
         minSdk = 29
         targetSdk = 34
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -72,10 +72,13 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")      // ViewModel
     implementation("io.coil-kt:coil-compose:2.5.0")                         // ImagePicker
+    implementation("androidx.activity:activity-ktx:1.6.1")                  // PickVisualMedia
+    implementation ("androidx.activity:activity-compose:1.6.1")             // rememberLauncherForActivityResult
     implementation("androidx.navigation:navigation-compose:2.7.6")          // Navigation
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))     // Firebase
     implementation("com.google.firebase:firebase-auth")                     // Firebase Auth
     implementation("com.google.firebase:firebase-firestore-ktx")            // Firebase Firestore
+    implementation("com.google.firebase:firebase-storage")                  // Firebase Storage
     implementation("com.google.firebase:firebase-analytics")                // Firebase Analytics
     implementation("com.google.accompanist:accompanist-insets:0.11.0")      // Navigation BottomBar
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.11.0")// Navigation BottomBar

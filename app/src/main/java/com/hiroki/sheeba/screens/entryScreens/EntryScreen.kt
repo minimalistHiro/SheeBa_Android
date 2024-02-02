@@ -51,7 +51,6 @@ fun EntryScreen(viewModel: ViewModel) {
                     .padding(horizontal = 60.dp)
             )
 
-
             Spacer(modifier = Modifier.height((screenHeight / 5).dp))
 
             CustomBorderCapsuleButton(

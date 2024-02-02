@@ -1,9 +1,12 @@
 package com.hiroki.sheeba.data
 
+import android.net.Uri
+
 data class SignUpUIState (
     var email: String = "",
     var password: String = "",
     var password2: String = "",
+    var imageUri: Uri?,
     var username: String = "",
     var age: String = "",
     var address: String = "",

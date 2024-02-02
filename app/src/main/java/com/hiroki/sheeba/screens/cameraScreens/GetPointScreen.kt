@@ -52,7 +52,7 @@ fun GetPointScreen(viewModel: ViewModel) {
                 Spacer(modifier = Modifier.height((screenHeight / 15).dp))
 
                 if(!viewModel.isQrCodeScanError.value) {
-                    CustomIcon()
+                    CustomIcon(size = 120)
                 }
 
                 Spacer(modifier = Modifier.height(15.dp))

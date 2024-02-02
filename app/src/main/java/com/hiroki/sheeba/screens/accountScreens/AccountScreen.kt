@@ -34,7 +34,7 @@ import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomDestructiveAlertDialog
 import com.hiroki.sheeba.screens.components.CustomDivider
 import com.hiroki.sheeba.screens.components.CustomDoubleAlertDialog
-import com.hiroki.sheeba.screens.components.CustomIcon
+import com.hiroki.sheeba.screens.components.CustomImagePicker
 import com.hiroki.sheeba.screens.components.CustomListNav
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
@@ -74,7 +74,13 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
             Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
-                CustomIcon()
+                // トップ画像
+                CustomImagePicker(
+                    size = 120,
+                    model = viewModel.currentUser.value.profileImageUrl,
+                    conditions = (viewModel.currentUser.value.profileImageUrl != "")) {
+                    navController.navigate(Setting.updateImageScreen)
+                }
 
                 Spacer(modifier = Modifier.height(15.dp))
 

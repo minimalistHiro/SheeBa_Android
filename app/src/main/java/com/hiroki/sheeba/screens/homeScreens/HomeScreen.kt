@@ -1,6 +1,8 @@
 package com.hiroki.sheeba.screens.homeScreens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -66,7 +69,21 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(modifier = Modifier.height((screenHeight / 20).dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.cleartitle),
+                        contentDescription = "",
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp)
+                            .size(width = 150.dp, height = 60.dp)
+                    )
+                }
+
+//                Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
                 Box(
                     modifier = Modifier

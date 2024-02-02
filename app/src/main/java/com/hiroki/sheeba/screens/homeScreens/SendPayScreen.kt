@@ -78,7 +78,7 @@ fun SendPayScreen(viewModel: ViewModel) {
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                CustomIcon()
+                CustomIcon(size = 120)
 
                 Spacer(modifier = Modifier.height(5.dp))
 
@@ -222,6 +222,7 @@ fun SendPayScreen(viewModel: ViewModel) {
                 okText = "送る",
                 onOkButtonClicked = {
                     viewModel.handleSendPoint()
+                    viewModel.sendPayText.value = "0"
                     isShowSendPayDialog.value = false
                 },
                 onCancelButtonClicked = {

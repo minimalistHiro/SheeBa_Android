@@ -1,5 +1,9 @@
 package com.hiroki.sheeba.screens.signUpScreens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
@@ -34,7 +37,7 @@ import com.hiroki.sheeba.model.ChatUserItem
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
 import com.hiroki.sheeba.screens.components.CustomDropdownMenu
-import com.hiroki.sheeba.screens.components.CustomIcon
+import com.hiroki.sheeba.screens.components.CustomImagePicker
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
 import com.hiroki.sheeba.screens.components.InputTextField
 import com.hiroki.sheeba.viewModel.ViewModel
@@ -47,6 +50,14 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
     val screenHeight = configuration.screenHeightDp
     var expanded by remember { mutableStateOf(false) }
     var selectedItem by remember { mutableStateOf(ChatUserItem.ages[0]) }      // 選択値
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            imageUri = uri
+            viewModel.onSignUpEvent(SignUpUIEvent.ProfileImageUrlChange(uri))
+        }
+    )
 
     Box(modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center) {
@@ -81,11 +92,12 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
 
                 Spacer(modifier = Modifier.height((screenHeight / 50).dp))
 
-                CustomIcon()
-//            AsyncImage(
-//                model = "",
-//                contentDescription = null,
-//            )
+                // トップ画像
+                CustomImagePicker(size = 120, model = imageUri, conditions = (imageUri != null)) {
+                    photoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
