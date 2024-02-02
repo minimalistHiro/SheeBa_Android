@@ -69,7 +69,8 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White),
+                .background(Color.White)
+                .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))
@@ -119,7 +120,6 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
                 ) {
                     Text(
                         modifier = Modifier

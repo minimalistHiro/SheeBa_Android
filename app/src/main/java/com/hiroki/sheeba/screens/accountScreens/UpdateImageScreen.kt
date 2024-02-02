@@ -90,39 +90,6 @@ fun UpdateImageScreen(viewModel: ViewModel, navController: NavHostController) {
                     text = "確定",
                     onButtonClicked = {
                         viewModel.handleUpdateImage(imageUri = imageUri)
-//                        viewModel.progress.value = true
-//                        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
-//                            viewModel.handleErrorForLogout(title = "", text = Setting.failureFetchUID, exception = null)
-//                            return@run
-//                        }
-//
-//                        // 画像削除
-//                        viewModel.deleteImage(uid = uid.toString())
-//
-//                        // FIreStorageに保存
-//                        val imageUri = imageUri ?: run {
-//                            viewModel.handleError(title = "", text = Setting.failurePersistImage, exception = null)
-//                            return@run
-//                        }
-//
-//                        val storageRef = FirebaseStorage.getInstance().reference.child(uid.toString())
-//
-//                        storageRef
-//                            .putFile(imageUri)
-//                            .continueWithTask { task ->
-//                                storageRef.downloadUrl
-//                                    .addOnSuccessListener {
-//                                        viewModel.updateImage(uid = uid.toString(), profileImageUrl = it.toString())
-//                                        viewModel.progress.value = false
-//                                        isShowSuccessUpdateDialog.value = true
-//                                    }
-//                                    .addOnFailureListener {
-//                                        viewModel.handleError(title = "", text = Setting.failureUpdateImage, exception = it)
-//                                    }
-//                            }
-//                            .addOnFailureListener {
-//                                viewModel.handleError(title = "", text = Setting.failureUpdateImage, exception = it)
-//                            }
                     },
                     isEnabled = true
                 )

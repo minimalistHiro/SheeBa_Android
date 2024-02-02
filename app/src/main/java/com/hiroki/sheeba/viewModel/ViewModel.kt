@@ -407,6 +407,12 @@ class ViewModel: ViewModel() {
             return
         }
 
+        // パスワードが6文字以下の場合、エラーを出す。
+        if(password.length < 6) {
+            handleError(title = "", text = Setting.weakPassword, exception = null)
+            return
+        }
+
         FirebaseAuth
             .getInstance()
             .createUserWithEmailAndPassword(email, password)
@@ -606,7 +612,7 @@ class ViewModel: ViewModel() {
             .sendPasswordResetEmail(email)
             .addOnSuccessListener {
                 handleAlert(title = "", text = "入力したメールアドレスにパスワード再設定用のURLを送信しました。")
-                PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
+                PostOfficeAppRouter.navigateTo(Screen.TopScreen)
             }
             .addOnFailureListener {
                 handleError(title = "", text = Setting.failureSendEmail, exception = null)
@@ -625,7 +631,7 @@ class ViewModel: ViewModel() {
             if(it.currentUser == null) {
                 // バックグラウンド処理
                 viewModelScope.launch(Dispatchers.IO) {
-                    PostOfficeAppRouter.navigateTo(Screen.CompulsionEntryScreen)
+                    PostOfficeAppRouter.navigateTo(Screen.TutorialScreen)
                 }
             }
         }

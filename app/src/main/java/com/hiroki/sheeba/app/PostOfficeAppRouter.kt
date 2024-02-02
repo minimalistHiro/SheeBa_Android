@@ -4,8 +4,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 
 sealed class Screen {
+    object TopScreen: Screen()
     object EntryScreen: Screen()
-    object CompulsionEntryScreen: Screen()
+    object TutorialScreen: Screen()
     object SetUpUsernameScreen: Screen()
     object SetUpEmailScreen: Screen()
     object ConfirmEmailScreen: Screen()
@@ -19,7 +20,7 @@ sealed class Screen {
 
 object PostOfficeAppRouter {
 
-    var currentScreen: MutableState<Screen> = mutableStateOf(Screen.EntryScreen)
+    var currentScreen: MutableState<Screen> = mutableStateOf(Screen.TopScreen)
 
     fun navigateTo(destination: Screen) {
         currentScreen.value = destination

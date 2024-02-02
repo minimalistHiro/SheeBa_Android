@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import com.google.firebase.auth.FirebaseAuth
 import com.hiroki.sheeba.screens.ContentScreen
 import com.hiroki.sheeba.screens.cameraScreens.GetPointScreen
+import com.hiroki.sheeba.screens.entryScreens.EntryScreen
 import com.hiroki.sheeba.screens.entryScreens.TutorialScreen
 import com.hiroki.sheeba.screens.homeScreens.SendPayScreen
 import com.hiroki.sheeba.screens.loginScreens.LoginScreen
@@ -32,7 +33,7 @@ fun PostOfficeApp() {
 //        viewModel.fetchCurrentUser()
         Crossfade(targetState = PostOfficeAppRouter.currentScreen) { currentState ->
             when(currentState.value) {
-                is Screen.EntryScreen -> {
+                is Screen.TopScreen -> {
                     if(FirebaseAuth.getInstance().currentUser == null) {
                         TutorialScreen(viewModel = viewModel)
 //                        EntryScreen(viewModel = viewModel)
@@ -44,8 +45,10 @@ fun PostOfficeApp() {
                         }
                     }
                 }
-                is Screen.CompulsionEntryScreen -> {
-//                    EntryScreen(viewModel = viewModel)
+                is Screen.EntryScreen -> {
+                    EntryScreen(viewModel = viewModel)
+                }
+                is Screen.TutorialScreen -> {
                     TutorialScreen(viewModel = viewModel)
                 }
                 is Screen.SetUpUsernameScreen -> {

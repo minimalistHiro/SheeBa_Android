@@ -144,7 +144,7 @@ fun ConfirmEmailScreen(viewModel: ViewModel) {
                 onOkButtonClicked = {
                     isShowInvalidLinkCautionDialog.value = false
                     viewModel.handleLogout()
-                    PostOfficeAppRouter.navigateTo(Screen.CompulsionEntryScreen)
+                    PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
                 },
                 onCancelButtonClicked = {
                     isShowInvalidLinkCautionDialog.value = false

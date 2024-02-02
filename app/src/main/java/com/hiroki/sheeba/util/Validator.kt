@@ -9,7 +9,7 @@ object Validator {
 
     fun validatePassword(password: String): ValidationResult {
         return ValidationResult(
-            (!password.isNullOrEmpty() && password.length >= 6)
+            (!password.isNullOrEmpty())
         )
     }
 
