@@ -110,6 +110,7 @@ fun SendEmailScreen(viewModel: ViewModel) {
                 title = viewModel.dialogTitle.value,
                 text = viewModel.dialogText.value) {
                 viewModel.isShowDialog.value = false
+                PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
             }
         }
     }

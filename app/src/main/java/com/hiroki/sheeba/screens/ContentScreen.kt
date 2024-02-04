@@ -17,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
@@ -73,7 +74,6 @@ fun ContentScreen(viewModel: ViewModel) {
             .fillMaxSize()
             .background(Color.White),
     ) {
-
         Scaffold(
             bottomBar = {
                 NavigationBar {
@@ -91,15 +91,20 @@ fun ContentScreen(viewModel: ViewModel) {
                                 selectedItemIndex = index
                                 navController.navigate(item.navTitle)
                             },
-                            label = { Text(text = item.title) },
+                            label = { Text(
+                                text = item.title,
+
+                                color = colorResource(id = R.color.sheebaDarkGreen),
+                            ) },
                             icon = {
                                 Icon(
                                     painter = if(index == selectedItemIndex) {
                                         item.selectedIcon
                                     } else item.unselectedIcon,
-                                    contentDescription = item.title
+                                    contentDescription = item.title,
+                                    tint = colorResource(id = R.color.sheebaDarkGreen)
                                 )
-                            }
+                            },
                         )
                     }
                 }

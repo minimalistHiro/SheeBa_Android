@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -25,8 +26,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hiroki.sheeba.R
-import com.hiroki.sheeba.app.PostOfficeAppRouter
-import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
 import com.hiroki.sheeba.screens.components.CustomDestructiveAlertDialog
@@ -70,6 +69,7 @@ fun ConfirmEmailScreen(viewModel: ViewModel) {
 
                 Text(
                     text = "入力したメールアドレスに\n確認用メールを送信しました。",
+                    fontSize = with(LocalDensity.current) { (24 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
@@ -82,6 +82,7 @@ fun ConfirmEmailScreen(viewModel: ViewModel) {
 
                 Text(
                     text = "送信したメールアドレス内のリンクを開き、\nメールアドレスの認証を完了してください。",
+                    fontSize = with(LocalDensity.current) { (18 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Normal,
@@ -94,6 +95,7 @@ fun ConfirmEmailScreen(viewModel: ViewModel) {
 
                 Text(
                     text = "メールが届いていない場合は、\n迷惑メールに入っている可能性があります。",
+                    fontSize = with(LocalDensity.current) { (18 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Normal,
@@ -107,7 +109,14 @@ fun ConfirmEmailScreen(viewModel: ViewModel) {
                 CustomCapsuleButton(
                     text = "メールアドレス確認済み",
                     onButtonClicked = {
+//                        val user = FirebaseAuth.getInstance().currentUser
+                        // 既にログイン済みか否かで処理を分ける。
+//                        if(user != null) {
+//                            viewModel.handleLogoutOnly()
                         viewModel.handleLoginWithConfirmEmail()
+//                        } else {
+//                            viewModel.handleLoginWithConfirmEmail()
+//                        }
                     },
                     isEnabled = true
                 )
@@ -144,7 +153,6 @@ fun ConfirmEmailScreen(viewModel: ViewModel) {
                 onOkButtonClicked = {
                     isShowInvalidLinkCautionDialog.value = false
                     viewModel.handleLogout()
-                    PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
                 },
                 onCancelButtonClicked = {
                     isShowInvalidLinkCautionDialog.value = false

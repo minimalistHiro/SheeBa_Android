@@ -40,9 +40,10 @@ object Setting {
     // ErrorCode
     val mismatchPassword = "パスワードとパスワード（確認用）が一致しません。"
     val weakPassword = "パスワードは6文字以上で設定してください。"
+    val notConfirmEmail = "メールアドレスの認証が完了していません。\nメールボックスにあるメールをご確認ください。"
     val failureCreateAccount = "アカウントの作成に失敗しました。"
     val failureLogin = "ログインに失敗しました。"
-    val failureSendEmail = "メール送信に失敗しました。"
+    val failureSendEmail = "メール送信に失敗しました。\nしばらく経ってから再度お試しください。"
     val failureFetchUID = "UIDの取得に失敗しました。"
     val failureFetchUser = "ユーザー情報の取得に失敗しました。"
     val failureFetchStorePoint = "店舗ポイント情報の取得に失敗しました。"

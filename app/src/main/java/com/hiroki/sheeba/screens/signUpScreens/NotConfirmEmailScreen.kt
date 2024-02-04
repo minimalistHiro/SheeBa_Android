@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -65,6 +66,7 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
 
                 Text(
                     text = "メールアドレス、パスワードを入力し、\n「メール送信」ボタンを押して\nメールアドレス認証を完了してください。",
+                    fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Normal,
@@ -75,32 +77,36 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
 
                 Spacer(modifier = Modifier.height((screenHeight / 7).dp))
 
-                InputEmailTextField(
-                    label = "メールアドレス",
-                    onTextSelected = {
-                        viewModel.onLoginEvent(LoginUIEvent.EmailChange(it))
-                    },
-                    errorStatus = viewModel.signUpUIState.value.emailError
-                )
+                if(!viewModel.isHandleLoginProcess.value) {
+                    InputEmailTextField(
+                        label = "メールアドレス",
+                        onTextSelected = {
+                            viewModel.onLoginEvent(LoginUIEvent.EmailChange(it))
+                        },
+                        errorStatus = viewModel.loginUIState.value.emailError
+                    )
 
-                Spacer(modifier = Modifier.height((screenHeight / 25).dp))
+                    Spacer(modifier = Modifier.height((screenHeight / 25).dp))
 
-                InputPasswordTextField(
-                    label = "パスワード",
-                    onTextSelected = {
-                        viewModel.onLoginEvent(LoginUIEvent.PasswordChange(it))
-                    },
-                    errorStatus = viewModel.loginUIState.value.passwordError
-                )
+                    InputPasswordTextField(
+                        label = "パスワード",
+                        onTextSelected = {
+                            viewModel.onLoginEvent(LoginUIEvent.PasswordChange(it))
+                        },
+                        errorStatus = viewModel.loginUIState.value.passwordError
+                    )
+                }
 
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
                 CustomCapsuleButton(
                     text = "メール送信",
                     onButtonClicked = {
-                        viewModel.handleLoginWithEmailVerification()
+//                        viewModel.handleLoginWithEmailVerification()
+                        viewModel.handleEmailVerification()
                     },
-                    isEnabled = viewModel.loginAllValidationPassed.value
+//                    isEnabled = viewModel.loginAllValidationPassed.value
+                    isEnabled = true
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))

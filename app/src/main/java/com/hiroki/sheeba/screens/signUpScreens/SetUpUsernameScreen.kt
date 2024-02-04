@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -83,6 +84,7 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
 
                 Text(
                     text = "トップ画像（任意）",
+                    fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 15.sp,
                         fontStyle = FontStyle.Normal,

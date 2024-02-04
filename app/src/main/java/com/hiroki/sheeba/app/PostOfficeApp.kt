@@ -36,12 +36,12 @@ fun PostOfficeApp() {
                 is Screen.TopScreen -> {
                     if(FirebaseAuth.getInstance().currentUser == null) {
                         TutorialScreen(viewModel = viewModel)
-//                        EntryScreen(viewModel = viewModel)
                     } else {
                         if(FirebaseAuth.getInstance().currentUser?.isEmailVerified == true) {
                             ContentScreen(viewModel = viewModel)
                         } else {
                             NotConfirmEmailScreen(viewModel = viewModel)
+//                            TutorialScreen(viewModel = viewModel)
                         }
                     }
                 }

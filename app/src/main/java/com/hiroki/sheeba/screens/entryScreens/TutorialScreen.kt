@@ -1,6 +1,7 @@
 package com.hiroki.sheeba.screens.entryScreens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -81,10 +84,33 @@ fun TutorialScreen(viewModel: ViewModel) {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 if(Setting.tutorialLastPage != page.value) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(
+                            onClick = {page.value = Setting.tutorialLastPage},
+                        ) {
+                            Text(
+                                text = "スキップ",
+                                fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
+                                style = TextStyle(
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    fontStyle = FontStyle.Normal,
+                                ),
+                                textAlign = TextAlign.Center,
+                                color = Color.Black
+                            )
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height((screenHeight / 3).dp))
 
                     Text(
                         text = Setting.tutorialText(page = page.value),
+                        fontSize = with(LocalDensity.current) { (25 / fontScale).sp },
                         style = TextStyle(
                             fontSize = 25.sp,
                             fontWeight = FontWeight.Bold,
@@ -97,6 +123,7 @@ fun TutorialScreen(viewModel: ViewModel) {
 
                     Text(
                         text = Setting.termsOfServiceTitle,
+                        fontSize = with(LocalDensity.current) { (25 / fontScale).sp },
                         style = TextStyle(
                             fontSize = 25.sp,
                             fontWeight = FontWeight.Bold,
@@ -117,6 +144,7 @@ fun TutorialScreen(viewModel: ViewModel) {
                     ) {
                         Text(
                             text = Setting.termsOfServiceExplanation,
+                            fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
                             style = TextStyle(
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Normal,
@@ -128,6 +156,7 @@ fun TutorialScreen(viewModel: ViewModel) {
                         tutorials.forEach { tutorial ->
                             Text(
                                 text = tutorial.title,
+                                fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
                                 style = TextStyle(
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
@@ -137,6 +166,7 @@ fun TutorialScreen(viewModel: ViewModel) {
                             )
                             Text(
                                 text = tutorial.text,
+                                fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
                                 style = TextStyle(
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Normal,
@@ -176,6 +206,7 @@ fun TutorialScreen(viewModel: ViewModel) {
                         )
                         Text(
                             text = "同意します",
+                            fontSize = with(LocalDensity.current) { (25 / fontScale).sp },
                             style = TextStyle(
                                 fontSize = 25.sp,
                                 fontWeight = FontWeight.Bold,
@@ -195,18 +226,6 @@ fun TutorialScreen(viewModel: ViewModel) {
                         isEnabled = isAgree.value
                     )
                 }
-
-//                CustomCapsuleButton(
-//                    text = if(Setting.tutorialLastPage != page.value) "次へ" else "始める",
-//                    onButtonClicked = {
-//                        if(Setting.tutorialLastPage != page.value) {
-//                            page.value += 1
-//                        } else {
-//                            PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
-//                        }
-//                    },
-//                    isEnabled = true
-//                )
             }
         }
     }

@@ -40,6 +40,7 @@ class ViewModel: ViewModel() {
     var loginEmailPassed = mutableStateOf(false)
     var loginAllValidationPassed = mutableStateOf(false)
     var progress = mutableStateOf(false)
+    var isHandleLoginProcess = mutableStateOf(false)                        // ログイン済みか否か
 
     // DB
 //    val users: StateFlow<List<ChatUser>> = _users.asStateFlow()
@@ -455,6 +456,8 @@ class ViewModel: ViewModel() {
      * @return なし
      */
     fun handleEmailVerification() {
+        progress.value = true
+
         val user = FirebaseAuth.getInstance().currentUser ?: run {
             handleError(title = "", text = Setting.failureFetchUser, exception = null)
             return
@@ -463,9 +466,11 @@ class ViewModel: ViewModel() {
         user.sendEmailVerification()
             .addOnCompleteListener {
                 PostOfficeAppRouter.navigateTo(Screen.ConfirmEmailScreen)
+                progress.value = false
             }
             .addOnFailureListener {
                 handleError(title = "", text = Setting.failureSendEmail, exception = it)
+                progress.value = false
             }
     }
 
@@ -485,16 +490,19 @@ class ViewModel: ViewModel() {
             .signInWithEmailAndPassword(email, password)
             .addOnCompleteListener {
                 if(it.isSuccessful) {
+                    isHandleLoginProcess.value = true
+
                     val user = it.result.user
                     user?.let {
                         if(it.isEmailVerified) {
                             PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
+                            progress.value = false
                         } else {
                             PostOfficeAppRouter.navigateTo(Screen.NotConfirmEmailScreen)
+                            progress.value = false
                         }
                     }
                 }
-                progress.value = false
             }
             .addOnFailureListener {
                 handleError(
@@ -511,8 +519,9 @@ class ViewModel: ViewModel() {
      * @return なし
      */
     fun handleLoginWithConfirmEmail() {
-        val email = signUpUIState.value.email
-        val password = signUpUIState.value.password
+        // サインアップの場合とログインの場合で代入する値を分ける
+        val email = if(signUpUIState.value.email.isEmpty()) loginUIState.value.email else signUpUIState.value.email
+        val password = if(signUpUIState.value.password.isEmpty()) loginUIState.value.password else signUpUIState.value.password
 
         progress.value = true
 
@@ -520,13 +529,10 @@ class ViewModel: ViewModel() {
             .getInstance()
             .signInWithEmailAndPassword(email, password)
             .addOnCompleteListener {
-                progress.value = false
-
                 val user = it.result.user
                 user?.let {
                     if(!it.isEmailVerified) {
-                        handleError(title = "", text = "メールアドレスの認証が完了していません。" +
-                                "\n再度メールを送信する場合は、下の「メールを再送する」を押してください。", exception = null)
+                        handleError(title = "", text = Setting.notConfirmEmail, exception = null)
                         return@let
                     }
 
@@ -542,6 +548,8 @@ class ViewModel: ViewModel() {
                     handleError(title = "", text = Setting.failureFetchUser, exception = null)
                     return@addOnCompleteListener
                 }
+
+                progress.value = false
             }
             .addOnFailureListener {
                 handleError(
@@ -580,7 +588,6 @@ class ViewModel: ViewModel() {
                                 handleError(title = "", text = Setting.failureSendEmail, exception = it)
                             }
                     } else {
-                        handleAlert(title = "", text = "メール認証済みです。")
                         PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
                     }
                 }
@@ -600,6 +607,23 @@ class ViewModel: ViewModel() {
     }
 
     /**
+     * ログイン（メール送信含む）
+     *
+     * @return なし
+     */
+    fun isCheckEmailVerified() {
+        val user = FirebaseAuth.getInstance().currentUser ?: run {
+            handleError(title = "", text = Setting.failureFetchUser, exception = null)
+            return
+        }
+        if(!user.isEmailVerified) {
+            handleError(title = "", text = Setting.notConfirmEmail, exception = null)
+        } else {
+            PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
+        }
+    }
+
+    /**
      * 入力したメールアドレスにパスワード再設定リンクを送る
      *
      * @return なし
@@ -612,7 +636,6 @@ class ViewModel: ViewModel() {
             .sendPasswordResetEmail(email)
             .addOnSuccessListener {
                 handleAlert(title = "", text = "入力したメールアドレスにパスワード再設定用のURLを送信しました。")
-                PostOfficeAppRouter.navigateTo(Screen.TopScreen)
             }
             .addOnFailureListener {
                 handleError(title = "", text = Setting.failureSendEmail, exception = null)
@@ -631,11 +654,20 @@ class ViewModel: ViewModel() {
             if(it.currentUser == null) {
                 // バックグラウンド処理
                 viewModelScope.launch(Dispatchers.IO) {
-                    PostOfficeAppRouter.navigateTo(Screen.TutorialScreen)
+                    PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
                 }
             }
         }
         FirebaseAuth.getInstance().addAuthStateListener(authStateListener)
+    }
+
+    /**
+     * ログアウトのみ
+     *
+     * @return なし
+     */
+    fun handleLogoutOnly() {
+        FirebaseAuth.getInstance().signOut()
     }
 
     /**
@@ -889,7 +921,7 @@ class ViewModel: ViewModel() {
             .child(uid)
             .delete()
             .addOnFailureListener {
-                handleError(title = "", text = Setting.failureDeleteImage, exception = it)
+                Log.d(TAG, Setting.failureDeleteImage)
             }
     }
 
@@ -1041,6 +1073,11 @@ class ViewModel: ViewModel() {
             }
     }
 
+    /**
+     * QRコード読み取り結果を場合分けする。
+     *
+     * @return なし
+     */
     private fun divideScanProcess() {
         // 店舗ポイントアカウントの場合
         if(chatUser.value?.isStore == true) {
@@ -1154,6 +1191,12 @@ class ViewModel: ViewModel() {
         }
     }
 
+    /**
+     * トップ画像を更新
+     *
+     * @param imageUri 画像URI
+     * @return なし
+     */
     fun handleUpdateImage(imageUri: Uri?) {
         progress.value = true
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {

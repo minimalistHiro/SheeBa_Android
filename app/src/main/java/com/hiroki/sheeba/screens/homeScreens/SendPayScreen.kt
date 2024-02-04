@@ -55,6 +55,9 @@ fun SendPayScreen(viewModel: ViewModel) {
         mutableStateOf(false)
     }                                                       // 送ポイントダイアログ
 
+    // 初期化処理
+    viewModel.init()
+
     Box(modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center) {
 

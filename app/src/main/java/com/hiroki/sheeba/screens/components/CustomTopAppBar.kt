@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -24,6 +25,7 @@ fun CustomTopAppBar(title: String, onButtonClicked: () -> Unit = {}) {
     TopAppBar(
         title = { Text(
             text = title,
+            fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
             textAlign = TextAlign.Center,
             style = TextStyle(
                 fontSize = 20.sp,

@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -76,12 +77,30 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
                 // トップ画像
-                CustomImagePicker(
-                    size = 120,
-                    model = viewModel.currentUser.value.profileImageUrl,
-                    conditions = (viewModel.currentUser.value.profileImageUrl != "")) {
-                    navController.navigate(Setting.updateImageScreen)
-                }
+//                Box(
+//                    modifier = Modifier
+//                        .drawWithCache {
+//                            val path = androidx.compose.ui.graphics.Path()
+//                            path.addArc(
+//
+//                            )
+//                            onDrawWithContent {
+//                                drawContent()
+//                                drawPath(
+//                                    path = path,
+//                                    color = Color.Black,
+//                                )
+//                            }
+//                        }
+//                ) {
+//                    IconArc(size = 120)
+                    CustomImagePicker(
+                        size = 120,
+                        model = viewModel.currentUser.value.profileImageUrl,
+                        conditions = (viewModel.currentUser.value.profileImageUrl != "")) {
+                        navController.navigate(Setting.updateImageScreen)
+                    }
+//                }
 
                 Spacer(modifier = Modifier.height(15.dp))
 
@@ -91,6 +110,7 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                     } else {
                         viewModel.currentUser.value.username
                     },
+                    fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
@@ -107,6 +127,7 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                     } else {
                         "しばID：${viewModel.currentUser.value.uid}"
                     },
+                    fontSize = with(LocalDensity.current) { (12 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Normal,
@@ -125,6 +146,7 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                         modifier = Modifier
                             .padding(horizontal = 25.dp),
                         text = "設定",
+                        fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
                         style = TextStyle(
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,

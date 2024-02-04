@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -46,6 +47,7 @@ import com.hiroki.sheeba.model.ChatUserItem
 @ExperimentalMaterial3Api
 @Composable
 fun InputTextField(label: String, onTextSelected: (String) -> Unit, errorStatus: Boolean) {
+    val maxChar = 25
     val textValue = remember {
         mutableStateOf("")
     }
@@ -54,7 +56,10 @@ fun InputTextField(label: String, onTextSelected: (String) -> Unit, errorStatus:
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 30.dp),
-        label = { Text(text = label) },
+        label = { Text(
+            text = label,
+            fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
+        ) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = Color.Black,
             focusedLabelColor = Color.Black,
@@ -65,7 +70,10 @@ fun InputTextField(label: String, onTextSelected: (String) -> Unit, errorStatus:
         maxLines = 1,
         value = textValue.value,
         onValueChange = {
-            textValue.value = it
+            // 最大文字数以下なら入力を有効にする。
+            if(it.length <= maxChar) {
+                textValue.value = it
+            }
             onTextSelected(it)
         },
         isError = !errorStatus,
@@ -75,6 +83,7 @@ fun InputTextField(label: String, onTextSelected: (String) -> Unit, errorStatus:
 @ExperimentalMaterial3Api
 @Composable
 fun InputEmailTextField(label: String, onTextSelected: (String) -> Unit, errorStatus: Boolean) {
+    val maxChar = 40
     val textValue = remember {
         mutableStateOf("")
     }
@@ -83,7 +92,10 @@ fun InputEmailTextField(label: String, onTextSelected: (String) -> Unit, errorSt
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 30.dp),
-        label = { Text(text = label) },
+        label = { Text(
+            text = label,
+            fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
+        ) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = Color.Black,
             focusedLabelColor = Color.Black,
@@ -97,7 +109,10 @@ fun InputEmailTextField(label: String, onTextSelected: (String) -> Unit, errorSt
         maxLines = 1,
         value = textValue.value,
         onValueChange = {
-            textValue.value = it
+            // 最大文字数以下なら入力を有効にする。
+            if(it.length <= maxChar) {
+                textValue.value = it
+            }
             onTextSelected(it)
         },
         isError = !errorStatus,
@@ -107,6 +122,7 @@ fun InputEmailTextField(label: String, onTextSelected: (String) -> Unit, errorSt
 @ExperimentalMaterial3Api
 @Composable
 fun InputPasswordTextField(label: String, onTextSelected: (String) -> Unit, errorStatus: Boolean) {
+    val maxChar = 30
     val localFocusManager = LocalFocusManager.current
     val textValue = remember {
         mutableStateOf("")
@@ -119,7 +135,10 @@ fun InputPasswordTextField(label: String, onTextSelected: (String) -> Unit, erro
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 30.dp),
-        label = { Text(text = label) },
+        label = { Text(
+            text = label,
+            fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
+        ) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = Color.Black,
             focusedLabelColor = Color.Black,
@@ -133,7 +152,10 @@ fun InputPasswordTextField(label: String, onTextSelected: (String) -> Unit, erro
         maxLines = 1,
         value = textValue.value,
         onValueChange = {
-            textValue.value = it
+            // 最大文字数以下なら入力を有効にする。
+            if(it.length <= maxChar) {
+                textValue.value = it
+            }
             onTextSelected(it)
         },
         trailingIcon =  {
@@ -180,6 +202,7 @@ fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (Strin
             } else {
                 selectedItem
             },
+            fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
             style = TextStyle(
                 fontSize = 17.sp,
                 fontStyle = FontStyle.Normal,
@@ -216,7 +239,10 @@ fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (Strin
             ) {
                 items.forEach { item ->
                     DropdownMenuItem(
-                        text = { Text(text = item) },
+                        text = { Text(
+                            text = item,
+                            fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
+                        ) },
                         onClick = {
                             selectedItem = item
                             onTextSelected(item)
@@ -235,7 +261,6 @@ fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (Strin
         }
     )
 }
-
 
 @Preview
 @ExperimentalMaterial3Api
