@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -27,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
-import com.hiroki.sheeba.screens.components.CustomIcon
+import com.hiroki.sheeba.screens.components.CustomImagePicker
 import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
@@ -52,13 +53,17 @@ fun GetPointScreen(viewModel: ViewModel) {
                 Spacer(modifier = Modifier.height((screenHeight / 15).dp))
 
                 if(!viewModel.isQrCodeScanError.value) {
-                    CustomIcon(size = 120)
+                    CustomImagePicker(
+                        size = 120,
+                        model = viewModel.chatUser.value?.profileImageUrl,
+                        conditions = (viewModel.chatUser.value?.profileImageUrl != "")) {}
                 }
 
                 Spacer(modifier = Modifier.height(15.dp))
 
                 Text(
                     text = viewModel.chatUser.value?.username?: "エラー",
+                    fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
@@ -72,6 +77,7 @@ fun GetPointScreen(viewModel: ViewModel) {
                 if(viewModel.isSameStoreScanError.value) {
                     Text(
                         text = "1店舗につき1日1回のみポイントが貰えます。",
+                        fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
                         style = TextStyle(
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
@@ -82,6 +88,7 @@ fun GetPointScreen(viewModel: ViewModel) {
                 } else if(viewModel.isQrCodeScanError.value) {
                     Text(
                         text = "誤ったQRコードがスキャンされました。",
+                        fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
                         style = TextStyle(
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
@@ -96,6 +103,7 @@ fun GetPointScreen(viewModel: ViewModel) {
                     ) {
                         Text(
                             text = viewModel.getPoint.value,
+                            fontSize = with(LocalDensity.current) { (70 / fontScale).sp },
                             style = TextStyle(
                                 fontSize = 70.sp,
                                 fontWeight = FontWeight.Bold,
@@ -106,6 +114,7 @@ fun GetPointScreen(viewModel: ViewModel) {
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "pt",
+                            fontSize = with(LocalDensity.current) { (30 / fontScale).sp },
                             style = TextStyle(
                                 fontSize = 30.sp,
                                 fontWeight = FontWeight.Normal,
@@ -119,6 +128,7 @@ fun GetPointScreen(viewModel: ViewModel) {
 
                     Text(
                         text = "ゲット！",
+                        fontSize = with(LocalDensity.current) { (35 / fontScale).sp },
                         style = TextStyle(
                             fontSize = 35.sp,
                             fontWeight = FontWeight.Bold,

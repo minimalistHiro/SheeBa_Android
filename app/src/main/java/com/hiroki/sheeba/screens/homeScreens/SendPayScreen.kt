@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -90,6 +91,7 @@ fun SendPayScreen(viewModel: ViewModel) {
                 ) {
                     Text(
                         text = viewModel.chatUser.value?.username?: "エラー",
+                        fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
                         style = TextStyle(
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
@@ -100,6 +102,7 @@ fun SendPayScreen(viewModel: ViewModel) {
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = "さんに送る",
+                        fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
                         style = TextStyle(
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Normal,
@@ -116,6 +119,7 @@ fun SendPayScreen(viewModel: ViewModel) {
                 ) {
                     Text(
                         text = viewModel.sendPayText.value,
+                        fontSize = with(LocalDensity.current) { (60 / fontScale).sp },
                         style = TextStyle(
                             fontSize = 60.sp,
                             fontWeight = FontWeight.Bold,
@@ -126,6 +130,7 @@ fun SendPayScreen(viewModel: ViewModel) {
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = "pt",
+                        fontSize = with(LocalDensity.current) { (30 / fontScale).sp },
                         style = TextStyle(
                             fontSize = 30.sp,
                             fontWeight = FontWeight.Normal,
@@ -152,7 +157,7 @@ fun SendPayScreen(viewModel: ViewModel) {
                     )
                 ) {
                     Text(text =  "送る",
-                        fontSize = 25.sp,
+                        fontSize = with(LocalDensity.current) { (25 / fontScale).sp },
                         fontWeight = FontWeight.Bold,
                         color = Color.White)
                 }
@@ -177,7 +182,7 @@ fun SendPayScreen(viewModel: ViewModel) {
                         ) {
                             Text(
                                 text = it,
-                                fontSize = 35.sp,
+                                fontSize = with(LocalDensity.current) { (35 / fontScale).sp },
                                 fontWeight = FontWeight.Normal,
                                 textAlign = TextAlign.Center,
                                 color = if(it == "AC") {

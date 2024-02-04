@@ -77,30 +77,12 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
                 // トップ画像
-//                Box(
-//                    modifier = Modifier
-//                        .drawWithCache {
-//                            val path = androidx.compose.ui.graphics.Path()
-//                            path.addArc(
-//
-//                            )
-//                            onDrawWithContent {
-//                                drawContent()
-//                                drawPath(
-//                                    path = path,
-//                                    color = Color.Black,
-//                                )
-//                            }
-//                        }
-//                ) {
-//                    IconArc(size = 120)
-                    CustomImagePicker(
-                        size = 120,
-                        model = viewModel.currentUser.value.profileImageUrl,
-                        conditions = (viewModel.currentUser.value.profileImageUrl != "")) {
-                        navController.navigate(Setting.updateImageScreen)
-                    }
-//                }
+                CustomImagePicker(
+                    size = 120,
+                    model = viewModel.currentUser.value.profileImageUrl,
+                    conditions = (viewModel.currentUser.value.profileImageUrl != "")) {
+                    navController.navigate(Setting.updateImageScreen)
+                }
 
                 Spacer(modifier = Modifier.height(15.dp))
 
