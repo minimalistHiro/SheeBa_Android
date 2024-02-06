@@ -12,6 +12,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -62,7 +63,6 @@ fun LoginScreen(viewModel: ViewModel) {
                     onTextSelected = {
                         viewModel.onLoginEvent(LoginUIEvent.EmailChange(it))
                     },
-                    errorStatus = viewModel.loginUIState.value.emailError
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 25).dp))
@@ -72,7 +72,6 @@ fun LoginScreen(viewModel: ViewModel) {
                     onTextSelected = {
                         viewModel.onLoginEvent(LoginUIEvent.PasswordChange(it))
                     },
-                    errorStatus = viewModel.loginUIState.value.passwordError
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 5).dp))
@@ -82,7 +81,8 @@ fun LoginScreen(viewModel: ViewModel) {
                     onButtonClicked = {
                         viewModel.onLoginEvent(LoginUIEvent.LoginButtonClicked)
                     },
-                    isEnabled = viewModel.loginAllValidationPassed.value
+                    isEnabled = (!viewModel.loginUIState.value.email.isEmpty()) &&
+                            (!viewModel.loginUIState.value.password.isEmpty())
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 10).dp))
@@ -92,7 +92,7 @@ fun LoginScreen(viewModel: ViewModel) {
                     onButtonClicked = {
                         PostOfficeAppRouter.navigateTo(Screen.SendEmailScreen)
                     },
-                    isEnabled = false
+                    color = Color.Blue
                 )
             }
         }

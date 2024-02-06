@@ -52,11 +52,12 @@ fun GetPointScreen(viewModel: ViewModel) {
             ) {
                 Spacer(modifier = Modifier.height((screenHeight / 15).dp))
 
+                // アイコン画像
                 if(!viewModel.isQrCodeScanError.value) {
                     CustomImagePicker(
                         size = 120,
                         model = viewModel.chatUser.value?.profileImageUrl,
-                        conditions = (viewModel.chatUser.value?.profileImageUrl != "")) {}
+                        conditions = (viewModel.chatUser.value?.profileImageUrl != "" && viewModel.chatUser.value != null)) {}
                 }
 
                 Spacer(modifier = Modifier.height(15.dp))
@@ -111,7 +112,9 @@ fun GetPointScreen(viewModel: ViewModel) {
                             ),
                             textAlign = TextAlign.Center,
                         )
+
                         Spacer(modifier = Modifier.width(10.dp))
+
                         Text(
                             text = "pt",
                             fontSize = with(LocalDensity.current) { (30 / fontScale).sp },

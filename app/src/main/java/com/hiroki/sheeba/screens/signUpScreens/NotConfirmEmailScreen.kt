@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
@@ -26,13 +27,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hiroki.sheeba.R
-import com.hiroki.sheeba.data.LoginUIEvent
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
 import com.hiroki.sheeba.screens.components.CustomDestructiveAlertDialog
 import com.hiroki.sheeba.screens.components.CustomTextButton
-import com.hiroki.sheeba.screens.components.InputEmailTextField
-import com.hiroki.sheeba.screens.components.InputPasswordTextField
 import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
@@ -49,6 +47,11 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
         mutableStateOf(false)
     }                                   // データ削除確認ダイアログの表示有無
 
+    // ログインステータスが入力されていない場合、強制的にログアウトする。
+    if(viewModel.loginUIState.value.email.isEmpty()) {
+        viewModel.handleLogout()
+    }
+
     Box(modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center) {
 
@@ -64,8 +67,20 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
             ) {
                 Spacer(modifier = Modifier.height((screenHeight / 7).dp))
 
+//                if(!viewModel.isHandleLoginProcess.value) {
+//                    Text(
+//                        text = "メールアドレス、パスワードを入力し、",
+//                        fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
+//                        style = TextStyle(
+//                            fontSize = 20.sp,
+//                            fontWeight = FontWeight.Normal,
+//                            fontStyle = FontStyle.Normal,
+//                        ),
+//                        textAlign = TextAlign.Center,
+//                    )
+//                }
                 Text(
-                    text = "メールアドレス、パスワードを入力し、\n「メール送信」ボタンを押して\nメールアドレス認証を完了してください。",
+                    text = "「メール送信」ボタンを押して\nメールアドレス認証を完了してください。",
                     fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 20.sp,
@@ -77,25 +92,23 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
 
                 Spacer(modifier = Modifier.height((screenHeight / 7).dp))
 
-                if(!viewModel.isHandleLoginProcess.value) {
-                    InputEmailTextField(
-                        label = "メールアドレス",
-                        onTextSelected = {
-                            viewModel.onLoginEvent(LoginUIEvent.EmailChange(it))
-                        },
-                        errorStatus = viewModel.loginUIState.value.emailError
-                    )
-
-                    Spacer(modifier = Modifier.height((screenHeight / 25).dp))
-
-                    InputPasswordTextField(
-                        label = "パスワード",
-                        onTextSelected = {
-                            viewModel.onLoginEvent(LoginUIEvent.PasswordChange(it))
-                        },
-                        errorStatus = viewModel.loginUIState.value.passwordError
-                    )
-                }
+//                if(!viewModel.isHandleLoginProcess.value) {
+//                    InputEmailTextField(
+//                        label = "メールアドレス",
+//                        onTextSelected = {
+//                            viewModel.onLoginEvent(LoginUIEvent.EmailChange(it))
+//                        },
+//                    )
+//
+//                    Spacer(modifier = Modifier.height((screenHeight / 25).dp))
+//
+//                    InputPasswordTextField(
+//                        label = "パスワード",
+//                        onTextSelected = {
+//                            viewModel.onLoginEvent(LoginUIEvent.PasswordChange(it))
+//                        },
+//                    )
+//                }
 
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
@@ -106,7 +119,10 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
                         viewModel.handleEmailVerification()
                     },
 //                    isEnabled = viewModel.loginAllValidationPassed.value
-                    isEnabled = true
+//                    isEnabled = (!viewModel.isHandleLoginProcess.value) ||
+//                            ((!viewModel.loginUIState.value.email.isEmpty()) &&
+//                            (!viewModel.loginUIState.value.password.isEmpty()))
+                    isEnabled = true,
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))
@@ -116,7 +132,7 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
                     onButtonClicked = {
                         isShowConfirmationLogoutDialog.value = true
                     },
-                    isEnabled = true
+                    color = Color.Red
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 25).dp))
@@ -126,7 +142,7 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
                     onButtonClicked = {
                         isShowConfirmationWithdrawalDialog.value = true
                     },
-                    isEnabled = true
+                    color = Color.Red
                 )
             }
         }

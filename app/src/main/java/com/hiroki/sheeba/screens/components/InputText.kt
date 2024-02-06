@@ -46,7 +46,7 @@ import com.hiroki.sheeba.model.ChatUserItem
 
 @ExperimentalMaterial3Api
 @Composable
-fun InputTextField(label: String, onTextSelected: (String) -> Unit, errorStatus: Boolean) {
+fun InputTextField(label: String, onTextSelected: (String) -> Unit) {
     val maxChar = 25
     val textValue = remember {
         mutableStateOf("")
@@ -65,7 +65,6 @@ fun InputTextField(label: String, onTextSelected: (String) -> Unit, errorStatus:
             focusedLabelColor = Color.Black,
             cursorColor = Color.Black,
         ),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         singleLine = true,
         maxLines = 1,
         value = textValue.value,
@@ -76,13 +75,13 @@ fun InputTextField(label: String, onTextSelected: (String) -> Unit, errorStatus:
             }
             onTextSelected(it)
         },
-        isError = !errorStatus,
+//        isError = !errorStatus,
     )
 }
 
 @ExperimentalMaterial3Api
 @Composable
-fun InputEmailTextField(label: String, onTextSelected: (String) -> Unit, errorStatus: Boolean) {
+fun InputEmailTextField(label: String, onTextSelected: (String) -> Unit) {
     val maxChar = 40
     val textValue = remember {
         mutableStateOf("")
@@ -103,7 +102,6 @@ fun InputEmailTextField(label: String, onTextSelected: (String) -> Unit, errorSt
         ),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Next,
         ),
         singleLine = true,
         maxLines = 1,
@@ -115,13 +113,13 @@ fun InputEmailTextField(label: String, onTextSelected: (String) -> Unit, errorSt
             }
             onTextSelected(it)
         },
-        isError = !errorStatus,
+//        isError = !errorStatus,
     )
 }
 
 @ExperimentalMaterial3Api
 @Composable
-fun InputPasswordTextField(label: String, onTextSelected: (String) -> Unit, errorStatus: Boolean) {
+fun InputPasswordTextField(label: String, onTextSelected: (String) -> Unit) {
     val maxChar = 30
     val localFocusManager = LocalFocusManager.current
     val textValue = remember {
@@ -176,13 +174,13 @@ fun InputPasswordTextField(label: String, onTextSelected: (String) -> Unit, erro
             }
         },
         visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
-        isError = !errorStatus,
+//        isError = !errorStatus,
     )
 }
 
 @ExperimentalMaterial3Api
 @Composable
-fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (String) -> Unit, errorStatus: Boolean) {
+fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var selectedItem by remember { mutableStateOf("") }      // 選択値
 
@@ -197,7 +195,7 @@ fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (Strin
                 .wrapContentWidth(Alignment.Start)
                 .padding(horizontal = 15.dp)
             ,
-            text = if(selectedItem == "" || selectedItem == " ") {
+            text = if(selectedItem == "" || selectedItem == "") {
                 text
             } else {
                 selectedItem
@@ -208,11 +206,12 @@ fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (Strin
                 fontStyle = FontStyle.Normal,
             ),
             textAlign = TextAlign.Start,
-            color = if(errorStatus) {
-                Color.Black
-            } else {
-                Color.Red
-            },
+//            color = if(errorStatus) {
+//                Color.Black
+//            } else {
+//                Color.Red
+//            },
+            color = Color.Black,
         )
 
         Box(modifier = Modifier) {
@@ -221,7 +220,7 @@ fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (Strin
                     //クリックした時(状態を切り替える)
                     expanded = !expanded
                     // 初回クリックで、選択値を初期化
-                    onTextSelected(" ")
+//                    onTextSelected(" ")
                 },
                 modifier = Modifier
                     .padding(0.dp, 0.dp)
@@ -230,6 +229,7 @@ fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (Strin
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_arrow_drop_down_24),
                     contentDescription = "",
+                    tint = Color.Blue
                 )
             }
 
@@ -254,11 +254,12 @@ fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (Strin
         }
     }
     CustomDivider(
-        color = if(errorStatus) {
-            Color.Black
-        } else {
-            Color.Red
-        }
+//        color = if(errorStatus) {
+//            Color.Black
+//        } else {
+//            Color.Red
+//        }
+        color = Color.Black,
     )
 }
 
@@ -266,26 +267,26 @@ fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (Strin
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfInputTextField() {
-    InputTextField(label = "ユーザー名", onTextSelected = {}, errorStatus = true)
+    InputTextField(label = "ユーザー名", onTextSelected = {})
 }
 
 @Preview
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfInputEmailTextField() {
-    InputEmailTextField(label = "メールアドレス", onTextSelected = {}, errorStatus = true)
+    InputEmailTextField(label = "メールアドレス", onTextSelected = {})
 }
 
 @Preview
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfInputPasswordTextField() {
-    InputPasswordTextField(label = "パスワード", onTextSelected = {}, errorStatus = true)
+    InputPasswordTextField(label = "パスワード", onTextSelected = {})
 }
 
 @Preview
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfCustomDropdownMenu() {
-    CustomDropdownMenu(items = ChatUserItem.ages, text = "年代を選択してください", onTextSelected = {}, errorStatus = true)
+    CustomDropdownMenu(items = ChatUserItem.ages, text = "年代を選択してください", onTextSelected = {})
 }

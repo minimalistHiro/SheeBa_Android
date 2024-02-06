@@ -86,7 +86,6 @@ fun SendEmailScreen(viewModel: ViewModel) {
                     onTextSelected = {
                         viewModel.onLoginEvent(LoginUIEvent.EmailChange(it))
                     },
-                    errorStatus = viewModel.loginEmailPassed.value
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 5).dp))
@@ -96,7 +95,7 @@ fun SendEmailScreen(viewModel: ViewModel) {
                     onButtonClicked = {
                         viewModel.handleSendResetPasswordLink()
                     },
-                    isEnabled = true
+                    isEnabled = (!viewModel.loginUIState.value.email.isEmpty()),
                 )
             }
         }

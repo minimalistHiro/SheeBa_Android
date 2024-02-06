@@ -111,7 +111,7 @@ fun CustomBorderCapsuleButton(text: String, onButtonClicked: () -> Unit, isEnabl
 
 @ExperimentalMaterial3Api
 @Composable
-fun CustomTextButton(text: String, onButtonClicked: () -> Unit, isEnabled: Boolean) {
+fun CustomTextButton(text: String, onButtonClicked: () -> Unit, color: Color) {
     TextButton(
         onClick = {
             onButtonClicked.invoke()
@@ -120,7 +120,7 @@ fun CustomTextButton(text: String, onButtonClicked: () -> Unit, isEnabled: Boole
         Text(
             text = text,
             fontSize = with(LocalDensity.current) { (18 / fontScale).sp },
-            color = Color.Blue
+            color = color
         )
     }
 }
@@ -246,7 +246,7 @@ fun DefaultPreviewOfCustomBorderCapsuleButton() {
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfCustomTextButton() {
-    CustomTextButton(text = "Test", onButtonClicked = {}, isEnabled = false)
+    CustomTextButton(text = "Test", onButtonClicked = {}, color = Color.Blue)
 }
 
 @Preview

@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
@@ -88,11 +89,12 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 30.dp)
+                        .shadow(5.dp, shape = RoundedCornerShape(size = 30.dp))
                         .clip(RoundedCornerShape(size = 30.dp))
                         .background(colorResource(id = R.color.sheebaYellow))
                         .fillMaxWidth()
                         .height(200.dp),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -115,6 +117,7 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Spacer(modifier = Modifier.width((screenWidth / 5).dp))
+
                             if(viewModel.progress.value) {
                                 CircularProgressIndicator()
                             } else {

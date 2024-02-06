@@ -108,7 +108,6 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
                     onTextSelected = {
                         viewModel.onSignUpEvent(SignUpUIEvent.UsernameChange(it))
                     },
-                    errorStatus = viewModel.signUpUIState.value.usernameError
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 25).dp))
@@ -119,7 +118,6 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
                     onTextSelected = {
                         viewModel.onSignUpEvent(SignUpUIEvent.AgeChange(it))
                     },
-                    errorStatus = viewModel.signUpUIState.value.ageError,
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 25).dp))
@@ -130,7 +128,6 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
                     onTextSelected = {
                         viewModel.onSignUpEvent(SignUpUIEvent.AddressChange(it))
                     },
-                    errorStatus = viewModel.signUpUIState.value.addressError,
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 10).dp))
@@ -140,7 +137,10 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
                     onButtonClicked = {
                         PostOfficeAppRouter.navigateTo(Screen.SetUpEmailScreen)
                     },
-                    isEnabled = viewModel.signUpUsernameScreenValidationPassed.value
+                    isEnabled = (!viewModel.signUpUIState.value.username.isEmpty()) &&
+                            (!viewModel.signUpUIState.value.age.isEmpty()) &&
+                            (!viewModel.signUpUIState.value.address.isEmpty()),
+//                    isEnabled = viewModel.signUpUsernameScreenValidationPassed.value
                 )
             }
         }

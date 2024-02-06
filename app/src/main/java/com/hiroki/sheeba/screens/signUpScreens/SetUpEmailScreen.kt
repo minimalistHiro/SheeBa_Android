@@ -62,7 +62,7 @@ fun SetUpEmailScreen(viewModel: ViewModel) {
                     onTextSelected = {
                         viewModel.onSignUpEvent(SignUpUIEvent.EmailChange(it))
                     },
-                    errorStatus = viewModel.signUpUIState.value.emailError
+//                    errorStatus = viewModel.signUpUIState.value.emailError
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 25).dp))
@@ -72,7 +72,7 @@ fun SetUpEmailScreen(viewModel: ViewModel) {
                     onTextSelected = {
                         viewModel.onSignUpEvent(SignUpUIEvent.PasswordChange(it))
                     },
-                    errorStatus = viewModel.signUpUIState.value.passwordError
+//                    errorStatus = viewModel.signUpUIState.value.passwordError
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 25).dp))
@@ -82,7 +82,7 @@ fun SetUpEmailScreen(viewModel: ViewModel) {
                     onTextSelected = {
                         viewModel.onSignUpEvent(SignUpUIEvent.Password2Change(it))
                     },
-                    errorStatus = viewModel.signUpUIState.value.password2Error
+//                    errorStatus = viewModel.signUpUIState.value.password2Error
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 5).dp))
@@ -92,7 +92,10 @@ fun SetUpEmailScreen(viewModel: ViewModel) {
                     onButtonClicked = {
                         viewModel.onSignUpEvent(SignUpUIEvent.SignUpButtonClicked)
                     },
-                    isEnabled = viewModel.signUpAllValidationPassed.value
+//                    isEnabled = viewModel.signUpAllValidationPassed.value
+                    isEnabled = (!viewModel.signUpUIState.value.email.isEmpty()) &&
+                            (!viewModel.signUpUIState.value.password.isEmpty()) &&
+                            (!viewModel.signUpUIState.value.password2.isEmpty()),
                 )
             }
         }

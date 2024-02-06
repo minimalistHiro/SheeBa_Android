@@ -134,12 +134,14 @@ fun TutorialScreen(viewModel: ViewModel) {
 
                     Spacer(modifier = Modifier.height((screenHeight / 50).dp))
 
+                    //　利用規約本文
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height((screenHeight / 1.7).dp)
                             .background(colorResource(id = R.color.chatLogBackground))
-                            .verticalScroll(rememberScrollState()),
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 10.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(

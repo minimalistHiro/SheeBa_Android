@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -37,11 +38,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hiroki.sheeba.R
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomDoubleAlertDialog
-import com.hiroki.sheeba.screens.components.CustomIcon
+import com.hiroki.sheeba.screens.components.CustomImagePicker
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
 import com.hiroki.sheeba.viewModel.ViewModel
 
@@ -69,7 +71,8 @@ fun SendPayScreen(viewModel: ViewModel) {
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .background(colorResource(id = R.color.sheebaYellow)),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 CustomTopAppBar(
@@ -82,7 +85,11 @@ fun SendPayScreen(viewModel: ViewModel) {
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                CustomIcon(size = 120)
+                // アイコン画像
+                CustomImagePicker(
+                    size = 120,
+                    model = viewModel.chatUser.value?.profileImageUrl,
+                    conditions = (viewModel.chatUser.value?.profileImageUrl != "" && viewModel.chatUser.value != null)) {}
 
                 Spacer(modifier = Modifier.height(5.dp))
 

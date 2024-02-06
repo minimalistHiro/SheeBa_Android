@@ -69,7 +69,7 @@ fun UpdateUsernameScreen(viewModel: ViewModel, navController: NavHostController)
                     onTextSelected = {
                         viewModel.onSignUpEvent(SignUpUIEvent.UsernameChange(it))
                     },
-                    errorStatus = viewModel.signUpUIState.value.usernameError
+//                    errorStatus = viewModel.signUpUIState.value.usernameError
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 5).dp))
@@ -96,7 +96,8 @@ fun UpdateUsernameScreen(viewModel: ViewModel, navController: NavHostController)
                                 viewModel.handleError(title = "", text = Setting.failureUpdateUser, exception = it)
                             }
                     },
-                    isEnabled = viewModel.signUpUsernamePassed.value
+//                    isEnabled = viewModel.signUpUsernamePassed.value
+                    isEnabled = (!viewModel.signUpUIState.value.username.isEmpty())
                 )
             }
         }

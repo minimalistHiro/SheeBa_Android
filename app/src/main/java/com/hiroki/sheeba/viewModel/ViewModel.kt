@@ -23,7 +23,6 @@ import com.hiroki.sheeba.model.ChatUser
 import com.hiroki.sheeba.model.StorePoint
 import com.hiroki.sheeba.util.FirebaseConstants
 import com.hiroki.sheeba.util.Setting
-import com.hiroki.sheeba.util.Validator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -99,11 +98,11 @@ class ViewModel: ViewModel() {
     fun init() {
         signUpUIState.value = SignUpUIState(imageUri = null)
         loginUIState.value = LoginUIState()
-        signUpUsernameScreenValidationPassed.value = false
-        signUpAllValidationPassed.value = false
-        signUpUsernamePassed.value = false
-        loginEmailPassed.value = false
-        loginAllValidationPassed.value = false
+//        signUpUsernameScreenValidationPassed.value = false
+//        signUpAllValidationPassed.value = false
+//        signUpUsernamePassed.value = false
+//        loginEmailPassed.value = false
+//        loginAllValidationPassed.value = false
     }
 
     /**
@@ -113,7 +112,7 @@ class ViewModel: ViewModel() {
      * @return なし
      */
     fun onSignUpEvent(event: SignUpUIEvent) {
-        validateSignUpDataWithRules()
+//        validateSignUpDataWithRules()
         when(event) {
             is SignUpUIEvent.EmailChange -> {
                 signUpUIState.value = signUpUIState.value.copy(
@@ -178,7 +177,7 @@ class ViewModel: ViewModel() {
      * @return なし
      */
     fun onLoginEvent(event: LoginUIEvent) {
-        validateLoginDataWithRules()
+//        validateLoginDataWithRules()
         when(event) {
             is LoginUIEvent.EmailChange -> {
                 loginUIState.value = loginUIState.value.copy(
@@ -201,67 +200,67 @@ class ViewModel: ViewModel() {
      *
      * @return なし
      */
-    private fun validateSignUpDataWithRules() {
-        val emailResult = Validator.validateEmail(
-            email = signUpUIState.value.email
-        )
-
-        val passwordResult = Validator.validatePassword(
-            password = signUpUIState.value.password
-        )
-
-        val password2Result = Validator.validatePassword(
-            password = signUpUIState.value.password2
-        )
-
-        val usernameResult = Validator.validateUsername(
-            username = signUpUIState.value.username
-        )
-
-        val ageResult = Validator.validateAge(
-            age = signUpUIState.value.age
-        )
-
-        val addressResult = Validator.validateAddress(
-            address = signUpUIState.value.address
-        )
-
-        signUpUIState.value = signUpUIState.value.copy(
-            emailError = emailResult.status,
-            passwordError = passwordResult.status,
-            password2Error = password2Result.status,
-            usernameError =  usernameResult.status,
-            ageError =  ageResult.status,
-            addressError =  addressResult.status,
-        )
-
-        signUpUsernameScreenValidationPassed.value = usernameResult.status && ageResult.status && addressResult.status
-        signUpAllValidationPassed.value = emailResult.status && passwordResult.status && password2Result.status
-        signUpUsernamePassed.value = usernameResult.status
-    }
+//    private fun validateSignUpDataWithRules() {
+//        val emailResult = Validator.validateEmail(
+//            email = signUpUIState.value.email
+//        )
+//
+//        val passwordResult = Validator.validatePassword(
+//            password = signUpUIState.value.password
+//        )
+//
+//        val password2Result = Validator.validatePassword(
+//            password = signUpUIState.value.password2
+//        )
+//
+//        val usernameResult = Validator.validateUsername(
+//            username = signUpUIState.value.username
+//        )
+//
+//        val ageResult = Validator.validateAge(
+//            age = signUpUIState.value.age
+//        )
+//
+//        val addressResult = Validator.validateAddress(
+//            address = signUpUIState.value.address
+//        )
+//
+//        signUpUIState.value = signUpUIState.value.copy(
+//            emailError = emailResult.status,
+//            passwordError = passwordResult.status,
+//            password2Error = password2Result.status,
+//            usernameError =  usernameResult.status,
+//            ageError =  ageResult.status,
+//            addressError =  addressResult.status,
+//        )
+//
+//        signUpUsernameScreenValidationPassed.value = usernameResult.status && ageResult.status && addressResult.status
+//        signUpAllValidationPassed.value = emailResult.status && passwordResult.status && password2Result.status
+//        signUpUsernamePassed.value = usernameResult.status
+//    }
 
     /**
      * ログインの各イベントごとのエラー処理
      *
      * @return なし
      */
-    private fun validateLoginDataWithRules() {
-        val emailResult = Validator.validateEmail(
-            email = loginUIState.value.email
-        )
-
-        val passwordResult = Validator.validatePassword(
-            password = loginUIState.value.password
-        )
-
-        loginUIState.value = loginUIState.value.copy(
-            emailError = emailResult.status,
-            passwordError = passwordResult.status,
-        )
-
-        loginAllValidationPassed.value = emailResult.status && passwordResult.status
-        loginEmailPassed.value = emailResult.status
-    }
+//    private fun validateLoginDataWithRules() {
+//        val emailResult = Validator.validateEmail(
+//            email = loginUIState.value.email
+//        )
+//
+//        val passwordResult = Validator.validatePassword(
+//            password = loginUIState.value.password
+//        )
+//
+//        loginUIState.value = loginUIState.value.copy(
+//            emailError = emailResult.status,
+//            passwordError = passwordResult.status,
+//        )
+//
+//        loginAllValidationPassed.value = emailResult.status && passwordResult.status
+//        loginEmailPassed.value = emailResult.status
+//    }
 
     /**
      * 現在ユーザー情報を取得
@@ -286,6 +285,14 @@ class ViewModel: ViewModel() {
                 if (document != null) {
                     document.toObject(ChatUser::class.java)?.let {
                         currentUser = mutableStateOf(it)
+                    }
+                    // 初回特典アラート表示
+                    if(!currentUser.value.isFirstLogin && !currentUser.value.isStore) {
+                        handleAlert(title = "", text = "初回登録特典として\n${Setting.newRegistrationBenefits}ptプレゼント！")
+                        val data = hashMapOf<String, Any>(
+                            FirebaseConstants.isFirstLogin to true,
+                        )
+                        updateUser(document = currentUser.value.uid, data = data)
                     }
                 } else {
                     handleError(title = "", text = Setting.failureFetchUser, exception = null)
@@ -467,10 +474,12 @@ class ViewModel: ViewModel() {
             .addOnCompleteListener {
                 PostOfficeAppRouter.navigateTo(Screen.ConfirmEmailScreen)
                 progress.value = false
+                return@addOnCompleteListener
             }
             .addOnFailureListener {
                 handleError(title = "", text = Setting.failureSendEmail, exception = it)
                 progress.value = false
+                return@addOnFailureListener
             }
     }
 
@@ -630,15 +639,19 @@ class ViewModel: ViewModel() {
      */
     fun handleSendResetPasswordLink() {
         val email = loginUIState.value.email
+        progress.value = true
 
         FirebaseAuth
             .getInstance()
             .sendPasswordResetEmail(email)
             .addOnSuccessListener {
                 handleAlert(title = "", text = "入力したメールアドレスにパスワード再設定用のURLを送信しました。")
+                progress.value = false
+                return@addOnSuccessListener
             }
             .addOnFailureListener {
                 handleError(title = "", text = Setting.failureSendEmail, exception = null)
+                return@addOnFailureListener
             }
     }
 
