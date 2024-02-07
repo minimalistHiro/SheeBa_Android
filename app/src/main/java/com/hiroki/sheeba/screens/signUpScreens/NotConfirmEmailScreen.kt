@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
@@ -57,7 +59,8 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
 
         Surface(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
         ) {
             Column(
                 modifier = Modifier
@@ -67,18 +70,6 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
             ) {
                 Spacer(modifier = Modifier.height((screenHeight / 7).dp))
 
-//                if(!viewModel.isHandleLoginProcess.value) {
-//                    Text(
-//                        text = "メールアドレス、パスワードを入力し、",
-//                        fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
-//                        style = TextStyle(
-//                            fontSize = 20.sp,
-//                            fontWeight = FontWeight.Normal,
-//                            fontStyle = FontStyle.Normal,
-//                        ),
-//                        textAlign = TextAlign.Center,
-//                    )
-//                }
                 Text(
                     text = "「メール送信」ボタンを押して\nメールアドレス認証を完了してください。",
                     fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
@@ -91,24 +82,6 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 7).dp))
-
-//                if(!viewModel.isHandleLoginProcess.value) {
-//                    InputEmailTextField(
-//                        label = "メールアドレス",
-//                        onTextSelected = {
-//                            viewModel.onLoginEvent(LoginUIEvent.EmailChange(it))
-//                        },
-//                    )
-//
-//                    Spacer(modifier = Modifier.height((screenHeight / 25).dp))
-//
-//                    InputPasswordTextField(
-//                        label = "パスワード",
-//                        onTextSelected = {
-//                            viewModel.onLoginEvent(LoginUIEvent.PasswordChange(it))
-//                        },
-//                    )
-//                }
 
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
