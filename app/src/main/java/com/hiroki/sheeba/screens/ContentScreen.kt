@@ -32,6 +32,8 @@ import com.hiroki.sheeba.screens.cameraScreens.CameraScreen
 import com.hiroki.sheeba.screens.cameraScreens.ErrorQRCodeOverlay
 import com.hiroki.sheeba.screens.cameraScreens.QrCodeOverlay
 import com.hiroki.sheeba.screens.homeScreens.HomeScreen
+import com.hiroki.sheeba.screens.homeScreens.menuScreens.RankingScreen
+import com.hiroki.sheeba.screens.homeScreens.menuScreens.TodaysGetPointScreen
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
@@ -129,12 +131,12 @@ fun ContentScreen(viewModel: ViewModel) {
                 composable(items[2].navTitle) {
                     AccountScreen(viewModel = viewModel, padding = padding, navController = navController)
                 }
-//                composable(Setting.sendPayScreen) {
-//                    SendPayScreen(viewModel = viewModel, navController = navController)
-//                }
-//                composable(Setting.getPointScreen) {
-//                    GetPointScreen(viewModel = viewModel, navController = navController)
-//                }
+                composable(Setting.rankingScreen) {
+                    RankingScreen(viewModel = viewModel, navController = navController)
+                }
+                composable(Setting.todaysGetPointScreen) {
+                    TodaysGetPointScreen(viewModel = viewModel, navController = navController)
+                }
                 composable(Setting.updateImageScreen) {
                     UpdateImageScreen(viewModel = viewModel, navController = navController)
                 }

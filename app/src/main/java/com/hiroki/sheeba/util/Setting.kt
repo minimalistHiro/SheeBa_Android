@@ -18,6 +18,8 @@ object Setting {
     val setUpEmailScreen = "setUpEmailScreen"
     val homeScreen = "homeScreen"
     val sendPayScreen = "sendPayScreen"
+    val rankingScreen = "rankingScreen"
+    val todaysGetPointScreen = "todaysGetPointScreen"
     val cameraScreen = "cameraScreen"
     val getPointScreen = "getPointScreen"
     val accountScreen = "accountScreen"

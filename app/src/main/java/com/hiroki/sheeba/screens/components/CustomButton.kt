@@ -3,6 +3,7 @@ package com.hiroki.sheeba.screens.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,13 +14,17 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hiroki.sheeba.R
 
 @ExperimentalMaterial3Api
 @Composable
@@ -166,66 +172,34 @@ fun CustomListNav(text: String, color: Color, onButtonClicked: () -> Unit) {
     }
 }
 
-//@OptIn(ExperimentalTextApi::class)
-//@Composable
-//fun CustomTextWithLink(
-//    text: String,
-//    onClickTextLink: (url: String) -> Unit,
-//) {
-//    val url = "https://shibaginzadori.com/SheeBa/"
-//
-//    val annotatedText = buildAnnotatedString {
-//        withAnnotation(tag = "linkTag", annotation = url) {
-//            withStyle(
-//                style = SpanStyle(color = Color.Black, textDecoration = TextDecoration.Underline),
-//            ) {
-//                append(text)
-//            }
-//        }
-//    }
-//
-//    ClickableText(
-//        modifier = Modifier
-//            .padding(vertical = 12.dp)
-//            .padding(horizontal = 25.dp),
-//        text = annotatedText,
-//        onClick = { offset ->
-//            val linkAnnotation = annotatedText.getStringAnnotations(
-//                tag = "linkTag", start = offset, end = offset,
-//            ).firstOrNull() ?: return@ClickableText
-//
-//            onClickTextLink(linkAnnotation.item)
-//        },
-//    )
-//}
+@Composable
+fun MenuButton(text: String, painter: Painter, onButtonClicked: () -> Unit) {
+    Column(modifier = Modifier.padding(horizontal = 15.dp)) {
+        IconButton(
+            onClick = {
+                onButtonClicked.invoke()
+            },
+        ) {
+            Icon(
+                painter = painter,
+                contentDescription = "",
+                tint = Color.White,
 
-//@Composable
-//fun CustomTextWithLink(text: String, url: String) {
-//    val annotatedText = buildAnnotatedString {
-//        pushStringAnnotation(
-//            tag = "URL", annotation = url
-//        )
-//        withStyle(
-//            style = SpanStyle(
-//                color = Color.Black, fontWeight = FontWeight.Bold
-//            )
-//        ) {
-//            append(text)
-//        }
-//        pop()
-//    }
-//
-//    ClickableText(
-//        text = annotatedText,
-//        onClick = { offset ->
-//            annotatedText.getStringAnnotations(
-//                tag = "URL", start = offset, end = offset
-//            ).firstOrNull()?.let { annotation ->
-//                Log.d("Clicked URL", annotation.item)
-//            }
-//        }
-//    )
-//}
+            )
+        }
+        Text(
+            text = text,
+            fontSize = with(LocalDensity.current) { (10 / fontScale).sp },
+            style = TextStyle(
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                fontStyle = FontStyle.Normal,
+            ),
+            textAlign = TextAlign.Center,
+            color = Color.White,
+        )
+    }
+}
 
 @Preview
 @ExperimentalMaterial3Api
@@ -263,16 +237,9 @@ fun DefaultPreviewOfCustomListNav() {
     CustomListNav(text = "Test", color = Color.Black, onButtonClicked = {})
 }
 
-//@Preview
-//@ExperimentalMaterial3Api
-//@Composable
-//fun DefaultPreviewOfCustomTextWithLink2() {
-//    CustomTextWithLink(text = "Test", onClickTextLink = {})
-//}
-
-//@Preview
-//@ExperimentalMaterial3Api
-//@Composable
-//fun DefaultPreviewOfCustomTextWithLink() {
-//    CustomTextWithLink(text = "Test", url = "https://shibaginzadori.com/SheeBa/")
-//}
+@Preview
+@ExperimentalMaterial3Api
+@Composable
+fun DefaultPreviewOfMenuButton() {
+    MenuButton(text = "テスト", painter = painterResource(id = R.drawable.baseline_person_24)) {}
+}

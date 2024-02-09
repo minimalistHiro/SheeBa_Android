@@ -78,6 +78,7 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
             ) {
                 CustomTopAppBar(
                     title = "新規アカウントを作成",
+                    color = colorResource(id = R.color.sheebaYellow),
                     onButtonClicked = {
                         PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
                     }
@@ -98,7 +99,7 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
                 Spacer(modifier = Modifier.height((screenHeight / 50).dp))
 
                 // トップ画像
-                CustomImagePicker(size = 120, model = imageUri, conditions = (imageUri != null)) {
+                CustomImagePicker(size = 120, model = imageUri, isAlpha = false, conditions = (imageUri != null)) {
                     photoPickerLauncher.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
@@ -145,6 +146,8 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
                             (!viewModel.signUpUIState.value.address.isEmpty()),
 //                    isEnabled = viewModel.signUpUsernameScreenValidationPassed.value
                 )
+
+                Spacer(modifier = Modifier.height((screenHeight / 10).dp))
             }
         }
         // インジケーター

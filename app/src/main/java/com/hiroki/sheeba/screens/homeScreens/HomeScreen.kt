@@ -43,6 +43,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.hiroki.sheeba.R
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
+import com.hiroki.sheeba.screens.components.MenuButton
+import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
@@ -62,12 +64,12 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White),
+                .background(Color.White)
+                .verticalScroll(rememberScrollState()),
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
+                    .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Row(
@@ -86,9 +88,10 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
 
 //                Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
+                // カードスクリーン
                 Box(
                     modifier = Modifier
-                        .padding(horizontal = 30.dp)
+                        .padding(horizontal = 40.dp)
                         .shadow(5.dp, shape = RoundedCornerShape(size = 30.dp))
                         .clip(RoundedCornerShape(size = 30.dp))
                         .background(colorResource(id = R.color.sheebaYellow))
@@ -121,15 +124,17 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                             if(viewModel.progress.value) {
                                 CircularProgressIndicator()
                             } else {
-                                Text(
-                                    text = viewModel.currentUser.value.money,
-                                    style = TextStyle(
-                                        fontSize = 35.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        fontStyle = FontStyle.Normal,
-                                    ),
-                                    textAlign = TextAlign.Center,
-                                )
+                                viewModel.currentUser.value?.let {
+                                    Text(
+                                        text = it.money,
+                                        style = TextStyle(
+                                            fontSize = 35.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            fontStyle = FontStyle.Normal,
+                                        ),
+                                        textAlign = TextAlign.Center,
+                                    )
+                                }
                             }
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
@@ -155,6 +160,32 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                         }
 
                         Spacer(modifier = Modifier.height(30.dp))
+                    }
+                }
+
+                Spacer(modifier = Modifier.height((screenHeight / 30).dp))
+
+                // Menuボタン
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .clip(RoundedCornerShape(size = 30.dp))
+                        .background(colorResource(id = R.color.sheebaDarkGreen))
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Row {
+                        // ランキング
+                        MenuButton(text = "ランキング", painter = painterResource(id = R.drawable.baseline_flag_24)) {
+                            viewModel.fetchAllUsersOrderByMoney()
+                            navController.navigate(Setting.rankingScreen)
+                        }
+                        // 本日の獲得
+                        MenuButton(text = "本日の獲得", painter = painterResource(id = R.drawable.baseline_store_24)) {
+                            viewModel.fetchStorePoints()
+                            navController.navigate(Setting.todaysGetPointScreen)
+                        }
                     }
                 }
             }

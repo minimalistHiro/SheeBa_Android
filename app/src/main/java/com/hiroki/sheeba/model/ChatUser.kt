@@ -16,6 +16,8 @@ data class ChatUser (
     var isStore: Boolean = false,
     @field:JvmField
     var isOwner: Boolean = false,
+    var ranking: String = "",
+    var no: Int = 0,
 )
 
 object ChatUserItem {

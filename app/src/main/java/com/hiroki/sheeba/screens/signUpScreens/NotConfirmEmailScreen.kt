@@ -117,6 +117,8 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
                     },
                     color = Color.Red
                 )
+
+                Spacer(modifier = Modifier.height((screenHeight / 10).dp))
             }
         }
         // インジケーター

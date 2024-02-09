@@ -77,6 +77,7 @@ fun SendPayScreen(viewModel: ViewModel) {
             ) {
                 CustomTopAppBar(
                     title = "",
+                    color = colorResource(id = R.color.sheebaYellow),
                     onButtonClicked = {
                         viewModel.sendPayText.value = "0"
                         PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
@@ -89,6 +90,7 @@ fun SendPayScreen(viewModel: ViewModel) {
                 CustomImagePicker(
                     size = 120,
                     model = viewModel.chatUser.value?.profileImageUrl,
+                    isAlpha = false,
                     conditions = (viewModel.chatUser.value?.profileImageUrl != "" && viewModel.chatUser.value != null)) {}
 
                 Spacer(modifier = Modifier.height(5.dp))

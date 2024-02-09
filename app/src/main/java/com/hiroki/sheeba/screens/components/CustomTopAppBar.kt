@@ -9,19 +9,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
-import com.hiroki.sheeba.R
 
 @ExperimentalMaterial3Api
 @Composable
-fun CustomTopAppBar(title: String, onButtonClicked: () -> Unit = {}) {
+fun CustomTopAppBar(title: String, color: Color, onButtonClicked: () -> Unit = {}) {
     TopAppBar(
         title = { Text(
             text = title,
@@ -42,7 +41,7 @@ fun CustomTopAppBar(title: String, onButtonClicked: () -> Unit = {}) {
                 Icon(Icons.Filled.ArrowBack, contentDescription = "")
             }
         },
-        colors =  TopAppBarDefaults.topAppBarColors(colorResource(id = R.color.sheebaYellow))
+        colors =  TopAppBarDefaults.topAppBarColors(color)
     )
 }
 
@@ -50,5 +49,5 @@ fun CustomTopAppBar(title: String, onButtonClicked: () -> Unit = {}) {
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfCustomTopAppBar() {
-    CustomTopAppBar(title = "タイトル")
+    CustomTopAppBar(title = "タイトル", color = Color.White)
 }

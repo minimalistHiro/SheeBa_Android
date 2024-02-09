@@ -79,27 +79,30 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                 // トップ画像
                 CustomImagePicker(
                     size = 120,
-                    model = viewModel.currentUser.value.profileImageUrl,
-                    conditions = (viewModel.currentUser.value.profileImageUrl != "")) {
+                    model = viewModel.currentUser.value?.profileImageUrl,
+                    isAlpha = false,
+                    conditions = (!viewModel.currentUser.value?.profileImageUrl.isNullOrEmpty())) {
                     navController.navigate(Setting.updateImageScreen)
                 }
 
                 Spacer(modifier = Modifier.height(15.dp))
 
-                Text(
-                    text = if(viewModel.progress.value) {
-                        "読み込み中..."
-                    } else {
-                        viewModel.currentUser.value.username
-                    },
-                    fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontStyle = FontStyle.Normal,
-                    ),
-                    textAlign = TextAlign.Center,
-                )
+                if(viewModel.progress.value) {
+                    "読み込み中..."
+                } else {
+                    viewModel.currentUser.value?.username
+                }?.let {
+                    Text(
+                        text = it,
+                        fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
+                        style = TextStyle(
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Normal,
+                        ),
+                        textAlign = TextAlign.Center,
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
@@ -107,7 +110,7 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                     text = if(viewModel.progress.value) {
                         "読み込み中..."
                     } else {
-                        "しばID：${viewModel.currentUser.value.uid}"
+                        "しばID：${viewModel.currentUser.value?.uid}"
                     },
                     fontSize = with(LocalDensity.current) { (12 / fontScale).sp },
                     style = TextStyle(
@@ -160,6 +163,8 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                         isShowConfirmationWithdrawalDialog.value = true
                     }
                     CustomDivider(color = Color.Gray)
+
+                    Spacer(modifier = Modifier.height((screenHeight / 10).dp))
                 }
             }
         }

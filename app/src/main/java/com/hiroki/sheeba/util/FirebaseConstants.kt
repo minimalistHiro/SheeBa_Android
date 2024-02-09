@@ -15,6 +15,9 @@ object FirebaseConstants {
     val isStore = "isStore"
     val isOwner = "isOwner"
 
+    // DBに保存しない
+    val ranking = "ranking"
+
     // messages
     val messages = "messages"
     val fromId = "fromId"

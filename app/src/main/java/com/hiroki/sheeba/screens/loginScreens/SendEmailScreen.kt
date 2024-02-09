@@ -65,6 +65,7 @@ fun SendEmailScreen(viewModel: ViewModel) {
             ) {
                 CustomTopAppBar(
                     title = "新規アカウントを作成",
+                    color = colorResource(id = R.color.sheebaYellow),
                     onButtonClicked = {
                         PostOfficeAppRouter.navigateTo(Screen.LoginScreen)
                     }
@@ -100,6 +101,8 @@ fun SendEmailScreen(viewModel: ViewModel) {
                     },
                     isEnabled = (!viewModel.loginUIState.value.email.isEmpty()),
                 )
+
+                Spacer(modifier = Modifier.height((screenHeight / 10).dp))
             }
         }
         // インジケーター

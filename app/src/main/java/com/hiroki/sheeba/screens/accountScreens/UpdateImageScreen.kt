@@ -67,6 +67,7 @@ fun UpdateImageScreen(viewModel: ViewModel, navController: NavHostController) {
             ) {
                 CustomTopAppBar(
                     title = "トップ画像を変更",
+                    color = colorResource(id = R.color.sheebaYellow),
                     onButtonClicked = {
                         navController.navigate(Setting.accountScreen)
                     }
@@ -77,8 +78,9 @@ fun UpdateImageScreen(viewModel: ViewModel, navController: NavHostController) {
                 // トップ画像
                 CustomImagePicker(
                     size = 240,
-                    model = if(imageUri == null) viewModel.currentUser.value.profileImageUrl else imageUri,
-                    conditions = ((viewModel.currentUser.value.profileImageUrl != "") || (imageUri != null))) {
+                    model = if(imageUri == null) viewModel.currentUser.value?.profileImageUrl else imageUri,
+                    isAlpha = false,
+                    conditions = ((!viewModel.currentUser.value?.profileImageUrl.isNullOrEmpty()) || (imageUri != null))) {
                     photoPickerLauncher.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )

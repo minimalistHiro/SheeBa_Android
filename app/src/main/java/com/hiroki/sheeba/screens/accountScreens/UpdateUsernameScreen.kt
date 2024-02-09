@@ -57,6 +57,7 @@ fun UpdateUsernameScreen(viewModel: ViewModel, navController: NavHostController)
             ) {
                 CustomTopAppBar(
                     title = "ユーザー名を変更",
+                    color = colorResource(id = R.color.sheebaYellow),
                     onButtonClicked = {
                         navController.navigate(Setting.accountScreen)
                     }
@@ -83,18 +84,20 @@ fun UpdateUsernameScreen(viewModel: ViewModel, navController: NavHostController)
                             FirebaseConstants.username to viewModel.signUpUIState.value.username,
                         )
 
-                        FirebaseFirestore
-                            .getInstance()
-                            .collection(FirebaseConstants.users)
-                            .document(viewModel.currentUser.value.uid)
-                            .update(userData)
-                            .addOnSuccessListener {
-                                isShowSuccessUpdateDialog.value = true
-                                viewModel.progress.value = false
-                            }
-                            .addOnFailureListener {
-                                viewModel.handleError(title = "", text = Setting.failureUpdateUser, exception = it)
-                            }
+                        viewModel.currentUser.value?.let {
+                            FirebaseFirestore
+                                .getInstance()
+                                .collection(FirebaseConstants.users)
+                                .document(it.uid)
+                                .update(userData)
+                                .addOnSuccessListener {
+                                    isShowSuccessUpdateDialog.value = true
+                                    viewModel.progress.value = false
+                                }
+                                .addOnFailureListener {
+                                    viewModel.handleError(title = "", text = Setting.failureUpdateUser, exception = it)
+                                }
+                        }
                     },
 //                    isEnabled = viewModel.signUpUsernamePassed.value
                     isEnabled = (!viewModel.signUpUIState.value.username.isEmpty())

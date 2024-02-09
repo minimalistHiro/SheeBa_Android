@@ -54,6 +54,7 @@ fun LoginScreen(viewModel: ViewModel) {
             ) {
                 CustomTopAppBar(
                     title = "ログイン",
+                    color = colorResource(id = R.color.sheebaYellow),
                     onButtonClicked = {
                         PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
                     }
@@ -97,6 +98,8 @@ fun LoginScreen(viewModel: ViewModel) {
                     },
                     color = Color.Blue
                 )
+
+                Spacer(modifier = Modifier.height((screenHeight / 10).dp))
             }
         }
         // インジケーター

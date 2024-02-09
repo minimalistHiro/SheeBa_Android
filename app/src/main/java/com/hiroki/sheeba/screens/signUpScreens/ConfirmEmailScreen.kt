@@ -63,6 +63,7 @@ fun ConfirmEmailScreen(viewModel: ViewModel) {
             ) {
                 CustomTopAppBar(
                     title = "新規アカウントを作成",
+                    color = colorResource(id = R.color.sheebaYellow),
                     onButtonClicked = {
                         isShowInvalidLinkCautionDialog.value = true
                     }

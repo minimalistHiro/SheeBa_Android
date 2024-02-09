@@ -43,9 +43,12 @@ class ViewModel: ViewModel() {
 
     // DB
 //    val users: StateFlow<List<ChatUser>> = _users.asStateFlow()
-    var currentUser = mutableStateOf(ChatUser())                                        // 現在のユーザー情報
+    var currentUser: MutableState<ChatUser?> = mutableStateOf(null)             // 現在のユーザー情報
     var chatUser: MutableState<ChatUser?> = mutableStateOf(null)                // 特定のユーザー情報
-    var storePoints = mutableListOf<StorePoint>()                                       // 全店舗ポイント情報
+    var allUsers = mutableListOf<ChatUser?>()                                           // 全ユーザー情報
+    var storeUsers = mutableListOf<ChatUser?>()                                         // 全店舗ユーザー情報
+    var rankMoneyUsers = mutableListOf<ChatUser?>()                                     // ポイント数上位%位までのユーザー情報
+    var storePoints = mutableListOf<StorePoint?>()                                      // 全店舗ポイント情報
     var storePoint: MutableState<StorePoint?> = mutableStateOf(null)            // 特定の店舗ポイント情報
 
     // ダイアログ
@@ -271,8 +274,7 @@ class ViewModel: ViewModel() {
         progress.value = true
 
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
-            println(Setting.failureFetchUID)
-            progress.value = false
+            handleError(title = "", text = Setting.failureFetchUID, exception = null)
             return
         }
 
@@ -286,13 +288,19 @@ class ViewModel: ViewModel() {
                     document.toObject(ChatUser::class.java)?.let {
                         currentUser = mutableStateOf(it)
                     }
-                    // 初回特典アラート表示
-                    if(!currentUser.value.isFirstLogin && !currentUser.value.isStore) {
-                        handleAlert(title = "", text = "初回登録特典として\n${Setting.newRegistrationBenefits}ptプレゼント！")
-                        val data = hashMapOf<String, Any>(
-                            FirebaseConstants.isFirstLogin to true,
-                        )
-                        updateUser(document = currentUser.value.uid, data = data)
+
+                    val currentUser = currentUser.value?.let {
+                        // 初回特典アラート表示
+                        if (!it.isFirstLogin && !it.isStore) {
+                            handleAlert(
+                                title = "",
+                                text = "初回登録特典として\n${Setting.newRegistrationBenefits}ptプレゼント！"
+                            )
+                            val data = hashMapOf<String, Any>(
+                                FirebaseConstants.isFirstLogin to true,
+                            )
+                            updateUser(document = uid, data = data)
+                        }
                     }
                 } else {
                     handleError(title = "", text = Setting.failureFetchUser, exception = null)
@@ -331,6 +339,93 @@ class ViewModel: ViewModel() {
     }
 
     /**
+     * 全ユーザーを取得
+     *
+     * @return なし
+     */
+    fun fetchAllUser() {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.users)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(ChatUser::class.java)?.let {
+                        if(!it.isStore || !it.money.isNullOrEmpty()) {
+                            allUsers.add(it)
+                        }
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchUser, exception = exception)
+            }
+    }
+
+    /**
+     * 全ユーザーをポイントが高い順に並べて取得
+     *
+     * @return なし
+     */
+    fun fetchAllUsersOrderByMoney() {
+        progress.value = true
+        allUsers.clear()
+        rankMoneyUsers.clear()
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.users)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(ChatUser::class.java)?.let {
+                        if(!it.isStore || !it.money.isNullOrEmpty()) {
+                            allUsers.add(it)
+                        }
+                    }
+                }
+
+                // ポイントが高い順に並び替える。
+                val sortUsers = allUsers.sortedByDescending {
+                    it?.money?.toInt()
+                }
+
+                var previousMoney = -1          // 一つ上位のポイント数
+                var count = 0                   // 順位
+
+                for(user in sortUsers) {
+                    user?.let { user ->
+                        user.money.toInt().let { money ->
+                            // オーナーアカウント以外
+                            if(!user.isOwner) {
+                                // 5位以内であれば、ランキングに加える
+                                if(count < 5) {
+                                    // ポイント数に変更があったら、順位を一つ変えるためカウント数を一つ加える。
+                                    if(money != previousMoney) {
+                                        count += 1
+                                    }
+                                    // データを上位5位までのユーザーに追加する。
+                                    val data = ChatUser(
+                                        username = user.username,
+                                        profileImageUrl = user.profileImageUrl,
+                                        money = user.money,
+                                        ranking = "${count}")
+                                    rankMoneyUsers.add(data)
+
+                                    previousMoney = money
+                                }
+                            }
+                        }
+                    }
+                }
+                progress.value = false
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchUser, exception = exception)
+            }
+    }
+
+    /**
      * UIDに一致する店舗ポイント情報を取得
      *
      * @param document1 ドキュメント1
@@ -365,6 +460,9 @@ class ViewModel: ViewModel() {
      * @return なし
      */
     fun fetchStorePoints() {
+        progress.value = true
+        storePoints.clear()
+
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
             return
         }
@@ -381,9 +479,41 @@ class ViewModel: ViewModel() {
                         storePoints.add(it)
                     }
                 }
+                fetchAllStoreUsers()
             }
             .addOnFailureListener { exception ->
                 handleError(title = "", text = Setting.failureFetchStorePoint, exception = exception)
+            }
+    }
+
+    /**
+     * 全店舗ユーザーを取得
+     *
+     * @return なし
+     */
+    fun fetchAllStoreUsers() {
+        storeUsers.clear()
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.users)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(ChatUser::class.java)?.let {
+                        if(it.isStore) {
+                            storeUsers.add(it)
+                        }
+                    }
+                }
+                // 番号順に並び変える。
+                storeUsers.sortBy {
+                    it?.no
+                }
+                progress.value = false
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchUser, exception = exception)
             }
     }
 
@@ -1012,6 +1142,42 @@ class ViewModel: ViewModel() {
     }
 
     /**
+     * 店舗ポイント情報が本日取得済みか否かを判断
+     *
+     * @param user ユーザー
+     * @return 全店舗ユーザーの中に今日取得した店舗ポイント情報を確保していた場合True、そうでない場合false。
+     */
+    fun isGetStorePointToday(user: ChatUser): Boolean {
+        for (storePoint in storePoints) {
+            // 全店舗ユーザーの中に今日取得した店舗ポイント情報を確保していた場合True。
+            if (storePoint != null) {
+                if (user.uid == storePoint.uid && storePoint.date == dateFormat(LocalDate.now())) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    /**
+     * 本日取得済みの店舗ポイント情報数をカウント
+     *
+     * @return 本日取得済みの店舗ポイント情報数
+     */
+    fun countGetStorePointToday(): Int {
+        var count: Int = 0
+
+        for (storePoint in storePoints) {
+            if (storePoint != null) {
+                if (storePoint.date == dateFormat(LocalDate.now())) {
+                    count += 1
+                }
+            }
+        }
+        return count
+    }
+
+    /**
      * QRコード読み取り処理
      *
      * @param chatUserUid 読み取ったQRコードのUID
@@ -1019,7 +1185,7 @@ class ViewModel: ViewModel() {
      */
     private fun handleScan(chatUserUid: String) {
         // 同アカウントのQRコードを読み取ってしまった場合、エラーを発動。
-        if(currentUser.value.uid == chatUserUid) {
+        if(currentUser.value?.uid == chatUserUid) {
             isQrCodeScanError.value = true
             return
         }
@@ -1047,27 +1213,29 @@ class ViewModel: ViewModel() {
                     }
                     // スキャンしたQRコードからUIDを取得できた場合、店舗ポイント情報を取得。
                     if(chatUser.value?.uid != "") {
-                        // 店舗ポイント情報を取得
-                        FirebaseFirestore
-                            .getInstance()
-                            .collection(FirebaseConstants.storePoints)
-                            .document(currentUser.value.uid)
-                            .collection(FirebaseConstants.user)
-                            .document(chatUserUid)
-                            .get()
-                            .addOnSuccessListener { document ->
-                                if (document != null) {
-                                    document.toObject(StorePoint::class.java)?.let {
-                                        storePoint = mutableStateOf(it)
+                        currentUser.value?.let {
+                            // 店舗ポイント情報を取得
+                            FirebaseFirestore
+                                .getInstance()
+                                .collection(FirebaseConstants.storePoints)
+                                .document(it.uid)
+                                .collection(FirebaseConstants.user)
+                                .document(chatUserUid)
+                                .get()
+                                .addOnSuccessListener { document ->
+                                    if (document != null) {
+                                        document.toObject(StorePoint::class.java)?.let {
+                                            storePoint = mutableStateOf(it)
+                                        }
+                                        divideScanProcess()
+                                    } else {
+                                        handleError(title = "", text = Setting.failureFetchStorePoint, exception = null)
                                     }
-                                    divideScanProcess()
-                                } else {
-                                    handleError(title = "", text = Setting.failureFetchStorePoint, exception = null)
                                 }
-                            }
-                            .addOnFailureListener {
-                                handleError(title = "", text = Setting.failureFetchStorePoint, exception = it)
-                            }
+                                .addOnFailureListener {
+                                    handleError(title = "", text = Setting.failureFetchStorePoint, exception = it)
+                                }
+                        }
                     } else {
                         // スキャンしたQRコードからUIDを取得できなかった場合、スキャンエラー画面を表示する。
                         isQrCodeScanError.value = true
@@ -1134,17 +1302,19 @@ class ViewModel: ViewModel() {
      * @return なし
      */
     private fun handleGetPointFromStore() {
-        val intCurrentUserMoney = currentUser.value.money.toInt()
+        val intCurrentUserMoney = currentUser.value?.money?.toInt()
         val intGetPoint = getPoint.value.toInt()
 
         // 残高に取得ポイントを足す
-        val calculatedCurrentUserMoney = intCurrentUserMoney + intGetPoint
+        val calculatedCurrentUserMoney = intCurrentUserMoney?.plus(intGetPoint)
 
         // 自身のユーザー情報を更新
         val userData = hashMapOf<String, Any>(
             FirebaseConstants.money to calculatedCurrentUserMoney.toString(),
         )
-        updateUser(document = currentUser.value.uid, data = userData)
+        currentUser.value?.let {
+            updateUser(document = it.uid, data = userData)
+        }
 
         // 店舗ポイント情報を更新
         val storePointData = hashMapOf<String, Any>(
@@ -1156,12 +1326,14 @@ class ViewModel: ViewModel() {
             FirebaseConstants.date to dateFormat(LocalDate.now())
         )
 
-        chatUser.value?.let {
-            persistStorePoint(
-                document1 = currentUser.value.uid,
-                document2 = it.uid,
-                data = storePointData
-            )
+        chatUser.value?.let { chatUser ->
+            currentUser.value?.let { currentUser ->
+                persistStorePoint(
+                    document1 = currentUser.uid,
+                    document2 = chatUser.uid,
+                    data = storePointData
+                )
+            }
         }
     }
 
@@ -1173,19 +1345,21 @@ class ViewModel: ViewModel() {
     fun handleSendPoint() {
         chatUser.value?.let {
             val chatUserMoney = it.money.toInt()
-            val currentUserMoney = currentUser.value.money.toInt()
+            val currentUserMoney = currentUser.value?.money?.toInt()
             val sendPayText = sendPayText.value.toInt()
 
             // TODO: -  互いに友達登録していない場合、新規友達登録をする。
 
             // 各ユーザーの残高を計算
             val calculatedChatUserMoney = chatUserMoney + sendPayText
-            val calculatedCurrentUserMoney = currentUserMoney - sendPayText
+            val calculatedCurrentUserMoney = currentUserMoney?.minus(sendPayText)
 
             // 各ユーザーの残高が0を下回る場合、アラートを発動
-            if((calculatedChatUserMoney < 0) || (calculatedCurrentUserMoney < 0)) {
-                handleError(title = "", text = "入力数値が残ポイントを超えています。", exception = null)
-                return
+            if (calculatedCurrentUserMoney != null) {
+                if((calculatedChatUserMoney < 0) || (calculatedCurrentUserMoney < 0)) {
+                    handleError(title = "", text = "入力数値が残ポイントを超えています。", exception = null)
+                    return
+                }
             }
 
             // 送ポイント相手のデータを更新
@@ -1198,7 +1372,9 @@ class ViewModel: ViewModel() {
             val userData = hashMapOf<String, Any>(
                 FirebaseConstants.money to calculatedCurrentUserMoney.toString(),
             )
-            updateUser(document = currentUser.value.uid, data = userData)
+            currentUser.value?.let {
+                updateUser(document = it.uid, data = userData)
+            }
 
             PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
         }

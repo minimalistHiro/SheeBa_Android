@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -44,7 +46,8 @@ fun GetPointScreen(viewModel: ViewModel) {
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White),
+                .background(Color.White)
+                .verticalScroll(rememberScrollState()),
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -57,7 +60,8 @@ fun GetPointScreen(viewModel: ViewModel) {
                     CustomImagePicker(
                         size = 120,
                         model = viewModel.chatUser.value?.profileImageUrl,
-                        conditions = (viewModel.chatUser.value?.profileImageUrl != "" && viewModel.chatUser.value != null)) {}
+                        isAlpha = false,
+                        conditions = (!viewModel.chatUser.value?.profileImageUrl.isNullOrEmpty() && viewModel.chatUser.value != null)) {}
                 }
 
                 Spacer(modifier = Modifier.height(15.dp))
@@ -159,6 +163,8 @@ fun GetPointScreen(viewModel: ViewModel) {
                     },
                     isEnabled = true
                 )
+
+                Spacer(modifier = Modifier.height((screenHeight / 10).dp))
             }
         }
     }

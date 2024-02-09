@@ -27,34 +27,20 @@ import com.hiroki.sheeba.R
 
 @ExperimentalMaterial3Api
 @Composable
-fun CustomIcon(size: Int) {
-//    Box(contentAlignment = Alignment.Center) {
+fun CustomIcon(size: Int, isAlpha: Boolean) {
         Icon(
             modifier = Modifier
                 .widthIn((size / 2).dp)
                 .heightIn((size / 2).dp),
             painter = painterResource(id = R.drawable.baseline_person_24),
             contentDescription = "",
-            tint = Color.Black,
+            tint = Color.Black.copy(alpha = if(isAlpha) 0.3F else 1.0F),
         )
-//        Text(
-//            text = "変更",
-//            fontSize = with(LocalDensity.current) { (12 / fontScale).sp },
-//            style = TextStyle(
-//                fontSize = 12.sp,
-//                fontWeight = FontWeight.Bold,
-//                fontStyle = FontStyle.Normal,
-//            ),
-//            textAlign = TextAlign.Center,
-//            color = Color.White
-//        )
-//    }
 }
 
 @ExperimentalMaterial3Api
 @Composable
-fun CustomAsyncImage(size: Int, model: Any?) {
-//    Box(contentAlignment = Alignment.Center) {
+fun CustomAsyncImage(size: Int, model: Any?, isAlpha: Boolean) {
         AsyncImage(
             model = model,
             contentDescription = null,
@@ -63,28 +49,17 @@ fun CustomAsyncImage(size: Int, model: Any?) {
                 .height(size.dp)
                 .clip(CircleShape),
             contentScale = ContentScale.Crop,
+            alpha = if(isAlpha) 0.3F else 1.0F,
         )
-//        Text(
-//            text = "変更",
-//            fontSize = with(LocalDensity.current) { (12 / fontScale).sp },
-//            style = TextStyle(
-//                fontSize = 12.sp,
-//                fontWeight = FontWeight.Bold,
-//                fontStyle = FontStyle.Normal,
-//            ),
-//            textAlign = TextAlign.Center,
-//            color = Color.White
-//        )
-//    }
 }
 
 @ExperimentalMaterial3Api
 @Composable
-fun CustomImagePicker(size: Int, model: Any?, conditions: Boolean, onButtonClicked: () -> Unit) {
+fun CustomImagePicker(size: Int, model: Any?, conditions: Boolean, isAlpha: Boolean, onButtonClicked: () -> Unit) {
     Box(
         modifier = Modifier
             .size(size.dp)
-            .border(2.dp, Color.Black, CircleShape)
+            .border(2.dp, if(isAlpha) Color.Gray else Color.Black, CircleShape)
             .clip(CircleShape)
             .background(Color(R.color.chatLogBackground))
     ) {
@@ -97,23 +72,11 @@ fun CustomImagePicker(size: Int, model: Any?, conditions: Boolean, onButtonClick
             },
         ) {
             if(conditions) {
-                CustomAsyncImage(size = size, model = model)
+                CustomAsyncImage(size = size, model = model, isAlpha = isAlpha)
             } else {
-                CustomIcon(size = size)
+                CustomIcon(size = size, isAlpha = isAlpha)
             }
         }
-//        Canvas(
-//            modifier = Modifier
-//                .widthIn(size.dp)
-//                .heightIn(size.dp),
-//        ) {
-//            drawArc(
-//                color = Color.Black,
-//                startAngle = 20F,
-//                sweepAngle = 140F,
-//                useCenter = false,
-//            )
-//        }
     }
 }
 
@@ -136,5 +99,5 @@ fun IconArc(size: Int) {
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfIcon() {
-    CustomIcon(size = 120)
+    CustomIcon(size = 120, isAlpha = false)
 }
