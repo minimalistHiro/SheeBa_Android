@@ -10,10 +10,11 @@ object FirebaseConstants {
     val username = "username"
     val age = "age"
     val address = "address"
-    val isConfirmEmail = "isConfirmEmail"
+//    val isConfirmEmail = "isConfirmEmail"
     val isFirstLogin = "isFirstLogin"
     val isStore = "isStore"
     val isOwner = "isOwner"
+    val os = "os"
 
     // DBに保存しない
     val ranking = "ranking"

@@ -676,10 +676,10 @@ class ViewModel: ViewModel() {
                     }
 
                     // メールアドレス認証済み処理
-                    val data = hashMapOf<String, Any>(
-                        FirebaseConstants.isConfirmEmail to true,
-                    )
-                    updateUser(document = it.uid, data = data)
+//                    val data = hashMapOf<String, Any>(
+//                        FirebaseConstants.isConfirmEmail to true,
+//                    )
+//                    updateUser(document = it.uid, data = data)
                     PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
                 }
 
@@ -917,10 +917,11 @@ class ViewModel: ViewModel() {
             FirebaseConstants.username to username,
             FirebaseConstants.age to age,
             FirebaseConstants.address to address,
-            FirebaseConstants.isConfirmEmail to false,
+//            FirebaseConstants.isConfirmEmail to false,
             FirebaseConstants.isFirstLogin to false,
             FirebaseConstants.isStore to false,
             FirebaseConstants.isOwner to false,
+            FirebaseConstants.os to "Android"
         )
 
         FirebaseFirestore
