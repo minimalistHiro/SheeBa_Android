@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,6 +25,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,9 +44,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.hiroki.sheeba.R
+import com.hiroki.sheeba.model.NotificationModel
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.MenuButton
+import com.hiroki.sheeba.util.FirebaseConstants
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
@@ -53,10 +61,36 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
+    var isContainNotReadNotification = remember {
+        mutableStateOf(false)
+    }                                   // 外部リンクURL
 
     // Screen開示処理
     viewModel.init()
     viewModel.fetchCurrentUser()
+
+    // 未読のお知らせを確認する。
+    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run { return }
+    FirebaseFirestore
+        .getInstance()
+        .collection(FirebaseConstants.notifications)
+        .document(uid)
+        .collection(FirebaseConstants.notification)
+        .orderBy(FirebaseConstants.timestamp, Query.Direction.DESCENDING)
+        .get()
+        .addOnSuccessListener { documents ->
+            for(document in documents) {
+                document.toObject(NotificationModel::class.java)?.let {
+                    // 未読があった場合、お知らせに赤いバッジをつける
+                    if(!it.isRead) {
+                        isContainNotReadNotification.value = true
+                    }
+                }
+            }
+        }
+        .addOnFailureListener { exception ->
+            viewModel.handleError(title = "", text = Setting.failureFetchNotification, exception = exception)
+        }
 
     Box(modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center) {
@@ -75,18 +109,50 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
+                    horizontalArrangement = Arrangement.Start,
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.cleartitle),
                         contentDescription = "",
                         modifier = Modifier
                             .padding(horizontal = 20.dp)
-                            .size(width = 150.dp, height = 60.dp)
+                            .size(width = 150.dp, height = 60.dp),
                     )
-                }
 
-//                Spacer(modifier = Modifier.height((screenHeight / 20).dp))
+                    // お知らせ
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 10.dp)
+                            .padding(end = 10.dp),
+                        contentAlignment = Alignment.TopEnd
+                    ) {
+                        IconButton(
+                            modifier = Modifier
+                                .size(30.dp),
+                            onClick = {
+                                viewModel.fetchNotifications()
+                                navController.navigate(Setting.notificationListScreen)
+                            },
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_notifications_24),
+                                contentDescription = "",
+                                tint = Color.Black,
+                            )
+                        }
+
+                        // バッジ
+                        if(isContainNotReadNotification.value) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Red),
+                            )
+                        }
+                    }
+                }
 
                 // カードスクリーン
                 Box(

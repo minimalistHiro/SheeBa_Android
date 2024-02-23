@@ -184,7 +184,6 @@ fun MenuButton(text: String, painter: Painter, onButtonClicked: () -> Unit) {
                 painter = painter,
                 contentDescription = "",
                 tint = Color.White,
-
             )
         }
         Text(

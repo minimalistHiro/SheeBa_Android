@@ -40,6 +40,10 @@ import com.hiroki.sheeba.screens.components.CustomListNav
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
+enum class ExternalLink {
+    PrivacyPolicy,
+    OfficialSite,
+}
 @ExperimentalMaterial3Api
 @Composable
 fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavHostController) {
@@ -58,7 +62,10 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
     var isShowPrivacyPolicyDialog = remember {
         mutableStateOf(false)
     }                                   // プライバシーポリシー表示有無
-    val uriHandler = LocalUriHandler.current            // URL開示用変数
+    var externalLink = remember {
+        mutableStateOf(ExternalLink.OfficialSite)
+    }                                   // 外部リンクURL
+    val uriHandler = LocalUriHandler.current                                // URL開示用変数
 
     // Screen開示処理
     viewModel.init()
@@ -146,8 +153,16 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                     }
                     CustomDivider(color = Color.Gray)
 
+                    // 公式サイト
+                    CustomListNav(text = "公式サイト", color = Color.Black) {
+                        externalLink.value = ExternalLink.OfficialSite
+                        isShowPrivacyPolicyDialog.value = true
+                    }
+                    CustomDivider(color = Color.Gray)
+
                     // プライバシーポリシー
                     CustomListNav(text = "プライバシーポリシー", color = Color.Black) {
+                        externalLink.value = ExternalLink.PrivacyPolicy
                         isShowPrivacyPolicyDialog.value = true
                     }
                     CustomDivider(color = Color.Gray)
@@ -202,7 +217,12 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                 okText = "はい",
                 onOkButtonClicked = {
                     isShowPrivacyPolicyDialog.value = false
-                    uriHandler.openUri(Setting.privacyPolicyURL)
+
+                    // 飛ぶ外部リンクを分ける
+                    when(externalLink.value) {
+                        ExternalLink.OfficialSite -> uriHandler.openUri(Setting.officialSiteURL)
+                        ExternalLink.PrivacyPolicy -> uriHandler.openUri(Setting.privacyPolicyURL)
+                    }
                 },
                 onCancelButtonClicked = {
                     isShowPrivacyPolicyDialog.value = false

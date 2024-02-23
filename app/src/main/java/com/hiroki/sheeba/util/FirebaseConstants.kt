@@ -15,6 +15,7 @@ object FirebaseConstants {
     val isStore = "isStore"
     val isOwner = "isOwner"
     val os = "os"
+    val isEnableScan = "isEnableScan"
 
     // DBに保存しない
     val ranking = "ranking"
@@ -41,4 +42,11 @@ object FirebaseConstants {
     val storePoints = "storePoints"
     val getPoint = "getPoint"
     val date = "date"
+
+    // notifications
+    val notifications = "notifications"
+    val notification = "notification"
+    val isRead = "isRead"
+    val imageUrl = "imageUrl"
+    val url = "url"
 }

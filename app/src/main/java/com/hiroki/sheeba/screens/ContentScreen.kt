@@ -34,6 +34,8 @@ import com.hiroki.sheeba.screens.cameraScreens.QrCodeOverlay
 import com.hiroki.sheeba.screens.homeScreens.HomeScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.RankingScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.TodaysGetPointScreen
+import com.hiroki.sheeba.screens.homeScreens.notificationScreens.NotificationDetailScreen
+import com.hiroki.sheeba.screens.homeScreens.notificationScreens.NotificationListScreen
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
@@ -130,6 +132,12 @@ fun ContentScreen(viewModel: ViewModel) {
                 }
                 composable(items[2].navTitle) {
                     AccountScreen(viewModel = viewModel, padding = padding, navController = navController)
+                }
+                composable(Setting.notificationListScreen) {
+                    NotificationListScreen(viewModel = viewModel, navController = navController)
+                }
+                composable(Setting.notificationDetailScreen) {
+                    NotificationDetailScreen(viewModel = viewModel, navController = navController, notification = viewModel.notification)
                 }
                 composable(Setting.rankingScreen) {
                     RankingScreen(viewModel = viewModel, navController = navController)

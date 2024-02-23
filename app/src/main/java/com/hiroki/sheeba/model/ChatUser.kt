@@ -18,7 +18,13 @@ data class ChatUser (
     var isOwner: Boolean = false,
     var os: String = "Android",
     var ranking: String = "",
+
+    // 店舗ユーザー
     var no: Int = 0,
+    @field:JvmField
+    var isEnableScan: Boolean = false,
+
+    var getPoint: Int = 0,
 )
 
 object ChatUserItem {

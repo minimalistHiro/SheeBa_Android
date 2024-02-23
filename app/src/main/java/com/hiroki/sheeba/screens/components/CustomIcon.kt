@@ -41,16 +41,16 @@ fun CustomIcon(size: Int, isAlpha: Boolean) {
 @ExperimentalMaterial3Api
 @Composable
 fun CustomAsyncImage(size: Int, model: Any?, isAlpha: Boolean) {
-        AsyncImage(
-            model = model,
-            contentDescription = null,
-            modifier = Modifier
-                .width(size.dp)
-                .height(size.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop,
-            alpha = if(isAlpha) 0.3F else 1.0F,
-        )
+    AsyncImage(
+        model = model,
+        contentDescription = null,
+        modifier = Modifier
+            .width(size.dp)
+            .height(size.dp)
+            .clip(CircleShape),
+        contentScale = ContentScale.Crop,
+        alpha = if(isAlpha) 0.3F else 1.0F,
+    )
 }
 
 @ExperimentalMaterial3Api

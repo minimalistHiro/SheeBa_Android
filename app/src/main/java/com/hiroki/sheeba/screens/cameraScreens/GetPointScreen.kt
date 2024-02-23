@@ -66,16 +66,18 @@ fun GetPointScreen(viewModel: ViewModel) {
 
                 Spacer(modifier = Modifier.height(15.dp))
 
-                Text(
-                    text = viewModel.chatUser.value?.username?: "エラー",
-                    fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontStyle = FontStyle.Normal,
-                    ),
-                    textAlign = TextAlign.Center,
-                )
+                if(!viewModel.isQrCodeScanError.value) {
+                    Text(
+                        text = viewModel.chatUser.value?.username?: "エラー",
+                        fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
+                        style = TextStyle(
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Normal,
+                        ),
+                        textAlign = TextAlign.Center,
+                    )
+                }
 
                 Spacer(modifier = Modifier.height((screenHeight / 10).dp))
 
@@ -107,7 +109,7 @@ fun GetPointScreen(viewModel: ViewModel) {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = viewModel.getPoint.value,
+                            text = viewModel.chatUser.value?.getPoint.toString(),
                             fontSize = with(LocalDensity.current) { (70 / fontScale).sp },
                             style = TextStyle(
                                 fontSize = 70.sp,

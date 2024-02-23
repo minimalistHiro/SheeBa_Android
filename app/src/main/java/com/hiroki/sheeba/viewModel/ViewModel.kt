@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.hiroki.sheeba.QrCodeAnalyzer
@@ -20,13 +21,16 @@ import com.hiroki.sheeba.data.LoginUIState
 import com.hiroki.sheeba.data.SignUpUIEvent
 import com.hiroki.sheeba.data.SignUpUIState
 import com.hiroki.sheeba.model.ChatUser
+import com.hiroki.sheeba.model.NotificationModel
 import com.hiroki.sheeba.model.StorePoint
 import com.hiroki.sheeba.util.FirebaseConstants
 import com.hiroki.sheeba.util.Setting
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Date
 import java.util.concurrent.Executors
 
 class ViewModel: ViewModel() {
@@ -40,16 +44,19 @@ class ViewModel: ViewModel() {
     var loginAllValidationPassed = mutableStateOf(false)
     var progress = mutableStateOf(false)
     var isHandleLoginProcess = mutableStateOf(false)                        // ログイン済みか否か
+//    var isContainNotReadNotification = mutableStateOf(false)                // 未読のお知らせの有無
 
     // DB
 //    val users: StateFlow<List<ChatUser>> = _users.asStateFlow()
     var currentUser: MutableState<ChatUser?> = mutableStateOf(null)             // 現在のユーザー情報
     var chatUser: MutableState<ChatUser?> = mutableStateOf(null)                // 特定のユーザー情報
-    var allUsers = mutableListOf<ChatUser?>()                                           // 全ユーザー情報
-    var storeUsers = mutableListOf<ChatUser?>()                                         // 全店舗ユーザー情報
-    var rankMoneyUsers = mutableListOf<ChatUser?>()                                     // ポイント数上位%位までのユーザー情報
-    var storePoints = mutableListOf<StorePoint?>()                                      // 全店舗ポイント情報
+    var allUsers = mutableListOf<ChatUser?>()                                       // 全ユーザー情報
+    var storeUsers = mutableListOf<ChatUser?>()                                     // 全店舗ユーザー情報
+    var rankMoneyUsers = mutableListOf<ChatUser?>()                                 // ポイント数上位%位までのユーザー情報
+    var storePoints = mutableListOf<StorePoint?>()                                  // 全店舗ポイント情報
     var storePoint: MutableState<StorePoint?> = mutableStateOf(null)            // 特定の店舗ポイント情報
+    var notification: NotificationModel? = null                                     // 特定のお知らせ
+    var notifications = mutableListOf<NotificationModel?>()                         // 全お知らせ
 
     // ダイアログ
     var isShowDialog = mutableStateOf(false)                    // ダイアログの表示有無
@@ -62,7 +69,7 @@ class ViewModel: ViewModel() {
     // キーボード関連
     var sendPayText = mutableStateOf("0")                       // 送金テキスト
     var isTappedAC = mutableStateOf(false)                      // ACボタンがタップされたか否か
-    var getPoint = mutableStateOf(Setting.getPointFromStore)        // 獲得ポイント
+//    var getPoint = mutableStateOf(Setting.getPointFromStore)        // 獲得ポイント
 
     // QRコード関連
     // ImageAnalyzer.Analyzerを継承したQrCodeAnalyzerを内包したUseCaseを作成
@@ -398,8 +405,8 @@ class ViewModel: ViewModel() {
                         user.money.toInt().let { money ->
                             // オーナーアカウント以外
                             if(!user.isOwner) {
-                                // 5位以内であれば、ランキングに加える
-                                if(count < 5) {
+                                // 指定順位以内であれば、ランキングに加える
+                                if(count < Setting.rankingCount) {
                                     // ポイント数に変更があったら、順位を一つ変えるためカウント数を一つ加える。
                                     if(money != previousMoney) {
                                         count += 1
@@ -493,6 +500,7 @@ class ViewModel: ViewModel() {
      */
     fun fetchAllStoreUsers() {
         storeUsers.clear()
+        var storeUsersContainNotEnableScan = mutableListOf<ChatUser?>()                     // スキャン不可能を含めた店舗ユーザー
 
         FirebaseFirestore
             .getInstance()
@@ -501,11 +509,20 @@ class ViewModel: ViewModel() {
             .addOnSuccessListener { documents ->
                 for(document in documents) {
                     document.toObject(ChatUser::class.java)?.let {
-                        if(it.isStore) {
+                        if(it.isStore && it.isEnableScan) {
                             storeUsers.add(it)
                         }
                     }
                 }
+                // スキャン可能ユーザーのみ加える
+//                for(user in storeUsersContainNotEnableScan) {
+//                    if (user != null) {
+//                        if(!user.isEnableScan) {
+//                            storeUsers.add(user)
+//                        }
+//                    }
+//                }
+
                 // 番号順に並び変える。
                 storeUsers.sortBy {
                     it?.no
@@ -514,6 +531,44 @@ class ViewModel: ViewModel() {
             }
             .addOnFailureListener { exception ->
                 handleError(title = "", text = Setting.failureFetchUser, exception = exception)
+            }
+    }
+
+    /**
+     * 全お知らせを取得
+     *
+     * @return なし
+     */
+    fun fetchNotifications() {
+        progress.value = true
+        notifications.clear()
+//        isContainNotReadNotification.value = false
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            return
+        }
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.notifications)
+            .document(uid)
+            .collection(FirebaseConstants.notification)
+            .orderBy(FirebaseConstants.timestamp, Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(NotificationModel::class.java)?.let {
+                        notifications.add(it)
+                        // 未読があった場合、お知らせに赤いバッジをつける
+//                        if(!it.isRead) {
+//                            isContainNotReadNotification.value = true
+//                        }
+                    }
+                }
+                progress.value = false
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchNotification, exception = exception)
             }
     }
 
@@ -1021,6 +1076,27 @@ class ViewModel: ViewModel() {
     }
 
     /**
+     * お知らせを更新
+     *
+     * @param document1 ドキュメント1
+     * @param document2 ドキュメント2
+     * @param data データ
+     * @return なし
+     */
+    fun updateNotification(document1: String, document2: String, data: HashMap<String, Any>) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.notifications)
+            .document(document1)
+            .collection(FirebaseConstants.notification)
+            .document(document2)
+            .update(data)
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureUpdateNotification, exception = it)
+            }
+    }
+
+    /**
      * 画像を更新
      *
      * @param uid UID
@@ -1263,26 +1339,32 @@ class ViewModel: ViewModel() {
     private fun divideScanProcess() {
         // 店舗ポイントアカウントの場合
         if(chatUser.value?.isStore == true) {
-            // 店舗ポイント情報がある場合。
-            storePoint.value?.let {
-                // uidの取得がうまくいかない場合があるので、ここでも条件分岐をする。
-                if(it.uid == "" || it.uid == "D") {
-                    handleGetPointFromStore()
-                    PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
-                } else {
-                    // 店舗QRコードが同日に2度以上のスキャンでない場合
-                    if(it.date != dateFormat(LocalDate.now())) {
+            // スキャン可能である場合。
+            if(chatUser.value?.isEnableScan == true) {
+                // 店舗ポイント情報がある場合。
+                storePoint.value?.let {
+                    // uidの取得がうまくいかない場合があるので、ここでも条件分岐をする。
+                    if(it.uid == "" || it.uid == "D") {
                         handleGetPointFromStore()
                         PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
                     } else {
-                        isSameStoreScanError.value = true
-                        PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                        // 店舗QRコードが同日に2度以上のスキャンでない場合
+                        if(it.date != dateFormat(LocalDate.now())) {
+                            handleGetPointFromStore()
+                            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                        } else {
+                            isSameStoreScanError.value = true
+                            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                        }
                     }
                 }
-            }
-            // 店舗ポイント情報がない場合、ポイントを獲得する。
-            if(storePoint.value == null) {
-                handleGetPointFromStore()
+                // 店舗ポイント情報がない場合、ポイントを獲得する。
+                if(storePoint.value == null) {
+                    handleGetPointFromStore()
+                    PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                }
+            } else {
+                isQrCodeScanError.value = true
                 PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
             }
         } else if(chatUser.value?.isStore == false) {
@@ -1304,10 +1386,8 @@ class ViewModel: ViewModel() {
      */
     private fun handleGetPointFromStore() {
         val intCurrentUserMoney = currentUser.value?.money?.toInt()
-        val intGetPoint = getPoint.value.toInt()
-
         // 残高に取得ポイントを足す
-        val calculatedCurrentUserMoney = intCurrentUserMoney?.plus(intGetPoint)
+        var calculatedCurrentUserMoney = chatUser.value?.getPoint?.let { intCurrentUserMoney?.plus(it) }
 
         // 自身のユーザー情報を更新
         val userData = hashMapOf<String, Any>(
@@ -1322,7 +1402,7 @@ class ViewModel: ViewModel() {
             FirebaseConstants.uid to (chatUser.value?.uid ?: ""),
             FirebaseConstants.email to (chatUser.value?.email ?: ""),
             FirebaseConstants.profileImageUrl to (chatUser.value?.profileImageUrl ?: ""),
-            FirebaseConstants.getPoint to getPoint.value,
+            FirebaseConstants.getPoint to (chatUser.value?.getPoint.toString() ?: ""),
             FirebaseConstants.username to (chatUser.value?.username ?: ""),
             FirebaseConstants.date to dateFormat(LocalDate.now())
         )
@@ -1432,6 +1512,18 @@ class ViewModel: ViewModel() {
     fun dateFormat(date: LocalDate): String {
         val formatter = DateTimeFormatter.ofPattern("yyyy年M月dd日")
         val formattedDateTime = date.format(formatter)
+        return formattedDateTime
+    }
+
+    /**
+     * Date型をStringに変換
+     *
+     * @param date 日付
+     * @return なし
+     */
+    fun convertDateToString(date: Date): String {
+        val formatter = SimpleDateFormat("yyyy年M月dd日 HH:mm")
+        val formattedDateTime = formatter.format(date)
         return formattedDateTime
     }
 }

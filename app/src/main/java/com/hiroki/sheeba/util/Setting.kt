@@ -5,18 +5,22 @@ import android.util.Size
 object Setting {
     // キャンペーン値
     val newRegistrationBenefits = "20"              // 新規登録特典。プレゼントポイント
-    val getPointFromStore = "1"                     // 店舗からの取得ポイント
+//    val getPointFromStore = "1"                     // 店舗からの取得ポイント
+    val rankingCount = 10                           // ランキング表示ユーザー
 
     // 各種設定
     val maxNumberOfDigits = 6                       // 最大送金桁数
     val IMAGE_SIZE = Size(1080, 1920)   // 画像の解析サイズ
-    val privacyPolicyURL = "https://www.shibaginzadori.com/?page_id=1070" // プライバシーポリシーURL
+    val privacyPolicyURL = "https://www.shibaginzadori.com/?page_id=1070"   // プライバシーポリシーURL
+    val officialSiteURL = "https://www.shibaginzadori.com/?p=970"           // 公式サイトURL
 
     // Screens
     val entryScreen = "entryScreen"
     val setUpUsernameScreen = "setUpUsernameScreen"
     val setUpEmailScreen = "setUpEmailScreen"
     val homeScreen = "homeScreen"
+    val notificationListScreen = "notificationListScreen"
+    val notificationDetailScreen = "notificationDetailScreen"
     val sendPayScreen = "sendPayScreen"
     val rankingScreen = "rankingScreen"
     val todaysGetPointScreen = "todaysGetPointScreen"
@@ -49,10 +53,12 @@ object Setting {
     val failureFetchUID = "UIDの取得に失敗しました。"
     val failureFetchUser = "ユーザー情報の取得に失敗しました。"
     val failureFetchStorePoint = "店舗ポイント情報の取得に失敗しました。"
+    val failureFetchNotification = "お知らせの取得に失敗しました。"
     val failurePersistUser = "ユーザー情報の保存に失敗しました。"
     val failurePersistStorePoint = "店舗ポイント情報の保存に失敗しました。"
     val failurePersistImage = "画像の保存に失敗しました。"
     val failureUpdateUser = "ユーザー情報の更新に失敗しました。"
+    val failureUpdateNotification = "お知らせの更新に失敗しました。"
     val failureUpdateImage = "画像の更新に失敗しました。"
     val failureDeleteData = "データ削除に失敗しました。"
     val failureDeleteUser = "ユーザー情報の削除に失敗しました。"
