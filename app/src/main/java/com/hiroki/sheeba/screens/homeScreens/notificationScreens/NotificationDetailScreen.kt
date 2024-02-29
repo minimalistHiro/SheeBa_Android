@@ -113,7 +113,6 @@ fun NotificationDetailScreen(viewModel: ViewModel, navController: NavHostControl
                         .fillMaxSize()
                         .padding(horizontal = 15.dp),
                     text = notification?.text ?: "",
-                    fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Normal,

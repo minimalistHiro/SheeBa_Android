@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -68,6 +69,7 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
     // Screen開示処理
     viewModel.init()
     viewModel.fetchCurrentUser()
+    viewModel.fetchAlerts()
 
     // 未読のお知らせを確認する。
     val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run { return }
@@ -106,6 +108,7 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                // トップバー
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -149,6 +152,47 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                                     .size(10.dp)
                                     .clip(CircleShape)
                                     .background(Color.Red),
+                            )
+                        }
+                    }
+                }
+
+                // アラートバー
+                if(viewModel.alertNotification != null) {
+                    Box(
+                        modifier = Modifier
+                            .padding(vertical = 20.dp)
+                            .clip(androidx.compose.ui.graphics.RectangleShape)
+                            .background(Color.Blue)
+                            .fillMaxWidth()
+                            .height(45.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                text = viewModel.alertNotification?.title ?: "",
+                                fontSize = with(LocalDensity.current) { (12 / fontScale).sp },
+                                style = TextStyle(
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontStyle = FontStyle.Normal,
+                                ),
+                                textAlign = TextAlign.Center,
+                                color = Color.White,
+                            )
+
+                            Text(
+                                text = viewModel.alertNotification?.text ?: "",
+                                fontSize = with(LocalDensity.current) { (12 / fontScale).sp },
+                                style = TextStyle(
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    fontStyle = FontStyle.Normal,
+                                ),
+                                textAlign = TextAlign.Center,
+                                color = Color.White,
                             )
                         }
                     }

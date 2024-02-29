@@ -20,6 +20,7 @@ import com.hiroki.sheeba.data.LoginUIEvent
 import com.hiroki.sheeba.data.LoginUIState
 import com.hiroki.sheeba.data.SignUpUIEvent
 import com.hiroki.sheeba.data.SignUpUIState
+import com.hiroki.sheeba.model.AlertNotification
 import com.hiroki.sheeba.model.ChatUser
 import com.hiroki.sheeba.model.NotificationModel
 import com.hiroki.sheeba.model.StorePoint
@@ -55,6 +56,7 @@ class ViewModel: ViewModel() {
     var rankMoneyUsers = mutableListOf<ChatUser?>()                                 // ポイント数上位%位までのユーザー情報
     var storePoints = mutableListOf<StorePoint?>()                                  // 全店舗ポイント情報
     var storePoint: MutableState<StorePoint?> = mutableStateOf(null)            // 特定の店舗ポイント情報
+    var alertNotification: AlertNotification? = null                                // 速報
     var notification: NotificationModel? = null                                     // 特定のお知らせ
     var notifications = mutableListOf<NotificationModel?>()                         // 全お知らせ
 
@@ -531,6 +533,35 @@ class ViewModel: ViewModel() {
             }
             .addOnFailureListener { exception ->
                 handleError(title = "", text = Setting.failureFetchUser, exception = exception)
+            }
+    }
+
+    /**
+     * 速報を取得
+     *
+     * @return なし
+     */
+    fun fetchAlerts() {
+        progress.value = true
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            return
+        }
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.alerts)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(AlertNotification::class.java)?.let {
+                        alertNotification = it
+                    }
+                }
+                progress.value = false
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchNotification, exception = exception)
             }
     }
 

@@ -43,6 +43,9 @@ object FirebaseConstants {
     val getPoint = "getPoint"
     val date = "date"
 
+    // alerts
+    val alerts = "alerts"
+
     // notifications
     val notifications = "notifications"
     val notification = "notification"

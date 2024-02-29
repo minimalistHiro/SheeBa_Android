@@ -12,8 +12,8 @@ android {
         applicationId = "com.hiroki.sheeba"
         minSdk = 29
         targetSdk = 34
-        versionCode = 7
-        versionName = "1.2.1"
+        versionCode = 11
+        versionName = "1.3.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
