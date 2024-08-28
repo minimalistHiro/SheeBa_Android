@@ -12,7 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -32,10 +31,14 @@ import com.hiroki.sheeba.screens.cameraScreens.CameraScreen
 import com.hiroki.sheeba.screens.cameraScreens.ErrorQRCodeOverlay
 import com.hiroki.sheeba.screens.cameraScreens.QrCodeOverlay
 import com.hiroki.sheeba.screens.homeScreens.HomeScreen
+import com.hiroki.sheeba.screens.homeScreens.menuScreens.MoneyTransferScreen
+import com.hiroki.sheeba.screens.homeScreens.menuScreens.QRCodeScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.RankingScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.TodaysGetPointScreen
 import com.hiroki.sheeba.screens.homeScreens.notificationScreens.NotificationDetailScreen
 import com.hiroki.sheeba.screens.homeScreens.notificationScreens.NotificationListScreen
+import com.hiroki.sheeba.screens.mapScreens.MapScreen
+import com.hiroki.sheeba.screens.mapScreens.StoreDetailScreen
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
@@ -43,7 +46,7 @@ import com.hiroki.sheeba.viewModel.ViewModel
 @Composable
 fun ContentScreen(viewModel: ViewModel) {
     val navController = rememberNavController()
-    var selectedTabIndex by remember { mutableStateOf(0) }          // 選択されたタブ番号
+//    var selectedTabIndex by remember { mutableStateOf(0) }          // 選択されたタブ番号
     // ボトムタブ
     val items = listOf(
         BottomNavigationItem(
@@ -53,10 +56,22 @@ fun ContentScreen(viewModel: ViewModel) {
             unselectedIcon = painterResource(id = R.drawable.baseline_home_24),
         ),
         BottomNavigationItem(
+            title = "マップ",
+            navTitle = Setting.mapScreen,
+            selectedIcon = painterResource(id = R.drawable.baseline_location_pin_24),
+            unselectedIcon = painterResource(id = R.drawable.baseline_location_pin_24),
+        ),
+        BottomNavigationItem(
             title = "スキャン",
             navTitle = Setting.cameraScreen,
             selectedIcon = painterResource(id = R.drawable.baseline_qr_code_scanner_24),
             unselectedIcon = painterResource(id = R.drawable.baseline_qr_code_scanner_24),
+        ),
+        BottomNavigationItem(
+            title = "マップ",
+            navTitle = Setting.mapScreen,
+            selectedIcon = painterResource(id = R.drawable.baseline_location_pin_24),
+            unselectedIcon = painterResource(id = R.drawable.baseline_location_pin_24),
         ),
         BottomNavigationItem(
             title = "アカウント",
@@ -122,6 +137,10 @@ fun ContentScreen(viewModel: ViewModel) {
                     HomeScreen(viewModel = viewModel, padding = padding, navController = navController)
                 }
                 composable(items[1].navTitle) {
+//                    MapView(viewModel = viewModel)
+                    MapScreen(viewModel = viewModel, navController = navController)
+                }
+                composable(items[2].navTitle) {
                     CameraScreen(viewModel = viewModel, padding = padding, navController = navController, viewModel.qrCodeAnalyzeUseCase)
                     viewModel.qrCode.value?.let {
                         QrCodeOverlay(qrCode = it)
@@ -130,7 +149,10 @@ fun ContentScreen(viewModel: ViewModel) {
                         ErrorQRCodeOverlay()
                     }
                 }
-                composable(items[2].navTitle) {
+                composable(items[3].navTitle) {
+                    MapScreen(viewModel = viewModel, navController = navController)
+                }
+                composable(items[4].navTitle) {
                     AccountScreen(viewModel = viewModel, padding = padding, navController = navController)
                 }
                 composable(Setting.notificationListScreen) {
@@ -138,6 +160,15 @@ fun ContentScreen(viewModel: ViewModel) {
                 }
                 composable(Setting.notificationDetailScreen) {
                     NotificationDetailScreen(viewModel = viewModel, navController = navController, notification = viewModel.notification)
+                }
+                composable(Setting.moneyTransferScreen) {
+                    MoneyTransferScreen(viewModel = viewModel, navController = navController)
+                }
+                composable(Setting.storeDetailScreen) {
+                    StoreDetailScreen(viewModel = viewModel, navController = navController, storeUser = viewModel.storeUser, nav = viewModel.navStoreDetailScreen)
+                }
+                composable(Setting.qrCodeScreen) {
+                    QRCodeScreen(viewModel = viewModel, navController = navController)
                 }
                 composable(Setting.rankingScreen) {
                     RankingScreen(viewModel = viewModel, navController = navController)

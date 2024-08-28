@@ -23,8 +23,13 @@ data class ChatUser (
     var no: Int = 0,
     @field:JvmField
     var isEnableScan: Boolean = false,
-
     var getPoint: Int = 0,
+    var pointX: String = "",
+    var pointY: String = "",
+    var genre: String = "",
+    var phoneNumber: String = "",
+    var webURL: String = "",
+    var movieURL: String = "",
 )
 
 object ChatUserItem {

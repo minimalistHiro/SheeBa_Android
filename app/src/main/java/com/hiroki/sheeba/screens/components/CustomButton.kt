@@ -174,7 +174,9 @@ fun CustomListNav(text: String, color: Color, onButtonClicked: () -> Unit) {
 
 @Composable
 fun MenuButton(text: String, painter: Painter, onButtonClicked: () -> Unit) {
-    Column(modifier = Modifier.padding(horizontal = 15.dp)) {
+    Column(
+        modifier = Modifier.padding(horizontal = 15.dp),
+        horizontalAlignment = Alignment.CenterHorizontally) {
         IconButton(
             onClick = {
                 onButtonClicked.invoke()

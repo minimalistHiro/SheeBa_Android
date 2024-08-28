@@ -38,6 +38,7 @@ import com.hiroki.sheeba.R
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomStoreCard
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
+import com.hiroki.sheeba.screens.mapScreens.NavStoreDetailScreen
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
@@ -138,7 +139,12 @@ fun TodaysGetPointScreen(viewModel: ViewModel, navController: NavHostController)
                     if (storeUser != null) {
                         CustomStoreCard(
                             user = storeUser,
-                            isGetPoint = viewModel.isGetStorePointToday(user = storeUser)
+                            isGetPoint = viewModel.isGetStorePointToday(user = storeUser),
+                            onButtonClicked = {
+                                viewModel.storeUser = storeUser
+                                viewModel.navStoreDetailScreen = NavStoreDetailScreen.TodaysGetPointScreen
+                                navController.navigate(Setting.storeDetailScreen)
+                            }
                         )
                         Spacer(modifier = Modifier.height(15.dp))
                     }

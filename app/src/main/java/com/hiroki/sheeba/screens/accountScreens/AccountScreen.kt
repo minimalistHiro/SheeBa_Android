@@ -48,7 +48,6 @@ enum class ExternalLink {
 @Composable
 fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavHostController) {
     val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
     var isShowConfirmationLogoutDialog = remember {
         mutableStateOf(false)
@@ -94,6 +93,7 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
 
                 Spacer(modifier = Modifier.height(15.dp))
 
+                // ユーザー名
                 if(viewModel.progress.value) {
                     "読み込み中..."
                 } else {

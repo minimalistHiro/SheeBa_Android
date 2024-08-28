@@ -286,13 +286,33 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                     contentAlignment = Alignment.Center,
                 ) {
                     Row {
+                        // QRコード
+                        MenuButton(
+                            text = "QRコード",
+                            painter = painterResource(id = R.drawable.baseline_qr_code_24)
+                        ) {
+                            navController.navigate(Setting.qrCodeScreen)
+                        }
+                        // 送る
+                        MenuButton(
+                            text = "送る",
+                            painter = painterResource(id = R.drawable.baseline_currency_yen_24)
+                        ) {
+                            navController.navigate(Setting.moneyTransferScreen)
+                        }
                         // ランキング
-                        MenuButton(text = "ランキング", painter = painterResource(id = R.drawable.baseline_flag_24)) {
+                        MenuButton(
+                            text = "ランキング",
+                            painter = painterResource(id = R.drawable.baseline_flag_24)
+                        ) {
                             viewModel.fetchAllUsersOrderByMoney()
                             navController.navigate(Setting.rankingScreen)
                         }
                         // 本日の獲得
-                        MenuButton(text = "本日の獲得", painter = painterResource(id = R.drawable.baseline_store_24)) {
+                        MenuButton(
+                            text = "本日の獲得",
+                            painter = painterResource(id = R.drawable.baseline_store_24)
+                        ) {
                             viewModel.fetchStorePoints()
                             navController.navigate(Setting.todaysGetPointScreen)
                         }

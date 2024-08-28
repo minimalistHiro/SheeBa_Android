@@ -1,18 +1,27 @@
 package com.hiroki.sheeba.viewModel
 
+import android.R.attr.src
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.zxing.EncodeHintType
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.common.BitMatrix
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.hiroki.sheeba.QrCodeAnalyzer
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
@@ -23,16 +32,25 @@ import com.hiroki.sheeba.data.SignUpUIState
 import com.hiroki.sheeba.model.AlertNotification
 import com.hiroki.sheeba.model.ChatUser
 import com.hiroki.sheeba.model.NotificationModel
+import com.hiroki.sheeba.model.RecentMessage
 import com.hiroki.sheeba.model.StorePoint
+import com.hiroki.sheeba.screens.accountScreens.ExternalLink
+import com.hiroki.sheeba.screens.mapScreens.NavStoreDetailScreen
+import com.hiroki.sheeba.screens.mapScreens.PinItem
 import com.hiroki.sheeba.util.FirebaseConstants
+import com.hiroki.sheeba.util.FirebaseConstants.date
 import com.hiroki.sheeba.util.Setting
+import com.journeyapps.barcodescanner.BarcodeEncoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.HttpURLConnection
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.concurrent.Executors
+
 
 class ViewModel: ViewModel() {
     private val TAG = ViewModel::class.simpleName
@@ -52,13 +70,16 @@ class ViewModel: ViewModel() {
     var currentUser: MutableState<ChatUser?> = mutableStateOf(null)             // 現在のユーザー情報
     var chatUser: MutableState<ChatUser?> = mutableStateOf(null)                // 特定のユーザー情報
     var allUsers = mutableListOf<ChatUser?>()                                       // 全ユーザー情報
+    var storeUser: ChatUser? = null                                                 // 選択された店舗情報
     var storeUsers = mutableListOf<ChatUser?>()                                     // 全店舗ユーザー情報
     var rankMoneyUsers = mutableListOf<ChatUser?>()                                 // ポイント数上位%位までのユーザー情報
+    var recentMessages = mutableListOf<RecentMessage?>()                            // 全最新メッセージ
     var storePoints = mutableListOf<StorePoint?>()                                  // 全店舗ポイント情報
     var storePoint: MutableState<StorePoint?> = mutableStateOf(null)            // 特定の店舗ポイント情報
     var alertNotification: AlertNotification? = null                                // 速報
     var notification: NotificationModel? = null                                     // 特定のお知らせ
     var notifications = mutableListOf<NotificationModel?>()                         // 全お知らせ
+    var pinItems = mutableListOf<PinItem?>()                                        // 全ピン情報
 
     // ダイアログ
     var isShowDialog = mutableStateOf(false)                    // ダイアログの表示有無
@@ -72,6 +93,9 @@ class ViewModel: ViewModel() {
     var sendPayText = mutableStateOf("0")                       // 送金テキスト
     var isTappedAC = mutableStateOf(false)                      // ACボタンがタップされたか否か
 //    var getPoint = mutableStateOf(Setting.getPointFromStore)        // 獲得ポイント
+
+    // 画面遷移
+    var navStoreDetailScreen: NavStoreDetailScreen = NavStoreDetailScreen.TodaysGetPointScreen
 
     // QRコード関連
     // ImageAnalyzer.Analyzerを継承したQrCodeAnalyzerを内包したUseCaseを作成
@@ -501,6 +525,7 @@ class ViewModel: ViewModel() {
      * @return なし
      */
     fun fetchAllStoreUsers() {
+        progress.value = true
         storeUsers.clear()
         var storeUsersContainNotEnableScan = mutableListOf<ChatUser?>()                     // スキャン不可能を含めた店舗ユーザー
 
@@ -533,6 +558,70 @@ class ViewModel: ViewModel() {
             }
             .addOnFailureListener { exception ->
                 handleError(title = "", text = Setting.failureFetchUser, exception = exception)
+            }
+    }
+
+    /**
+     * 全店舗ユーザーを取得(Map用)
+     *
+     * @param onResult 取得結果
+     * @return なし
+     */
+    fun fetchAllStoreUsersForMap() {
+        progress.value = true
+        storeUsers.clear()
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.users)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(ChatUser::class.java)?.let {
+                        if(it.isStore && it.isEnableScan) {
+                            storeUsers.add(it)
+                        }
+                    }
+                }
+                // ピン情報を取得する。
+                fetchPinItems()
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchUser, exception = exception)
+            }
+    }
+
+    /**
+     * 全最新メッセージを取得
+     *
+     * @param なし
+     * @return なし
+     */
+    fun fetchRecentMessages() {
+        progress.value = true
+        recentMessages.clear()
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            return
+        }
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.recentMessages)
+            .document(uid)
+            .collection(FirebaseConstants.message)
+            .orderBy(FirebaseConstants.timestamp, Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(RecentMessage::class.java)?.let {
+                        recentMessages.add(it)
+                    }
+                }
+                progress.value = false
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchRecentMessage, exception = exception)
             }
     }
 
@@ -601,6 +690,36 @@ class ViewModel: ViewModel() {
             .addOnFailureListener { exception ->
                 handleError(title = "", text = Setting.failureFetchNotification, exception = exception)
             }
+    }
+
+    /**
+     * マップのピンを取得
+     *
+     * @param なし
+     * @return なし
+     */
+    fun fetchPinItems() {
+        pinItems.clear()
+
+        for (store in storeUsers) {
+            store?.let {
+                if (it.pointX.isNotEmpty() && it.pointY.isNotEmpty()) {
+                    val pinItem = PinItem(
+                        uid = it.uid,
+                        coordinate = LatLng(
+                            it.pointY.toDouble(),
+                            it.pointX.toDouble()
+                        ),
+                        buttonSize = 70f,
+                        imageUrl = it.profileImageUrl,
+                        storeName = it.username,
+                    )
+                    pinItems.add(pinItem)
+                } else {
+                    null
+                }
+            }
+        }
     }
 
     /**
@@ -1556,5 +1675,55 @@ class ViewModel: ViewModel() {
         val formatter = SimpleDateFormat("yyyy年M月dd日 HH:mm")
         val formattedDateTime = formatter.format(date)
         return formattedDateTime
+    }
+
+    /**
+     * QRコードを生成
+     *
+     * @param data QRコード化したいデータ
+     * @return bitmap
+     */
+    fun createQrCode(data: String): Bitmap? {
+        return try {
+            val bitMatrix = createBitMatrix(data)
+            bitMatrix?.let { createBitmap(it) }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * BitMatrixを作成する
+     *
+     * @param data QRコード化したいデータ
+     * @return bitmap
+     */
+    fun createBitMatrix(data: String): BitMatrix? {
+        val multiFormatWriter = MultiFormatWriter()
+        val hints = mapOf(
+            // マージン
+            EncodeHintType.MARGIN to 0,
+            // 誤り訂正レベルを一番低いレベルで設定 エンコード対象のデータ量が少ないため
+            EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.L
+        )
+
+        return multiFormatWriter.encode(
+            data, // QRコード化したいデータ
+            com.google.zxing.BarcodeFormat.QR_CODE, // QRコードにしたい場合はこれを指定
+            200, // 生成されるイメージの高さ(px)
+            200, // 生成されるイメージの横幅(px)
+            hints // オプション
+        )
+    }
+
+    /**
+     * BitMapを作成する
+     *
+     * @param bitMatrix bitMatrix
+     * @return bitmap
+     */
+    fun createBitmap(bitMatrix: BitMatrix): Bitmap {
+        val barcodeEncoder = BarcodeEncoder()
+        return barcodeEncoder.createBitmap(bitMatrix)
     }
 }

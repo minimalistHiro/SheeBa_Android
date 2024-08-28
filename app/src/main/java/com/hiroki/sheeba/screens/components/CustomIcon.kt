@@ -28,14 +28,14 @@ import com.hiroki.sheeba.R
 @ExperimentalMaterial3Api
 @Composable
 fun CustomIcon(size: Int, isAlpha: Boolean) {
-        Icon(
-            modifier = Modifier
-                .widthIn((size / 2).dp)
-                .heightIn((size / 2).dp),
-            painter = painterResource(id = R.drawable.baseline_person_24),
-            contentDescription = "",
-            tint = Color.Black.copy(alpha = if(isAlpha) 0.3F else 1.0F),
-        )
+    Icon(
+        modifier = Modifier
+            .widthIn((size / 2).dp)
+            .heightIn((size / 2).dp),
+        painter = painterResource(id = R.drawable.baseline_person_24),
+        contentDescription = "",
+        tint = Color.Black.copy(alpha = if(isAlpha) 0.3F else 1.0F),
+    )
 }
 
 @ExperimentalMaterial3Api

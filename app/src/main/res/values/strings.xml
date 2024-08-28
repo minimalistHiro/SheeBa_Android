@@ -27,7 +27,8 @@
     // InputText
     <string name="hide_password">Hide password</string>
     <string name="show_password">Show password</string>
+    <string name="title_activity_maps">MapsActivity</string>
 
     // error
-<!--    <string name="failureFetchUID">UIDの取得に失敗しました。</string>-->
+    <!--    <string name="failureFetchUID">UIDの取得に失敗しました。</string>-->
 </resources>

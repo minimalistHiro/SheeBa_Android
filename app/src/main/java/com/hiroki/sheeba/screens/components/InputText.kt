@@ -142,7 +142,10 @@ fun InputPasswordTextField(label: String, onTextSelected: (String) -> Unit) {
             focusedLabelColor = Color.Black,
             cursorColor = Color.Black,
         ),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Done
+        ),
         singleLine = true,
         keyboardActions = KeyboardActions {
             localFocusManager.clearFocus()
