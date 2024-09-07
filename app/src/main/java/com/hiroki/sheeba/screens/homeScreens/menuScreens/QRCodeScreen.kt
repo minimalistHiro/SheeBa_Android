@@ -62,7 +62,7 @@ fun QRCodeScreen(viewModel: ViewModel, navController: NavHostController) {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 CustomTopAppBar(
-                    title = "",
+                    title = "QRコード",
                     color = Color.White,
                     onButtonClicked = {
                         navController.navigate(Setting.homeScreen)

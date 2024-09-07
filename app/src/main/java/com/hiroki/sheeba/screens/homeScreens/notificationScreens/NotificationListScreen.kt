@@ -8,9 +8,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
@@ -45,7 +45,7 @@ fun NotificationListScreen(viewModel: ViewModel, navController: NavHostControlle
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .verticalScroll(rememberScrollState()),
+//                .verticalScroll(rememberScrollState()),
         ) {
             Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 CustomTopAppBar(
@@ -56,39 +56,70 @@ fun NotificationListScreen(viewModel: ViewModel, navController: NavHostControlle
                     }
                 )
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                ) {
                     // 全お知らせ
-                    viewModel.notifications.forEach { notification ->
-                        if (notification != null) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                CustomListNav(text = notification.title, color = Color.Black) {
-                                    viewModel.notification = notification
-                                    navController.navigate(Setting.notificationDetailScreen)
-                                }
+                    LazyColumn {
+                        items(viewModel.notifications) {
+                            if (it != null) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    CustomListNav(text = it.title, color = Color.Black) {
+                                        viewModel.notification = it
+                                        navController.navigate(Setting.notificationDetailScreen)
+                                    }
 
-                                // バッジ
-                                if(!notification.isRead) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(15.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.Red),
-                                    )
+                                    // バッジ
+                                    if(!it.isRead) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(15.dp)
+                                                .clip(CircleShape)
+                                                .background(Color.Red),
+                                        )
+                                    }
+                                }
+                                CustomDivider(color = Color.Gray)
+
+                                // 最後の行のみ空白を入れる
+                                if(viewModel.notifications.last() == it) {
+                                    Spacer(modifier = Modifier.height(100.dp))
                                 }
                             }
-                            CustomDivider(color = Color.Gray)
                         }
                     }
 
-                    Spacer(modifier = Modifier.height((screenHeight / 10).dp))
-                }
+//                    viewModel.notifications.forEach { notification ->
+//                        if (notification != null) {
+//                            Row(
+//                                modifier = Modifier
+//                                    .fillMaxSize(),
+//                                verticalAlignment = Alignment.CenterVertically,
+//                            ) {
+//                                CustomListNav(text = notification.title, color = Color.Black) {
+//                                    viewModel.notification = notification
+//                                    navController.navigate(Setting.notificationDetailScreen)
+//                                }
+//
+//                                // バッジ
+//                                if(!notification.isRead) {
+//                                    Box(
+//                                        modifier = Modifier
+//                                            .size(15.dp)
+//                                            .clip(CircleShape)
+//                                            .background(Color.Red),
+//                                    )
+//                                }
+//                            }
+//                            CustomDivider(color = Color.Gray)
+//                        }
+//                    }
+//                }
             }
         }
         // インジケーター

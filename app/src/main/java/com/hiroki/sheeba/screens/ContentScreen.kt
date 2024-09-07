@@ -19,6 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -31,6 +33,7 @@ import com.hiroki.sheeba.screens.cameraScreens.CameraScreen
 import com.hiroki.sheeba.screens.cameraScreens.ErrorQRCodeOverlay
 import com.hiroki.sheeba.screens.cameraScreens.QrCodeOverlay
 import com.hiroki.sheeba.screens.homeScreens.HomeScreen
+import com.hiroki.sheeba.screens.homeScreens.menuScreens.ChatLogScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.MoneyTransferScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.QRCodeScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.RankingScreen
@@ -44,8 +47,7 @@ import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
 @Composable
-fun ContentScreen(viewModel: ViewModel) {
-    val navController = rememberNavController()
+fun ContentScreen(viewModel: ViewModel, navController: NavHostController) {
 //    var selectedTabIndex by remember { mutableStateOf(0) }          // 選択されたタブ番号
     // ボトムタブ
     val items = listOf(
@@ -137,7 +139,6 @@ fun ContentScreen(viewModel: ViewModel) {
                     HomeScreen(viewModel = viewModel, padding = padding, navController = navController)
                 }
                 composable(items[1].navTitle) {
-//                    MapView(viewModel = viewModel)
                     MapScreen(viewModel = viewModel, navController = navController)
                 }
                 composable(items[2].navTitle) {
@@ -163,6 +164,9 @@ fun ContentScreen(viewModel: ViewModel) {
                 }
                 composable(Setting.moneyTransferScreen) {
                     MoneyTransferScreen(viewModel = viewModel, navController = navController)
+                }
+                composable(Setting.chatLogScreen) {
+                    ChatLogScreen(viewModel = viewModel, navController = navController)
                 }
                 composable(Setting.storeDetailScreen) {
                     StoreDetailScreen(viewModel = viewModel, navController = navController, storeUser = viewModel.storeUser, nav = viewModel.navStoreDetailScreen)
@@ -191,5 +195,5 @@ fun ContentScreen(viewModel: ViewModel) {
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfContentScreen() {
-    ContentScreen(viewModel = ViewModel())
+    ContentScreen(viewModel = ViewModel(), navController = rememberNavController())
 }

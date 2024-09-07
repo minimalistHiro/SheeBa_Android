@@ -14,6 +14,7 @@ object FirebaseConstants {
     val isFirstLogin = "isFirstLogin"
     val isStore = "isStore"
     val isOwner = "isOwner"
+    val isStoreOwner = "isStoreOwner"
     val os = "os"
     val isEnableScan = "isEnableScan"
 

@@ -16,6 +16,8 @@ data class ChatUser (
     var isStore: Boolean = false,
     @field:JvmField
     var isOwner: Boolean = false,
+    @field:JvmField
+    var isStoreOwner: Boolean = false,
     var os: String = "Android",
     var ranking: String = "",
 

@@ -298,6 +298,7 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                             text = "送る",
                             painter = painterResource(id = R.drawable.baseline_currency_yen_24)
                         ) {
+                            viewModel.fetchRecentMessages()
                             navController.navigate(Setting.moneyTransferScreen)
                         }
                         // ランキング

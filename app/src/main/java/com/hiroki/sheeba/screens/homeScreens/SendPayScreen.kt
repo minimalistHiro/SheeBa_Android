@@ -38,6 +38,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.hiroki.sheeba.R
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
@@ -45,11 +48,12 @@ import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomDoubleAlertDialog
 import com.hiroki.sheeba.screens.components.CustomImagePicker
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
+import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 
 @ExperimentalMaterial3Api
 @Composable
-fun SendPayScreen(viewModel: ViewModel) {
+fun SendPayScreen(viewModel: ViewModel, navController: NavHostController) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
@@ -238,7 +242,10 @@ fun SendPayScreen(viewModel: ViewModel) {
                 text = "${viewModel.sendPayText.value}pt送りますか？",
                 okText = "送る",
                 onOkButtonClicked = {
-                    viewModel.handleSendPoint()
+                    viewModel.handleSendPoint(navController = navController, isQRScan = false)
+                    viewModel.chatUser.value?.let {
+                        viewModel.handleSend(toId = it.uid, chatText = "", lastText = viewModel.sendPayText.value, isSendPay = true)
+                    }
                     viewModel.sendPayText.value = "0"
                     isShowSendPayDialog.value = false
                 },
@@ -256,5 +263,6 @@ fun SendPayScreen(viewModel: ViewModel) {
 fun DefaultPreviewOfSendPayScreen() {
     SendPayScreen(
         viewModel = ViewModel(),
+        navController = rememberNavController(),
     )
 }

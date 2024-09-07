@@ -1,8 +1,6 @@
 package com.hiroki.sheeba.viewModel
 
-import android.R.attr.src
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
@@ -11,9 +9,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
@@ -30,21 +32,28 @@ import com.hiroki.sheeba.data.LoginUIState
 import com.hiroki.sheeba.data.SignUpUIEvent
 import com.hiroki.sheeba.data.SignUpUIState
 import com.hiroki.sheeba.model.AlertNotification
+import com.hiroki.sheeba.model.ChatMessage
 import com.hiroki.sheeba.model.ChatUser
 import com.hiroki.sheeba.model.NotificationModel
 import com.hiroki.sheeba.model.RecentMessage
 import com.hiroki.sheeba.model.StorePoint
-import com.hiroki.sheeba.screens.accountScreens.ExternalLink
 import com.hiroki.sheeba.screens.mapScreens.NavStoreDetailScreen
 import com.hiroki.sheeba.screens.mapScreens.PinItem
 import com.hiroki.sheeba.util.FirebaseConstants
-import com.hiroki.sheeba.util.FirebaseConstants.date
+import com.hiroki.sheeba.util.FirebaseConstants.address
+import com.hiroki.sheeba.util.FirebaseConstants.age
+import com.hiroki.sheeba.util.FirebaseConstants.email
+import com.hiroki.sheeba.util.FirebaseConstants.profileImageUrl
+import com.hiroki.sheeba.util.FirebaseConstants.uid
+import com.hiroki.sheeba.util.FirebaseConstants.username
 import com.hiroki.sheeba.util.Setting
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.net.HttpURLConnection
-import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -52,7 +61,7 @@ import java.util.Date
 import java.util.concurrent.Executors
 
 
-class ViewModel: ViewModel() {
+open class ViewModel: ViewModel() {
     private val TAG = ViewModel::class.simpleName
     var signUpUIState = mutableStateOf(SignUpUIState(imageUri = null))
     var signUpUsernameScreenValidationPassed = mutableStateOf(false)
@@ -61,7 +70,7 @@ class ViewModel: ViewModel() {
     var loginUIState = mutableStateOf(LoginUIState())
     var loginEmailPassed = mutableStateOf(false)
     var loginAllValidationPassed = mutableStateOf(false)
-    var progress = mutableStateOf(false)
+    open var progress = mutableStateOf(false)
     var isHandleLoginProcess = mutableStateOf(false)                        // ログイン済みか否か
 //    var isContainNotReadNotification = mutableStateOf(false)                // 未読のお知らせの有無
 
@@ -69,11 +78,13 @@ class ViewModel: ViewModel() {
 //    val users: StateFlow<List<ChatUser>> = _users.asStateFlow()
     var currentUser: MutableState<ChatUser?> = mutableStateOf(null)             // 現在のユーザー情報
     var chatUser: MutableState<ChatUser?> = mutableStateOf(null)                // 特定のユーザー情報
+    var isStoreOwner: MutableState<Boolean> = mutableStateOf(false)             // 店舗オーナーか否か
     var allUsers = mutableListOf<ChatUser?>()                                       // 全ユーザー情報
     var storeUser: ChatUser? = null                                                 // 選択された店舗情報
     var storeUsers = mutableListOf<ChatUser?>()                                     // 全店舗ユーザー情報
     var rankMoneyUsers = mutableListOf<ChatUser?>()                                 // ポイント数上位%位までのユーザー情報
-    var recentMessages = mutableListOf<RecentMessage?>()                            // 全最新メッセージ
+    var recentMessages =  mutableListOf<RecentMessage?>()                            // 全最新メッセージ
+//    private val chatMessages = MutableStateFlow(listOf<ChatMessage?>())             // 全メッセージ
     var storePoints = mutableListOf<StorePoint?>()                                  // 全店舗ポイント情報
     var storePoint: MutableState<StorePoint?> = mutableStateOf(null)            // 特定の店舗ポイント情報
     var alertNotification: AlertNotification? = null                                // 速報
@@ -124,6 +135,9 @@ class ViewModel: ViewModel() {
     val delayMillis = 300L                                              // 押下後一時的に押下処理を無効化する時間(ms)
     var pushedAt = 0L                                                   // 前回押下時間(タイムスタンプ, ms)
     var isShowHandleScan = mutableStateOf(false)                // スキャン処理を一度したか否か
+
+    // その他
+    var isSendPay = mutableStateOf(false)                       // 送金処理か否か
     
     /**
      * 初期化処理
@@ -564,7 +578,7 @@ class ViewModel: ViewModel() {
     /**
      * 全店舗ユーザーを取得(Map用)
      *
-     * @param onResult 取得結果
+     * @param なし
      * @return なし
      */
     fun fetchAllStoreUsersForMap() {
@@ -614,7 +628,7 @@ class ViewModel: ViewModel() {
             .get()
             .addOnSuccessListener { documents ->
                 for(document in documents) {
-                    document.toObject(RecentMessage::class.java)?.let {
+                    document.toObject(RecentMessage::class.java).let {
                         recentMessages.add(it)
                     }
                 }
@@ -624,6 +638,42 @@ class ViewModel: ViewModel() {
                 handleError(title = "", text = Setting.failureFetchRecentMessage, exception = exception)
             }
     }
+
+    /**
+     * 全メッセージを取得
+     *
+     * @param toId トーク相手UID
+     * @return なし
+     */
+//    fun fetchMessages(toId: String) {
+//        val chatMessages = mutableListOf<ChatMessage>()
+//
+//        val fromId = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+//            handleError(title = "", text = Setting.failureFetchUID, exception = null)
+//            return
+//        }
+//
+//        FirebaseFirestore
+//            .getInstance()
+//            .collection(FirebaseConstants.messages)
+//            .document(fromId)
+//            .collection(toId)
+//            .orderBy(FirebaseConstants.timestamp, Query.Direction.ASCENDING)
+//            .get()
+//            .addOnSuccessListener { documents ->
+//                for(document in documents) {
+//                    document.toObject(ChatMessage::class.java).let {
+//                        chatMessages.add(it)
+//                    }
+//                }
+//                _uiCMState.update {
+//                    chatMessages
+//                }
+//            }
+//            .addOnFailureListener { exception ->
+//                handleError(title = "", text = Setting.failureFetchMessages, exception = exception)
+//            }
+//    }
 
     /**
      * 速報を取得
@@ -677,7 +727,7 @@ class ViewModel: ViewModel() {
             .get()
             .addOnSuccessListener { documents ->
                 for(document in documents) {
-                    document.toObject(NotificationModel::class.java)?.let {
+                    document.toObject(NotificationModel::class.java).let {
                         notifications.add(it)
                         // 未読があった場合、お知らせに赤いバッジをつける
 //                        if(!it.isRead) {
@@ -951,20 +1001,82 @@ class ViewModel: ViewModel() {
     }
 
     /**
+     * テキスト送信処理
+     *
+     * @param toId 受信者UID
+     * @param chatText ユーザーの入力テキスト
+     * @param lastText 一時保存用最新メッセージ
+     * @param isSendPay 送金の有無
+     * @return なし
+     */
+
+    /**
      * ログイン（メール送信含む）
      *
      * @return なし
      */
-    fun isCheckEmailVerified() {
-        val user = FirebaseAuth.getInstance().currentUser ?: run {
-            handleError(title = "", text = Setting.failureFetchUser, exception = null)
+    fun handleSend(toId: String, chatText: String, lastText: String, isSendPay: Boolean) {
+        progress.value = true
+
+        val fromId = FirebaseAuth.getInstance().currentUser?.uid ?: run {
             return
         }
-        if(!user.isEmailVerified) {
-            handleError(title = "", text = Setting.notConfirmEmail, exception = null)
-        } else {
-            PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
+
+        val messageData = hashMapOf<String, Any>(
+            FirebaseConstants.fromId to fromId,
+            FirebaseConstants.toId to toId,
+            FirebaseConstants.text to if (isSendPay) lastText else chatText,
+            FirebaseConstants.isSendPay to isSendPay,
+            FirebaseConstants.timestamp to Timestamp.now(),
+        )
+
+        // 自身のメッセージデータを保存
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.messages)
+            .document(fromId)
+            .collection(toId)
+            .document()
+            .set(messageData)
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failurePersistMessage, exception = it)
+            }
+
+        // トーク相手のメッセージデータを保存
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.messages)
+            .document(toId)
+            .collection(fromId)
+            .document()
+            .set(messageData)
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failurePersistMessage, exception = it)
+            }
+
+        // 自身の最新メッセージを保存
+        chatUser.value?.let {
+            persistRecentMessage(
+                user = it,
+                isSelf = true,
+                fromId = fromId,
+                toId = toId,
+                text = if (isSendPay) lastText else chatText,
+                isSendPay = isSendPay)
         }
+
+        // トーク相手の最新メッセージを保存
+        currentUser.value?.let {
+            persistRecentMessage(
+                user = it,
+                isSelf = false,
+                fromId = fromId,
+                toId = toId,
+                text = if (isSendPay) lastText else chatText,
+                isSendPay = isSendPay)
+        }
+
+        progress.value = false
     }
 
     /**
@@ -1126,6 +1238,7 @@ class ViewModel: ViewModel() {
             FirebaseConstants.isFirstLogin to false,
             FirebaseConstants.isStore to false,
             FirebaseConstants.isOwner to false,
+            FirebaseConstants.isStoreOwner to isStoreOwner.value,
             FirebaseConstants.os to "Android"
         )
 
@@ -1182,6 +1295,61 @@ class ViewModel: ViewModel() {
             .addOnFailureListener {
                 persistUser(email = email, profileImageUrl = "", username = username, age = age, address = address)
                 handleError(title = "", text = Setting.failurePersistImage, exception = it)
+            }
+    }
+
+    /**
+     * 最新メッセージを保存
+     *
+     * @param user ユーザー情報
+     * @param isSelf 自身のデータか否か
+     * @param fromId 送信者UID
+     * @param toId 受信者UID
+     * @param text テキスト
+     * @param isSendPay 送金の有無
+     * @return なし
+     */
+    fun persistRecentMessage(
+        user: ChatUser,
+        isSelf: Boolean,
+        fromId: String,
+        toId: String,
+        text: String,
+        isSendPay: Boolean
+    ) {
+        // ユーザー情報を格納
+        val data = hashMapOf<String, Any>(
+            FirebaseConstants.email to user.email,
+            FirebaseConstants.text to text,
+            FirebaseConstants.fromId to fromId,
+            FirebaseConstants.toId to toId,
+            FirebaseConstants.profileImageUrl to user.profileImageUrl,
+            FirebaseConstants.isSendPay to isSendPay,
+            FirebaseConstants.username to user.username,
+            FirebaseConstants.timestamp to Timestamp.now(),
+        )
+
+        var document: DocumentReference
+
+        if (isSelf) {
+            document = FirebaseFirestore
+                .getInstance()
+                .collection(FirebaseConstants.recentMessages)
+                .document(fromId)
+                .collection(FirebaseConstants.message)
+                .document(toId)
+        } else {
+            document = FirebaseFirestore
+                .getInstance()
+                .collection(FirebaseConstants.recentMessages)
+                .document(toId)
+                .collection(FirebaseConstants.message)
+                .document(fromId)
+        }
+
+        document.set(data)
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failurePersistRecentMessage, exception = it)
             }
     }
 
@@ -1571,9 +1739,11 @@ class ViewModel: ViewModel() {
     /**
      * 送ポイント処理
      *
+     * @param navController
+     * @param isQRScan QRコードスキャンによる送ポイントか否か
      * @return なし
      */
-    fun handleSendPoint() {
+    fun handleSendPoint(navController: NavHostController, isQRScan: Boolean) {
         chatUser.value?.let {
             val chatUserMoney = it.money.toInt()
             val currentUserMoney = currentUser.value?.money?.toInt()
@@ -1607,7 +1777,7 @@ class ViewModel: ViewModel() {
                 updateUser(document = it.uid, data = userData)
             }
 
-            PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
+            navController.navigate(Setting.chatLogScreen)
         }
     }
 

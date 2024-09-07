@@ -7,6 +7,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.hiroki.sheeba.screens.ContentScreen
 import com.hiroki.sheeba.screens.cameraScreens.GetPointScreen
@@ -25,20 +26,21 @@ import com.hiroki.sheeba.viewModel.ViewModel
 @Composable
 fun PostOfficeApp() {
     val viewModel = ViewModel()
+    val navController = rememberNavController()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
     ) {
 //        viewModel.fetchCurrentUser()
-        Crossfade(targetState = PostOfficeAppRouter.currentScreen) { currentState ->
+        Crossfade(targetState = PostOfficeAppRouter.currentScreen, label = "") { currentState ->
             when(currentState.value) {
                 is Screen.TopScreen -> {
                     if(FirebaseAuth.getInstance().currentUser == null) {
                         TutorialScreen(viewModel = viewModel)
                     } else {
                         if(FirebaseAuth.getInstance().currentUser?.isEmailVerified == true) {
-                            ContentScreen(viewModel = viewModel)
+                            ContentScreen(viewModel = viewModel, navController)
                         } else {
                             NotConfirmEmailScreen(viewModel = viewModel)
 //                            TutorialScreen(viewModel = viewModel)
@@ -70,10 +72,10 @@ fun PostOfficeApp() {
                     SendEmailScreen(viewModel = viewModel)
                 }
                 is Screen.ContentScreen -> {
-                    ContentScreen(viewModel = viewModel)
+                    ContentScreen(viewModel = viewModel, navController)
                 }
                 is Screen.SendPayScreen -> {
-                    SendPayScreen(viewModel = viewModel)
+                    SendPayScreen(viewModel = viewModel, navController)
                 }
                 is Screen.GetPointScreen -> {
                     GetPointScreen(viewModel = viewModel)

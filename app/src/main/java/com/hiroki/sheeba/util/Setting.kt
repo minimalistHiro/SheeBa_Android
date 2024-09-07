@@ -13,6 +13,7 @@ object Setting {
     val IMAGE_SIZE = Size(1080, 1920)   // 画像の解析サイズ
     val privacyPolicyURL = "https://www.shibaginzadori.com/?page_id=1070"   // プライバシーポリシーURL
     val officialSiteURL = "https://www.shibaginzadori.com/?p=970"           // 公式サイトURL
+    const val maxChatTextCount = 70                                         // トークの最大文字数
 
     // Screens
     val entryScreen = "entryScreen"
@@ -24,6 +25,7 @@ object Setting {
     val sendPayScreen = "sendPayScreen"
     val qrCodeScreen = "qrCodeScreen"
     val moneyTransferScreen = "moneyTransferScreen"
+    val chatLogScreen = "chatLogScreen"
     val rankingScreen = "rankingScreen"
     val todaysGetPointScreen = "todaysGetPointScreen"
     val mapScreen = "mapScreen"
@@ -57,11 +59,14 @@ object Setting {
     val failureFetchUID = "UIDの取得に失敗しました。"
     val failureFetchUser = "ユーザー情報の取得に失敗しました。"
     val failureFetchRecentMessage = "最新メッセージの取得に失敗しました。"
+    val failureFetchMessages = "メッセージの取得に失敗しました。"
     val failureFetchStorePoint = "店舗ポイント情報の取得に失敗しました。"
     val failureFetchNotification = "お知らせの取得に失敗しました。"
     val failurePersistUser = "ユーザー情報の保存に失敗しました。"
+    val failurePersistRecentMessage = "最新メッセージの保存に失敗しました。"
     val failurePersistStorePoint = "店舗ポイント情報の保存に失敗しました。"
     val failurePersistImage = "画像の保存に失敗しました。"
+    val failurePersistMessage = "メッセージの保存に失敗しました。"
     val failureUpdateUser = "ユーザー情報の更新に失敗しました。"
     val failureUpdateNotification = "お知らせの更新に失敗しました。"
     val failureUpdateImage = "画像の更新に失敗しました。"

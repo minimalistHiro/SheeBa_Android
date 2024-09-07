@@ -108,7 +108,7 @@ fun SetUpUsernameScreen(viewModel: ViewModel) {
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
                 InputTextField(
-                    label = "ユーザー名",
+                    label = if(viewModel.isStoreOwner.value) "店舗名" else "ユーザー名",
                     onTextSelected = {
                         viewModel.onSignUpEvent(SignUpUIEvent.UsernameChange(it))
                     },

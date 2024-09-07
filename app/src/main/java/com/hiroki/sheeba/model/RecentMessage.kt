@@ -1,6 +1,6 @@
 package com.hiroki.sheeba.model
 
-import java.util.Date
+import com.google.firebase.Timestamp
 
 data class RecentMessage (
     var email: String = "",
@@ -11,5 +11,5 @@ data class RecentMessage (
     @field:JvmField
     var isSendPay: Boolean = false,
     var username: String = "",
-    var timestamp: Date,
+    var timestamp: Timestamp = Timestamp.now(),
 )

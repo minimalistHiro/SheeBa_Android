@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -166,9 +167,11 @@ fun CustomListNav(text: String, color: Color, onButtonClicked: () -> Unit) {
                 fontWeight = FontWeight.Normal,
                 fontStyle = FontStyle.Normal,
             ),
-            textAlign = TextAlign.Center,
+            textAlign = TextAlign.Start,
             color = color,
         )
+
+        Spacer(modifier = Modifier.weight(1f))
     }
 }
 
