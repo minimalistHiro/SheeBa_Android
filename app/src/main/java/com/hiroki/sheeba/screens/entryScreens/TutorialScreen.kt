@@ -194,7 +194,8 @@ fun TutorialScreen(viewModel: ViewModel) {
                         onButtonClicked = {
                             page.value += 1
                         },
-                        isEnabled = true
+                        isEnabled = true,
+                        color = Color.Black
                     )
                 } else {
                     Row(
@@ -225,7 +226,8 @@ fun TutorialScreen(viewModel: ViewModel) {
                         onButtonClicked = {
                             PostOfficeAppRouter.navigateTo(Screen.EntryScreen)
                         },
-                        isEnabled = isAgree.value
+                        isEnabled = isAgree.value,
+                        color = Color.Black
                     )
                 }
             }

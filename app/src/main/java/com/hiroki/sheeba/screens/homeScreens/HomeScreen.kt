@@ -135,6 +135,12 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                                 .size(30.dp),
                             onClick = {
                                 viewModel.fetchNotifications()
+                                // 店舗オーナーのみ、全ユーザーを取得
+                                viewModel.currentUser.value?.let {
+                                    if (it.isStoreOwner) {
+                                        viewModel.fetchAllUsersContainSelf()
+                                    }
+                                }
                                 navController.navigate(Setting.notificationListScreen)
                             },
                         ) {
@@ -299,6 +305,7 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                             painter = painterResource(id = R.drawable.baseline_currency_yen_24)
                         ) {
                             viewModel.fetchRecentMessages()
+                            viewModel.fetchFriends()
                             navController.navigate(Setting.moneyTransferScreen)
                         }
                         // ランキング

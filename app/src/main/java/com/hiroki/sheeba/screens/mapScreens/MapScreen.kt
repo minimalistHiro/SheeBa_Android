@@ -191,7 +191,8 @@ fun StoreInfoOverlay(onClose: () -> Unit, user: ChatUser?, navController: NavHos
             CustomCapsuleButton(
                 text = "詳細を見る",
                 onButtonClicked = {navController.navigate(Setting.storeDetailScreen)},
-                isEnabled = true
+                isEnabled = true,
+                color = Color.Black
             )
 
             Spacer(modifier = Modifier.weight(1f))

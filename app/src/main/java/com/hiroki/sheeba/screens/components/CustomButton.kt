@@ -37,7 +37,7 @@ import com.hiroki.sheeba.R
 
 @ExperimentalMaterial3Api
 @Composable
-fun CustomCapsuleButton(text: String, onButtonClicked: () -> Unit, isEnabled: Boolean) {
+fun CustomCapsuleButton(text: String, onButtonClicked: () -> Unit, isEnabled: Boolean, color: Color) {
     Button(
         modifier = Modifier
             .fillMaxWidth()
@@ -49,7 +49,7 @@ fun CustomCapsuleButton(text: String, onButtonClicked: () -> Unit, isEnabled: Bo
         contentPadding = PaddingValues(),
         colors = ButtonDefaults.buttonColors(
             if(isEnabled) {
-                Color.Black
+                color
             } else {
                 Color.Gray
             }
@@ -63,7 +63,7 @@ fun CustomCapsuleButton(text: String, onButtonClicked: () -> Unit, isEnabled: Bo
             .background(
                 color =
                 if (isEnabled) {
-                    Color.Black
+                    color
                 } else {
                     Color.Gray
                 },
@@ -209,7 +209,7 @@ fun MenuButton(text: String, painter: Painter, onButtonClicked: () -> Unit) {
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfCustomCapsuleButton() {
-    CustomCapsuleButton(text = "Test", onButtonClicked = {}, isEnabled = false)
+    CustomCapsuleButton(text = "Test", onButtonClicked = {}, isEnabled = false, color = Color.Black)
 }
 
 @Preview

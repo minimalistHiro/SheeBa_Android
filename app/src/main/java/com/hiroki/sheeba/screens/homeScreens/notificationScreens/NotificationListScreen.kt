@@ -1,6 +1,7 @@
 package com.hiroki.sheeba.screens.homeScreens.notificationScreens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
+import com.hiroki.sheeba.screens.components.CustomCapsuleButton
 import com.hiroki.sheeba.screens.components.CustomDivider
 import com.hiroki.sheeba.screens.components.CustomListNav
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
@@ -47,7 +49,10 @@ fun NotificationListScreen(viewModel: ViewModel, navController: NavHostControlle
                 .background(Color.White)
 //                .verticalScroll(rememberScrollState()),
         ) {
-            Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 CustomTopAppBar(
                     title = "お知らせ",
                     color = Color.White,

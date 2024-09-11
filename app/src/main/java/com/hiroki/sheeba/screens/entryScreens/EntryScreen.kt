@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -81,7 +82,8 @@ fun EntryScreen(viewModel: ViewModel) {
                     onButtonClicked = {
                         PostOfficeAppRouter.navigateTo(Screen.LoginScreen)
                     },
-                    isEnabled = true
+                    isEnabled = true,
+                    color = Color.Black
                 )
             }
         }

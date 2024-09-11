@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
@@ -122,7 +123,8 @@ fun ConfirmEmailScreen(viewModel: ViewModel) {
 //                            viewModel.handleLoginWithConfirmEmail()
 //                        }
                     },
-                    isEnabled = true
+                    isEnabled = true,
+                    color = Color.Black
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 10).dp))

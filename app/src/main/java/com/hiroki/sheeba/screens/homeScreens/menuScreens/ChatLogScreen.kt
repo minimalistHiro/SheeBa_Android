@@ -169,7 +169,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChatLogScreen(viewModel: ViewModel, navController: NavHostController) {
 //    val chatLogViewModel = ChatLogViewModel(viewModel = viewModel)
-    val configuration = LocalConfiguration.current
     val _uiState = MutableStateFlow(listOf<ChatMessage>())
     val uiState: StateFlow<List<ChatMessage>> = _uiState.asStateFlow()
     val chatMessages by uiState.collectAsState()                            // 全メッセージ
@@ -201,10 +200,10 @@ fun ChatLogScreen(viewModel: ViewModel, navController: NavHostController) {
                 // StateFlowの値を更新
                 _uiState.value = chatMessages
                 // 画面最下部までスクロール
-                scope.launch {
-                    delay(1000)
-                    listState.scrollToItem(listState.layoutInfo.totalItemsCount)
-                }
+//                scope.launch {
+//                    delay(1000)
+//                    listState.scrollToItem(listState.layoutInfo.totalItemsCount)
+//                }
             }
     }
 
@@ -556,6 +555,7 @@ fun ChatButtonBar(viewModel: ViewModel) {
                     )
                 },
                 singleLine = false,
+                maxLines = 10,
                 colors = TextFieldDefaults.textFieldColors(
                     focusedIndicatorColor = Color.White,
                     unfocusedIndicatorColor = Color.White

@@ -163,7 +163,8 @@ fun GetPointScreen(viewModel: ViewModel) {
 
                         PostOfficeAppRouter.navigateTo(Screen.ContentScreen)
                     },
-                    isEnabled = true
+                    isEnabled = true,
+                    color = Color.Black
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 10).dp))

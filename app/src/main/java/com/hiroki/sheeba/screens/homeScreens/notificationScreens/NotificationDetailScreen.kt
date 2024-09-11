@@ -1,6 +1,7 @@
 package com.hiroki.sheeba.screens.homeScreens.notificationScreens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,8 +38,11 @@ import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.hiroki.sheeba.model.NotificationModel
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
+import com.hiroki.sheeba.screens.components.CustomCapsuleButton
+import com.hiroki.sheeba.screens.components.CustomDestructiveAlertDialog
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
 import com.hiroki.sheeba.util.FirebaseConstants
+import com.hiroki.sheeba.util.FirebaseConstants.title
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 import java.util.Date
@@ -49,6 +55,12 @@ fun NotificationDetailScreen(viewModel: ViewModel, navController: NavHostControl
     val screenHeight = configuration.screenHeightDp
 
     val uriHandler = LocalUriHandler.current            // URL開示用変数
+    var isShowDeleteNotificationAlert = remember {
+        mutableStateOf(false)
+    }                                                   // 削除確認ダイアログ表示有無
+    var isShowDeleteSuccessAlert = remember {
+        mutableStateOf(false)
+    }                                                   // 削除成功ダイアログ表示有無
 
     // 既読にする
     val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run { return }
@@ -155,18 +167,21 @@ fun NotificationDetailScreen(viewModel: ViewModel, navController: NavHostControl
                     contentScale = ContentScale.Crop,
                 )
 
-                // 空白
-                Text(
-                    modifier = Modifier
-                        .height(80.dp),
-                    text = "",
-                    fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
-                    style = TextStyle(
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Normal,
-                        fontStyle = FontStyle.Normal,
-                    ),
-                )
+                Spacer(modifier = Modifier.height(40.dp))
+
+                viewModel.currentUser.value?.let {
+                    if (it.isStoreOwner || it.isOwner) {
+                        CustomCapsuleButton(text = "削除",
+                            onButtonClicked = {
+                                isShowDeleteNotificationAlert.value = true
+                            },
+                            isEnabled = true,
+                            color = Color.Red
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(140.dp))
             }
         }
         // インジケーター
@@ -179,6 +194,36 @@ fun NotificationDetailScreen(viewModel: ViewModel, navController: NavHostControl
                 title = viewModel.dialogTitle.value,
                 text = viewModel.dialogText.value) {
                 viewModel.isShowDialog.value = false
+            }
+        }
+        // お知らせ削除確認ダイアログ
+        if(isShowDeleteNotificationAlert.value) {
+            CustomDestructiveAlertDialog(
+                title = "",
+                text = "このお知らせを削除しますか？",
+                okText = "削除",
+                onOkButtonClicked = {
+                    // お知らせを削除
+                    notification?.let {
+                        for (user in viewModel.allUsersContainSelf) {
+                            viewModel.deleteNotification(document1 = user.uid, document2 = it.title)
+                        }
+                        viewModel.deleteImage(path = it.title)
+                    }
+                    isShowDeleteNotificationAlert.value = false
+                    isShowDeleteSuccessAlert.value = true
+                },
+                onCancelButtonClicked = {
+                    isShowDeleteNotificationAlert.value = false
+                },
+            )
+        }
+        // 削除成功ダイアログ
+        if(isShowDeleteSuccessAlert.value) {
+            CustomAlertDialog(
+                title = "",
+                text = "削除しました。") {
+                navController.navigate(Setting.notificationListScreen)
             }
         }
     }

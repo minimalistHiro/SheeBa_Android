@@ -27,6 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import com.hiroki.sheeba.R
 import com.hiroki.sheeba.data.BottomNavigationItem
 import com.hiroki.sheeba.screens.accountScreens.AccountScreen
+import com.hiroki.sheeba.screens.accountScreens.CreateNotificationScreen
 import com.hiroki.sheeba.screens.accountScreens.UpdateImageScreen
 import com.hiroki.sheeba.screens.accountScreens.UpdateUsernameScreen
 import com.hiroki.sheeba.screens.cameraScreens.CameraScreen
@@ -34,6 +35,7 @@ import com.hiroki.sheeba.screens.cameraScreens.ErrorQRCodeOverlay
 import com.hiroki.sheeba.screens.cameraScreens.QrCodeOverlay
 import com.hiroki.sheeba.screens.homeScreens.HomeScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.ChatLogScreen
+import com.hiroki.sheeba.screens.homeScreens.menuScreens.CreateNewMessageScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.MoneyTransferScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.QRCodeScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.RankingScreen
@@ -168,6 +170,9 @@ fun ContentScreen(viewModel: ViewModel, navController: NavHostController) {
                 composable(Setting.chatLogScreen) {
                     ChatLogScreen(viewModel = viewModel, navController = navController)
                 }
+                composable(Setting.createNewMessageScreen) {
+                    CreateNewMessageScreen(viewModel = viewModel, navController = navController)
+                }
                 composable(Setting.storeDetailScreen) {
                     StoreDetailScreen(viewModel = viewModel, navController = navController, storeUser = viewModel.storeUser, nav = viewModel.navStoreDetailScreen)
                 }
@@ -179,6 +184,9 @@ fun ContentScreen(viewModel: ViewModel, navController: NavHostController) {
                 }
                 composable(Setting.todaysGetPointScreen) {
                     TodaysGetPointScreen(viewModel = viewModel, navController = navController)
+                }
+                composable(Setting.createNotificationScreen) {
+                    CreateNotificationScreen(viewModel = viewModel, navController = navController)
                 }
                 composable(Setting.updateImageScreen) {
                     UpdateImageScreen(viewModel = viewModel, navController = navController)

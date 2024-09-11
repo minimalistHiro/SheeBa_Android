@@ -14,6 +14,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -100,6 +101,7 @@ fun SetUpEmailScreen(viewModel: ViewModel) {
                     isEnabled = (!viewModel.signUpUIState.value.email.isEmpty()) &&
                             (!viewModel.signUpUIState.value.password.isEmpty()) &&
                             (!viewModel.signUpUIState.value.password2.isEmpty()),
+                    color = Color.Black
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 10).dp))

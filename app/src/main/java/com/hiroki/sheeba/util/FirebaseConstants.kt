@@ -50,6 +50,7 @@ object FirebaseConstants {
     // notifications
     val notifications = "notifications"
     val notification = "notification"
+    val title = "title"
     val isRead = "isRead"
     val imageUrl = "imageUrl"
     val url = "url"

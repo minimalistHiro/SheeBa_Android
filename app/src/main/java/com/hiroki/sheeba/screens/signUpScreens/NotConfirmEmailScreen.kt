@@ -96,6 +96,7 @@ fun NotConfirmEmailScreen(viewModel: ViewModel) {
 //                            ((!viewModel.loginUIState.value.email.isEmpty()) &&
 //                            (!viewModel.loginUIState.value.password.isEmpty()))
                     isEnabled = true,
+                    color = Color.Black
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))

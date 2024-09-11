@@ -86,7 +86,8 @@ fun LoginScreen(viewModel: ViewModel) {
                         viewModel.onLoginEvent(LoginUIEvent.LoginButtonClicked)
                     },
                     isEnabled = (!viewModel.loginUIState.value.email.isEmpty()) &&
-                            (!viewModel.loginUIState.value.password.isEmpty())
+                            (!viewModel.loginUIState.value.password.isEmpty()),
+                    color = Color.Black
                 )
 
                 Spacer(modifier = Modifier.height((screenHeight / 10).dp))

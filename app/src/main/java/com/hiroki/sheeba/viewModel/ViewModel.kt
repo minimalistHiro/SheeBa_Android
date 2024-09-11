@@ -6,10 +6,8 @@ import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
@@ -32,27 +30,17 @@ import com.hiroki.sheeba.data.LoginUIState
 import com.hiroki.sheeba.data.SignUpUIEvent
 import com.hiroki.sheeba.data.SignUpUIState
 import com.hiroki.sheeba.model.AlertNotification
-import com.hiroki.sheeba.model.ChatMessage
 import com.hiroki.sheeba.model.ChatUser
+import com.hiroki.sheeba.model.Friends
 import com.hiroki.sheeba.model.NotificationModel
 import com.hiroki.sheeba.model.RecentMessage
 import com.hiroki.sheeba.model.StorePoint
 import com.hiroki.sheeba.screens.mapScreens.NavStoreDetailScreen
 import com.hiroki.sheeba.screens.mapScreens.PinItem
 import com.hiroki.sheeba.util.FirebaseConstants
-import com.hiroki.sheeba.util.FirebaseConstants.address
-import com.hiroki.sheeba.util.FirebaseConstants.age
-import com.hiroki.sheeba.util.FirebaseConstants.email
-import com.hiroki.sheeba.util.FirebaseConstants.profileImageUrl
-import com.hiroki.sheeba.util.FirebaseConstants.uid
-import com.hiroki.sheeba.util.FirebaseConstants.username
 import com.hiroki.sheeba.util.Setting
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -79,7 +67,8 @@ open class ViewModel: ViewModel() {
     var currentUser: MutableState<ChatUser?> = mutableStateOf(null)             // 現在のユーザー情報
     var chatUser: MutableState<ChatUser?> = mutableStateOf(null)                // 特定のユーザー情報
     var isStoreOwner: MutableState<Boolean> = mutableStateOf(false)             // 店舗オーナーか否か
-    var allUsers = mutableListOf<ChatUser?>()                                       // 全ユーザー情報
+    var allUsers = mutableListOf<ChatUser>()                                        // 全ユーザー情報（自分を除く）
+    var allUsersContainSelf = mutableListOf<ChatUser>()                             // 全ユーザー情報（自分を含める）
     var storeUser: ChatUser? = null                                                 // 選択された店舗情報
     var storeUsers = mutableListOf<ChatUser?>()                                     // 全店舗ユーザー情報
     var rankMoneyUsers = mutableListOf<ChatUser?>()                                 // ポイント数上位%位までのユーザー情報
@@ -87,6 +76,8 @@ open class ViewModel: ViewModel() {
 //    private val chatMessages = MutableStateFlow(listOf<ChatMessage?>())             // 全メッセージ
     var storePoints = mutableListOf<StorePoint?>()                                  // 全店舗ポイント情報
     var storePoint: MutableState<StorePoint?> = mutableStateOf(null)            // 特定の店舗ポイント情報
+    var friends = mutableListOf<Friends?>()                                         // 全友達ユーザー情報
+//    var resultFriends = mutableListOf<Friends?>()                                   // 検索結果に一致したユーザー情報
     var alertNotification: AlertNotification? = null                                // 速報
     var notification: NotificationModel? = null                                     // 特定のお知らせ
     var notifications = mutableListOf<NotificationModel?>()                         // 全お知らせ
@@ -386,20 +377,49 @@ open class ViewModel: ViewModel() {
     }
 
     /**
-     * 全ユーザーを取得
+     * 自分以外の全ユーザーを取得
      *
      * @return なし
      */
-    fun fetchAllUser() {
+    fun fetchAllUserOtherThanSelf() {
+        allUsers.clear()
+
         FirebaseFirestore
             .getInstance()
             .collection(FirebaseConstants.users)
             .get()
             .addOnSuccessListener { documents ->
                 for(document in documents) {
-                    document.toObject(ChatUser::class.java)?.let {
-                        if(!it.isStore || !it.money.isNullOrEmpty()) {
+                    document.toObject(ChatUser::class.java).let {
+                        if(!it.isStore && currentUser.value?.uid != it.uid) {
                             allUsers.add(it)
+                        }
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchUser, exception = exception)
+            }
+    }
+
+    /**
+     * 自分を含めた全ユーザーを取得
+     *
+     * @return なし
+     */
+    fun fetchAllUsersContainSelf() {
+        allUsersContainSelf.clear()
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.users)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(ChatUser::class.java).let {
+                        // 追加するユーザーが店舗ユーザーでない場合のみ、追加する。
+                        if(!it.isStore) {
+                            allUsersContainSelf.add(it)
                         }
                     }
                 }
@@ -606,40 +626,6 @@ open class ViewModel: ViewModel() {
     }
 
     /**
-     * 全最新メッセージを取得
-     *
-     * @param なし
-     * @return なし
-     */
-    fun fetchRecentMessages() {
-        progress.value = true
-        recentMessages.clear()
-
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
-            return
-        }
-
-        FirebaseFirestore
-            .getInstance()
-            .collection(FirebaseConstants.recentMessages)
-            .document(uid)
-            .collection(FirebaseConstants.message)
-            .orderBy(FirebaseConstants.timestamp, Query.Direction.DESCENDING)
-            .get()
-            .addOnSuccessListener { documents ->
-                for(document in documents) {
-                    document.toObject(RecentMessage::class.java).let {
-                        recentMessages.add(it)
-                    }
-                }
-                progress.value = false
-            }
-            .addOnFailureListener { exception ->
-                handleError(title = "", text = Setting.failureFetchRecentMessage, exception = exception)
-            }
-    }
-
-    /**
      * 全メッセージを取得
      *
      * @param toId トーク相手UID
@@ -676,16 +662,123 @@ open class ViewModel: ViewModel() {
 //    }
 
     /**
+     * 全最新メッセージを取得
+     *
+     * @param なし
+     * @return なし
+     */
+    fun fetchRecentMessages() {
+        progress.value = true
+        recentMessages.clear()
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            return
+        }
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.recentMessages)
+            .document(uid)
+            .collection(FirebaseConstants.message)
+            .orderBy(FirebaseConstants.timestamp, Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(RecentMessage::class.java).let {
+                        recentMessages.add(it)
+                    }
+                }
+                progress.value = false
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchRecentMessage, exception = exception)
+            }
+    }
+
+    /**
+     * 全友達ユーザー情報を取得
+     *
+     * @param なし
+     * @return なし
+     */
+    fun fetchFriends() {
+        progress.value = true
+        friends.clear()
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            return
+        }
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.friends)
+            .document(uid)
+            .collection(FirebaseConstants.user)
+            .orderBy(FirebaseConstants.username, Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(Friends::class.java).let {
+                        friends.add(it)
+                    }
+                }
+                progress.value = false
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchFriends, exception = exception)
+            }
+    }
+
+    /**
+     * 検索に一致したユーザーを取得
+     *
+     * @param searchText 検索文字列
+     * @return なし
+     */
+//    fun fetchSearchNames(searchText: String): List<ChatUser> {
+//        val resultUsers = mutableListOf<ChatUser>()               // 検索結果に一致したユーザー情報
+//
+//        if (searchText.isEmpty()) {
+//            return resultUsers
+//        } else if (recentMessages.isEmpty()) {
+//            // 最新メッセージが空の場合
+//            resultUsers.addAll(
+//                allUsers.filter { user ->
+//                    // 全ユーザーの中で、既に友達申請しているユーザーを排除する
+//                    friends.none { friend -> friend?.uid == user.uid } &&
+//                            // 検索ワードに一致するユーザー名のみ含める
+//                            user.username.contains(searchText, ignoreCase = true)
+//                }
+//            )
+//        } else {
+//            // 検索ワードに一致するユーザーをフィルタ
+//            val filteredUsers = allUsers.filter {
+//                it.username.contains(searchText, ignoreCase = true)
+//            }
+//
+//            // 最近のメッセージのトーク相手のUIDを取得
+//            val recentMessageIds = recentMessages.map { message ->
+//                if (currentUser.value?.uid == message?.fromId) message?.toId else message?.fromId
+//            }
+//
+//            // 最近メッセージをやり取りした相手を省く
+//            resultUsers.addAll(
+//                filteredUsers.filter { user ->
+//                    !recentMessageIds.contains(user.uid)
+//                }
+//            )
+//        }
+//
+//        return resultUsers
+//    }
+
+    /**
      * 速報を取得
      *
      * @return なし
      */
     fun fetchAlerts() {
         progress.value = true
-
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
-            return
-        }
 
         FirebaseFirestore
             .getInstance()
@@ -1001,16 +1094,6 @@ open class ViewModel: ViewModel() {
     }
 
     /**
-     * テキスト送信処理
-     *
-     * @param toId 受信者UID
-     * @param chatText ユーザーの入力テキスト
-     * @param lastText 一時保存用最新メッセージ
-     * @param isSendPay 送金の有無
-     * @return なし
-     */
-
-    /**
      * ログイン（メール送信含む）
      *
      * @return なし
@@ -1103,6 +1186,16 @@ open class ViewModel: ViewModel() {
     }
 
     /**
+     * 承認処理
+     *
+     * @param toId 承認相手UID
+     * @return なし
+     */
+    fun handleApprove(toId: String) {
+
+    }
+
+    /**
      * ログアウト
      *
      * @return なし
@@ -1142,6 +1235,42 @@ open class ViewModel: ViewModel() {
         }
         // ユーザー情報削除
         deleteUser(uid)
+
+        // メッセージを削除
+        for (recentMessage in recentMessages) {
+            recentMessage?.let {
+                deleteMessage(document = uid, collection = if (uid == it.fromId) it.toId else it.fromId)
+            }
+        }
+
+        // 最新メッセージを削除
+        for (recentMessage in recentMessages) {
+            recentMessage?.let {
+                deleteRecentMessage(document1 = uid, document2 = if (uid == it.fromId) it.toId else it.fromId)
+            }
+        }
+
+        // 友達を削除
+        for (friend in friends) {
+            friend?.let {
+                deleteFriend(document1 = uid, document2 = it.uid)
+            }
+        }
+
+        // 店舗ポイント情報を削除
+        for (storePoint in storePoints) {
+            storePoint?.let {
+                deleteStorePoint(document1 = uid, document2 = it.uid)
+            }
+        }
+
+        // お知らせを削除
+        for (notification in notifications) {
+            notification?.let {
+                deleteNotification(document1 = uid, document2 = it.title)
+            }
+        }
+
         // 画像の削除
         deleteImage(uid)
         // 認証情報削除
@@ -1353,9 +1482,75 @@ open class ViewModel: ViewModel() {
             }
     }
 
+    /**
+     * 友達情報を保存
+     *
+     * @param chatUser 登録先ユーザー情報
+     * @return なし
+     */
+    fun persistFriend(
+        chatUser: ChatUser,
+    ) {
+        progress.value = true
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            handleErrorForLogout(title = "", text = Setting.failureFetchUID, exception = null)
+            return
+        }
+
+        // ユーザー情報を格納
+        currentUser.value?.let {
+            // 自身の友達データを保存
+            val myData = hashMapOf<String, Any>(
+                FirebaseConstants.uid to chatUser.uid,
+                FirebaseConstants.email to chatUser.email,
+                FirebaseConstants.profileImageUrl to chatUser.profileImageUrl,
+                FirebaseConstants.money to chatUser.money,
+                FirebaseConstants.username to chatUser.username,
+                FirebaseConstants.isApproval to false,
+                FirebaseConstants.approveUid to it.uid,
+            )
+
+            FirebaseFirestore
+                .getInstance()
+                .collection(FirebaseConstants.friends)
+                .document(uid)
+                .collection(FirebaseConstants.user)
+                .document(chatUser.uid)
+                .set(myData)
+                .addOnFailureListener {
+                    handleError(title = "", text = Setting.failurePersistFriends, exception = it)
+                }
+
+            // リクエスト相手の友達データを保存
+            val chatUserData = hashMapOf<String, Any>(
+                FirebaseConstants.uid to it.uid,
+                FirebaseConstants.email to it.email,
+                FirebaseConstants.profileImageUrl to it.profileImageUrl,
+                FirebaseConstants.money to it.money,
+                FirebaseConstants.username to it.username,
+                FirebaseConstants.isApproval to false,
+                FirebaseConstants.approveUid to it.uid,
+            )
+
+            FirebaseFirestore
+                .getInstance()
+                .collection(FirebaseConstants.friends)
+                .document(chatUser.uid)
+                .collection(FirebaseConstants.user)
+                .document(uid)
+                .set(chatUserData)
+                .addOnFailureListener {
+                    handleError(title = "", text = Setting.failurePersistFriends, exception = it)
+                }
+        }
+
+        progress.value = false
+    }
+
 
     /**
-     * 店舗ポイント情報を更新
+     * 店舗ポイント情報を保存
      *
      * @param document1 ドキュメント
      * @param document2 ドキュメント
@@ -1376,6 +1571,27 @@ open class ViewModel: ViewModel() {
     }
 
     /**
+     * お知らせを保存
+     *
+     * @param document1 ドキュメント
+     * @param document2 ドキュメント
+     * @param data データ
+     * @return なし
+     */
+    fun persistNotification(document1: String, document2: String, data: HashMap<String, Any>) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.notifications)
+            .document(document1)
+            .collection(FirebaseConstants.notification)
+            .document(document2)
+            .set(data)
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failurePersistNotification, exception = it)
+            }
+    }
+
+    /**
      * ユーザー情報を更新
      *
      * @param document ドキュメント
@@ -1387,6 +1603,27 @@ open class ViewModel: ViewModel() {
             .getInstance()
             .collection(FirebaseConstants.users)
             .document(document)
+            .update(data)
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureUpdateUser, exception = it)
+            }
+    }
+
+    /**
+     * 友達情報を更新
+     *
+     * @param document1 ドキュメント1
+     * @param document2 ドキュメント2
+     * @param data データ
+     * @return なし
+     */
+    fun updateFriend(document1: String, document2: String, data: HashMap<String, Any>) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.friends)
+            .document(document1)
+            .collection(FirebaseConstants.user)
+            .document(document2)
             .update(data)
             .addOnFailureListener {
                 handleError(title = "", text = Setting.failureUpdateUser, exception = it)
@@ -1447,19 +1684,123 @@ open class ViewModel: ViewModel() {
     }
 
     /**
-     * 画像を削除
+     * 最新メッセージを削除
      *
-     * @param uid UID
+     * @param document1 ドキュメント1
+     * @param document2 ドキュメント2
      * @return なし
      */
-    fun deleteImage(uid: String) {
+    fun deleteRecentMessage(document1: String, document2: String) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.recentMessages)
+            .document(document1)
+            .collection(FirebaseConstants.message)
+            .document(document2)
+            .delete()
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureDeleteRecentMessage, exception = it)
+            }
+    }
+
+    /**
+     * メッセージを削除
+     *
+     * @param document ドキュメント
+     * @param collection コレクション
+     * @return なし
+     */
+    fun deleteMessage(document: String, collection: String) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.messages)
+            .document(document)
+            .collection(collection)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.reference.delete()
+                }
+            }
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureDeleteRecentMessage, exception = it)
+            }
+    }
+
+    /**
+     * 画像を削除
+     *
+     * @param path パス
+     * @return なし
+     */
+    fun deleteImage(path: String) {
         FirebaseStorage
             .getInstance()
             .reference
-            .child(uid)
+            .child(path)
             .delete()
             .addOnFailureListener {
                 Log.d(TAG, Setting.failureDeleteImage)
+            }
+    }
+
+    /**
+     * 友達情報を削除
+     *
+     * @param document1 ドキュメント1
+     * @param document2 ドキュメント2
+     * @return なし
+     */
+    fun deleteFriend(document1: String, document2: String) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.friends)
+            .document(document1)
+            .collection(FirebaseConstants.user)
+            .document(document2)
+            .delete()
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureDeleteFriend, exception = it)
+            }
+    }
+
+    /**
+     * 店舗ポイント情報を削除
+     *
+     * @param document1 ドキュメント1
+     * @param document2 ドキュメント2
+     * @return なし
+     */
+    fun deleteStorePoint(document1: String, document2: String) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.storePoints)
+            .document(document1)
+            .collection(FirebaseConstants.user)
+            .document(document2)
+            .delete()
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureDeleteStorePoint, exception = it)
+            }
+    }
+
+    /**
+     * お知らせを削除
+     *
+     * @param document1 ドキュメント1
+     * @param document2 ドキュメント2
+     * @return なし
+     */
+    fun deleteNotification(document1: String, document2: String) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.notifications)
+            .document(document1)
+            .collection(FirebaseConstants.notification)
+            .document(document2)
+            .delete()
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureDeleteNotification, exception = it)
             }
     }
 
@@ -1795,7 +2136,7 @@ open class ViewModel: ViewModel() {
         }
 
         // 画像削除
-        deleteImage(uid = uid.toString())
+        deleteImage(path = uid.toString())
 
         // FIreStorageに保存
         val imageUri = imageUri ?: run {

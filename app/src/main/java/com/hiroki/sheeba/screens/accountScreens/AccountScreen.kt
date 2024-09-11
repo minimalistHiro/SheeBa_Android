@@ -69,6 +69,10 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
     // Screen開示処理
     viewModel.init()
     viewModel.fetchCurrentUser()
+    viewModel.fetchRecentMessages()
+    viewModel.fetchFriends()
+    viewModel.fetchNotifications()
+    viewModel.fetchStorePoints()
 
     Box(modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center) {
@@ -146,6 +150,17 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                         ),
                         textAlign = TextAlign.Center,
                     )
+
+                    // 店舗お知らせを作成
+                    viewModel.currentUser.value?.let {
+                        if (it.isStoreOwner || it.isOwner) {
+                            CustomListNav(text = "店舗お知らせを作成", color = Color.Blue) {
+                                viewModel.fetchAllUsersContainSelf()
+                                navController.navigate(Setting.createNotificationScreen)
+                            }
+                            CustomDivider(color = Color.Gray)
+                        }
+                    }
 
                     // ユーザー名を変更
                     CustomListNav(text = "ユーザー名を変更", color = Color.Black) {

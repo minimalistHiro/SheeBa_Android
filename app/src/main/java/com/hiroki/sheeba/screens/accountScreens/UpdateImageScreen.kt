@@ -93,7 +93,8 @@ fun UpdateImageScreen(viewModel: ViewModel, navController: NavHostController) {
                     onButtonClicked = {
                         viewModel.handleUpdateImage(imageUri = imageUri)
                     },
-                    isEnabled = true
+                    isEnabled = true,
+                    color = Color.Black,
                 )
             }
         }

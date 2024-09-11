@@ -100,7 +100,8 @@ fun UpdateUsernameScreen(viewModel: ViewModel, navController: NavHostController)
                         }
                     },
 //                    isEnabled = viewModel.signUpUsernamePassed.value
-                    isEnabled = (!viewModel.signUpUIState.value.username.isEmpty())
+                    isEnabled = (!viewModel.signUpUIState.value.username.isEmpty()),
+                    color = Color.Black
                 )
             }
         }

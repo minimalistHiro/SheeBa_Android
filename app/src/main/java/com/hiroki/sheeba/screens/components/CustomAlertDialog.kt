@@ -170,6 +170,53 @@ fun CustomDoubleTextAlertDialog(
     )
 }
 
+@Composable
+fun CustomDestructiveTextAlertDialog(
+    title: String,
+    text: String,
+    okText: String,
+    destructiveText: String,
+    onOkButtonClicked: () -> Unit,
+    onDestructiveButtonClicked: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = {},
+        title = {
+            Text(text = title)
+        },
+        text = {
+            Text(text)
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onOkButtonClicked.invoke()
+                }
+            ) {
+                Text(text = okText,
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                    ),
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDestructiveButtonClicked.invoke()
+                }
+            ) {
+                Text(text = destructiveText,
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    color = Color.Red,
+                )
+            }
+        }
+    )
+}
+
 @Preview
 @ExperimentalMaterial3Api
 @Composable

@@ -183,6 +183,40 @@ fun InputPasswordTextField(label: String, onTextSelected: (String) -> Unit) {
 
 @ExperimentalMaterial3Api
 @Composable
+fun InputTextBox(label: String, onTextSelected: (String) -> Unit) {
+    val maxChar = 400
+    val textValue = remember {
+        mutableStateOf("")
+    }
+
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 30.dp),
+        label = { Text(
+            text = label,
+            fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
+        ) },
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Color.Black,
+            focusedLabelColor = Color.Black,
+            cursorColor = Color.Black,
+        ),
+        singleLine = false,
+        maxLines = 30,
+        value = textValue.value,
+        onValueChange = {
+            // 最大文字数以下なら入力を有効にする。
+            if(it.length <= maxChar) {
+                textValue.value = it
+            }
+            onTextSelected(it)
+        },
+    )
+}
+
+@ExperimentalMaterial3Api
+@Composable
 fun CustomDropdownMenu(items: List<String>, text: String, onTextSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     var selectedItem by remember { mutableStateOf("") }      // 選択値
