@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -91,6 +92,7 @@ fun ContentScreen(viewModel: ViewModel, navController: NavHostController) {
 
     // Screen開示処理
     viewModel.fetchCurrentUser()
+//    viewModel.fetchEventStores()
 
     Surface(
         modifier = Modifier

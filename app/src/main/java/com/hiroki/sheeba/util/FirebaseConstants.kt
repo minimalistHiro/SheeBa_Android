@@ -54,4 +54,10 @@ object FirebaseConstants {
     val isRead = "isRead"
     val imageUrl = "imageUrl"
     val url = "url"
+
+    // stores
+    val stores = "stores"
+    val storename = "storename"
+    val no = "no"
+    val isEvent = "isEvent"
 }

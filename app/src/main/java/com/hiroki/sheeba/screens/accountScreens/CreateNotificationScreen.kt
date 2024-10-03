@@ -143,18 +143,23 @@ fun CreateNotificationScreen(viewModel: ViewModel, navController: NavHostControl
                                 .putFile(imageUri!!)
                                 .continueWithTask { task ->
                                     storageRef.downloadUrl
-                                        .addOnSuccessListener {
-                                            val data = hashMapOf<String, Any>(
-                                                FirebaseConstants.title to title,
-                                                FirebaseConstants.text to text,
-                                                FirebaseConstants.isRead to false,
-                                                FirebaseConstants.url to url,
-                                                FirebaseConstants.imageUrl to it.toString(),
-                                                FirebaseConstants.timestamp to Timestamp.now(),
-                                            )
-                                            // お知らせを保存
-                                            for (user in viewModel.allUsersContainSelf) {
-                                                viewModel.persistNotification(document1 = user.uid, document2 = title, data = data)
+                                        .addOnSuccessListener { uri ->
+                                            viewModel.currentUser.value?.let { user ->
+                                                val data = hashMapOf<String, Any>(
+                                                    FirebaseConstants.uid to user.uid,
+                                                    FirebaseConstants.title to title,
+                                                    FirebaseConstants.text to text,
+                                                    FirebaseConstants.username to user.username,
+                                                    FirebaseConstants.profileImageUrl to user.profileImageUrl,
+                                                    FirebaseConstants.isRead to false,
+                                                    FirebaseConstants.url to url,
+                                                    FirebaseConstants.imageUrl to uri.toString(),
+                                                    FirebaseConstants.timestamp to Timestamp.now(),
+                                                )
+                                                // お知らせを保存
+                                                for (user in viewModel.allUsersContainSelf) {
+                                                    viewModel.persistNotification(document1 = user.uid, document2 = title, data = data)
+                                                }
                                             }
                                         }
                                         .addOnFailureListener {
@@ -166,23 +171,28 @@ fun CreateNotificationScreen(viewModel: ViewModel, navController: NavHostControl
                                 }
                         } else {
                             // 画像がない場合
-                            val data = hashMapOf<String, Any>(
-                                FirebaseConstants.title to title,
-                                FirebaseConstants.text to text,
-                                FirebaseConstants.isRead to false,
-                                FirebaseConstants.url to url,
-                                FirebaseConstants.imageUrl to "",
-                                FirebaseConstants.timestamp to Timestamp.now(),
-                            )
-                            // お知らせを保存
-                            for (user in viewModel.allUsersContainSelf) {
-                                viewModel.persistNotification(document1 = user.uid, document2 = title, data = data)
+                            viewModel.currentUser.value?.let {
+                                val data = hashMapOf<String, Any>(
+                                    FirebaseConstants.uid to it.uid,
+                                    FirebaseConstants.title to title,
+                                    FirebaseConstants.text to text,
+                                    FirebaseConstants.username to it.username,
+                                    FirebaseConstants.profileImageUrl to it.profileImageUrl,
+                                    FirebaseConstants.isRead to false,
+                                    FirebaseConstants.url to url,
+                                    FirebaseConstants.imageUrl to "",
+                                    FirebaseConstants.timestamp to Timestamp.now(),
+                                )
+                                // お知らせを保存
+                                for (user in viewModel.allUsersContainSelf) {
+                                    viewModel.persistNotification(document1 = user.uid, document2 = title, data = data)
+                                }
                             }
                         }
                         isShowSuccessCreateDialog.value = true
                     },
                     isEnabled = true,
-                    color = Color.Black,
+                    color = Color.Blue,
                 )
 
                 Spacer(modifier = Modifier.height(100.dp))

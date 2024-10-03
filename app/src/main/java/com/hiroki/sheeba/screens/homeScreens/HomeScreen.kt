@@ -1,5 +1,6 @@
 package com.hiroki.sheeba.screens.homeScreens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +29,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -49,27 +56,60 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.hiroki.sheeba.R
+import com.hiroki.sheeba.model.ChatMessage
 import com.hiroki.sheeba.model.NotificationModel
+import com.hiroki.sheeba.model.RecentMessage
+import com.hiroki.sheeba.model.Stores
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
+import com.hiroki.sheeba.screens.components.CustomImagePicker
+import com.hiroki.sheeba.screens.components.CustomRankingCard
 import com.hiroki.sheeba.screens.components.MenuButton
 import com.hiroki.sheeba.util.FirebaseConstants
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 @ExperimentalMaterial3Api
 @Composable
 fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavHostController) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
-    val screenHeight = configuration.screenHeightDp
     var isContainNotReadNotification = remember {
         mutableStateOf(false)
     }                                   // 外部リンクURL
+
+    // イベント店舗
+    val _uiESState = MutableStateFlow(listOf<Stores>())
+    val uiESState: StateFlow<List<Stores>> = _uiESState.asStateFlow()
+    val eventStores by uiESState.collectAsState()
 
     // Screen開示処理
     viewModel.init()
     viewModel.fetchCurrentUser()
     viewModel.fetchAlerts()
+    viewModel.fetchStorePointsForEventStore()
+
+    // 全イベント店舗を取得
+    FirebaseFirestore
+        .getInstance()
+        .collection(FirebaseConstants.stores)
+        .orderBy(FirebaseConstants.no)
+        .addSnapshotListener { documents, e ->
+            if (e != null) {
+                return@addSnapshotListener
+            }
+            val eventStores = mutableListOf<Stores>()
+            for (document in documents!!) {
+                document.toObject(Stores::class.java).let {
+                    if (it.isEnableScan && it.isEvent) {
+                        eventStores.add(it)
+                    }
+                }
+            }
+            _uiESState.value = eventStores
+        }
 
     // 未読のお知らせを確認する。
     val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run { return }
@@ -79,19 +119,18 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
         .document(uid)
         .collection(FirebaseConstants.notification)
         .orderBy(FirebaseConstants.timestamp, Query.Direction.DESCENDING)
-        .get()
-        .addOnSuccessListener { documents ->
-            for(document in documents) {
-                document.toObject(NotificationModel::class.java)?.let {
+        .addSnapshotListener { documents, e ->
+            if (e != null) {
+                return@addSnapshotListener
+            }
+            for (document in documents!!) {
+                document.toObject(NotificationModel::class.java).let {
                     // 未読があった場合、お知らせに赤いバッジをつける
                     if(!it.isRead) {
                         isContainNotReadNotification.value = true
                     }
                 }
             }
-        }
-        .addOnFailureListener { exception ->
-            viewModel.handleError(title = "", text = Setting.failureFetchNotification, exception = exception)
         }
 
     Box(modifier = Modifier.fillMaxSize(),
@@ -279,7 +318,7 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                     }
                 }
 
-                Spacer(modifier = Modifier.height((screenHeight / 30).dp))
+                Spacer(modifier = Modifier.height(25.dp))
 
                 // Menuボタン
                 Box(
@@ -326,6 +365,60 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(25.dp))
+
+                // イベントバッジ
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 40.dp)
+                        .shadow(5.dp, shape = RoundedCornerShape(size = 30.dp))
+                        .clip(RoundedCornerShape(size = 30.dp))
+                        .background(Color.White)
+                        .width(300.dp)
+                        .height(400.dp),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Text(
+                            text = "獲得したバッジ",
+                            style = TextStyle(
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Normal,
+                                fontStyle = FontStyle.Normal,
+                            ),
+                            textAlign = TextAlign.Center,
+                        )
+
+//                        Spacer(modifier = Modifier.height(20.dp))
+
+                        LazyVerticalGrid(
+                            verticalArrangement = Arrangement.spacedBy(20.dp),
+                            horizontalArrangement = Arrangement.spacedBy(30.dp),
+                            columns = GridCells.Fixed(count = 4),
+                            contentPadding = PaddingValues(top = 20.dp, start = 15.dp, end = 15.dp),
+//                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            eventStores.forEach { store ->
+                                item {
+                                    CustomImagePicker(
+                                        size = 45,
+                                        model = store.profileImageUrl,
+                                        isAlpha = !viewModel.isGetEventStorePoint(store),
+                                        conditions = (!store.profileImageUrl.isEmpty())) {}
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))          // 空白のスペースを追加
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
         // ダイアログ

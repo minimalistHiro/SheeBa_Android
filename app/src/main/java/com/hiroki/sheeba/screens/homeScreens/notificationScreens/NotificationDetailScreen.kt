@@ -80,7 +80,7 @@ fun NotificationDetailScreen(viewModel: ViewModel, navController: NavHostControl
         ) {
             Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                 CustomTopAppBar(
-                    title = "お知らせ",
+                    title = notification?.username ?: "",
                     color = Color.White,
                     onButtonClicked = {
                         viewModel.fetchNotifications()
@@ -170,7 +170,8 @@ fun NotificationDetailScreen(viewModel: ViewModel, navController: NavHostControl
                 Spacer(modifier = Modifier.height(40.dp))
 
                 viewModel.currentUser.value?.let {
-                    if (it.isStoreOwner || it.isOwner) {
+                    // オーナー、もしくは自身が作成した店舗オーナー
+                    if (it.isOwner || (it.isStoreOwner && notification?.uid == viewModel.currentUser.value?.uid)) {
                         CustomCapsuleButton(text = "削除",
                             onButtonClicked = {
                                 isShowDeleteNotificationAlert.value = true

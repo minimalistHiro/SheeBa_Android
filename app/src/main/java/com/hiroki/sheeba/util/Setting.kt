@@ -64,6 +64,7 @@ object Setting {
     val failureFetchMessages = "メッセージの取得に失敗しました。"
     val failureFetchFriends = "友達情報の取得に失敗しました。"
     val failureFetchStorePoint = "店舗ポイント情報の取得に失敗しました。"
+    val failureFetchStore = "店舗の取得に失敗しました。"
     val failureFetchNotification = "お知らせの取得に失敗しました。"
     val failurePersistUser = "ユーザー情報の保存に失敗しました。"
     val failurePersistRecentMessage = "最新メッセージの保存に失敗しました。"

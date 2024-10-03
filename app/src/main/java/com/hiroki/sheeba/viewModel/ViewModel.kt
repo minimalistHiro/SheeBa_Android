@@ -35,6 +35,7 @@ import com.hiroki.sheeba.model.Friends
 import com.hiroki.sheeba.model.NotificationModel
 import com.hiroki.sheeba.model.RecentMessage
 import com.hiroki.sheeba.model.StorePoint
+import com.hiroki.sheeba.model.Stores
 import com.hiroki.sheeba.screens.mapScreens.NavStoreDetailScreen
 import com.hiroki.sheeba.screens.mapScreens.PinItem
 import com.hiroki.sheeba.util.FirebaseConstants
@@ -66,17 +67,20 @@ open class ViewModel: ViewModel() {
 //    val users: StateFlow<List<ChatUser>> = _users.asStateFlow()
     var currentUser: MutableState<ChatUser?> = mutableStateOf(null)             // 現在のユーザー情報
     var chatUser: MutableState<ChatUser?> = mutableStateOf(null)                // 特定のユーザー情報
+    var store: MutableState<Stores?> = mutableStateOf(null)                     // 取得した店舗
     var isStoreOwner: MutableState<Boolean> = mutableStateOf(false)             // 店舗オーナーか否か
     var allUsers = mutableListOf<ChatUser>()                                        // 全ユーザー情報（自分を除く）
     var allUsersContainSelf = mutableListOf<ChatUser>()                             // 全ユーザー情報（自分を含める）
     var storeUser: ChatUser? = null                                                 // 選択された店舗情報
-    var storeUsers = mutableListOf<ChatUser?>()                                     // 全店舗ユーザー情報
+//    var storeUsers = mutableListOf<ChatUser?>()                                     // 全店舗ユーザー情報
     var rankMoneyUsers = mutableListOf<ChatUser?>()                                 // ポイント数上位%位までのユーザー情報
     var recentMessages =  mutableListOf<RecentMessage?>()                            // 全最新メッセージ
 //    private val chatMessages = MutableStateFlow(listOf<ChatMessage?>())             // 全メッセージ
     var storePoints = mutableListOf<StorePoint?>()                                  // 全店舗ポイント情報
     var storePoint: MutableState<StorePoint?> = mutableStateOf(null)            // 特定の店舗ポイント情報
     var friends = mutableListOf<Friends?>()                                         // 全友達ユーザー情報
+    var stores = mutableListOf<Stores?>()                                           // 全店舗
+    var eventStores = mutableListOf<Stores?>()                                      // 全イベント店舗
 //    var resultFriends = mutableListOf<Friends?>()                                   // 検索結果に一致したユーザー情報
     var alertNotification: AlertNotification? = null                                // 速報
     var notification: NotificationModel? = null                                     // 特定のお知らせ
@@ -113,7 +117,7 @@ open class ViewModel: ViewModel() {
                     val chatUserUid = qrCode.rawValue.toString()
                     // QRコード読み取り処理
                     if(!isShowHandleScan.value) {
-                        handleScan(chatUserUid = chatUserUid)
+                        handleScan(resultUid = chatUserUid)
                         isShowHandleScan.value = true
                     }
                 },
@@ -377,6 +381,32 @@ open class ViewModel: ViewModel() {
     }
 
     /**
+     * UIDに一致する店舗を取得
+     *
+     * @param uid UID
+     * @return なし
+     */
+    fun fetchStore(uid: String) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.stores)
+            .document(uid)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    document.toObject(Stores::class.java)?.let {
+                        store = mutableStateOf(it)
+                    }
+                } else {
+                    handleError(title = "", text = Setting.failureFetchStore, exception = null)
+                }
+            }
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureFetchStore, exception = it)
+            }
+    }
+
+    /**
      * 自分以外の全ユーザーを取得
      *
      * @return なし
@@ -546,7 +576,7 @@ open class ViewModel: ViewModel() {
                         storePoints.add(it)
                     }
                 }
-                fetchAllStoreUsers()
+                fetchAllStores()
             }
             .addOnFailureListener { exception ->
                 handleError(title = "", text = Setting.failureFetchStorePoint, exception = exception)
@@ -554,24 +584,55 @@ open class ViewModel: ViewModel() {
     }
 
     /**
-     * 全店舗ユーザーを取得
+     * 店舗ポイント情報を取得（イベント店舗取得用）
      *
      * @return なし
      */
-    fun fetchAllStoreUsers() {
+    fun fetchStorePointsForEventStore() {
         progress.value = true
-        storeUsers.clear()
-        var storeUsersContainNotEnableScan = mutableListOf<ChatUser?>()                     // スキャン不可能を含めた店舗ユーザー
+        storePoints.clear()
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            return
+        }
 
         FirebaseFirestore
             .getInstance()
-            .collection(FirebaseConstants.users)
+            .collection(FirebaseConstants.storePoints)
+            .document(uid)
+            .collection(FirebaseConstants.user)
             .get()
             .addOnSuccessListener { documents ->
                 for(document in documents) {
-                    document.toObject(ChatUser::class.java)?.let {
-                        if(it.isStore && it.isEnableScan) {
-                            storeUsers.add(it)
+                    document.toObject(StorePoint::class.java)?.let {
+                        storePoints.add(it)
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchStorePoint, exception = exception)
+            }
+    }
+
+    /**
+     * 全店舗を取得
+     *
+     * @return なし
+     */
+    fun fetchAllStores() {
+        progress.value = true
+        stores.clear()
+//        var storeUsersContainNotEnableScan = mutableListOf<ChatUser?>()                     // スキャン不可能を含めた店舗ユーザー
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.stores)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(Stores::class.java)?.let {
+                        if(it.isEnableScan && !it.isEvent) {
+                            stores.add(it)
                         }
                     }
                 }
@@ -585,7 +646,7 @@ open class ViewModel: ViewModel() {
 //                }
 
                 // 番号順に並び変える。
-                storeUsers.sortBy {
+                stores.sortBy {
                     it?.no
                 }
                 progress.value = false
@@ -603,17 +664,17 @@ open class ViewModel: ViewModel() {
      */
     fun fetchAllStoreUsersForMap() {
         progress.value = true
-        storeUsers.clear()
+        stores.clear()
 
         FirebaseFirestore
             .getInstance()
-            .collection(FirebaseConstants.users)
+            .collection(FirebaseConstants.stores)
             .get()
             .addOnSuccessListener { documents ->
                 for(document in documents) {
-                    document.toObject(ChatUser::class.java)?.let {
-                        if(it.isStore && it.isEnableScan) {
-                            storeUsers.add(it)
+                    document.toObject(Stores::class.java)?.let {
+                        if(it.isEnableScan && !it.isEvent) {
+                            stores.add(it)
                         }
                     }
                 }
@@ -836,6 +897,38 @@ open class ViewModel: ViewModel() {
     }
 
     /**
+     * 全イベント店舗を取得
+     *
+     * @return なし
+     */
+    fun fetchEventStores() {
+        progress.value = true
+        eventStores.clear()
+        Log.d("クリア", "クリアしたよ")
+//        isContainNotReadNotification.value = false
+
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.stores)
+            .orderBy(FirebaseConstants.no)
+            .get()
+            .addOnSuccessListener { documents ->
+                for(document in documents) {
+                    document.toObject(Stores::class.java).let {
+                        if (it.isEnableScan && it.isEvent) {
+                            eventStores.add(it)
+                            Log.d("Event", it.storename)
+                        }
+                    }
+                }
+                progress.value = false
+            }
+            .addOnFailureListener { exception ->
+                handleError(title = "", text = Setting.failureFetchStore, exception = exception)
+            }
+    }
+
+    /**
      * マップのピンを取得
      *
      * @param なし
@@ -844,7 +937,7 @@ open class ViewModel: ViewModel() {
     fun fetchPinItems() {
         pinItems.clear()
 
-        for (store in storeUsers) {
+        for (store in stores) {
             store?.let {
                 if (it.pointX.isNotEmpty() && it.pointY.isNotEmpty()) {
                     val pinItem = PinItem(
@@ -855,7 +948,7 @@ open class ViewModel: ViewModel() {
                         ),
                         buttonSize = 70f,
                         imageUrl = it.profileImageUrl,
-                        storeName = it.username,
+                        storeName = it.storename,
                     )
                     pinItems.add(pinItem)
                 } else {
@@ -1486,10 +1579,12 @@ open class ViewModel: ViewModel() {
      * 友達情報を保存
      *
      * @param chatUser 登録先ユーザー情報
+     * @param isApproval 承認
      * @return なし
      */
     fun persistFriend(
         chatUser: ChatUser,
+        isApproval: Boolean,
     ) {
         progress.value = true
 
@@ -1507,7 +1602,7 @@ open class ViewModel: ViewModel() {
                 FirebaseConstants.profileImageUrl to chatUser.profileImageUrl,
                 FirebaseConstants.money to chatUser.money,
                 FirebaseConstants.username to chatUser.username,
-                FirebaseConstants.isApproval to false,
+                FirebaseConstants.isApproval to isApproval,
                 FirebaseConstants.approveUid to it.uid,
             )
 
@@ -1529,7 +1624,7 @@ open class ViewModel: ViewModel() {
                 FirebaseConstants.profileImageUrl to it.profileImageUrl,
                 FirebaseConstants.money to it.money,
                 FirebaseConstants.username to it.username,
-                FirebaseConstants.isApproval to false,
+                FirebaseConstants.isApproval to isApproval,
                 FirebaseConstants.approveUid to it.uid,
             )
 
@@ -1880,14 +1975,32 @@ open class ViewModel: ViewModel() {
     /**
      * 店舗ポイント情報が本日取得済みか否かを判断
      *
-     * @param user ユーザー
+     * @param store 店舗
      * @return 全店舗ユーザーの中に今日取得した店舗ポイント情報を確保していた場合True、そうでない場合false。
      */
-    fun isGetStorePointToday(user: ChatUser): Boolean {
+    fun isGetStorePointToday(store: Stores): Boolean {
         for (storePoint in storePoints) {
             // 全店舗ユーザーの中に今日取得した店舗ポイント情報を確保していた場合True。
             if (storePoint != null) {
-                if (user.uid == storePoint.uid && storePoint.date == dateFormat(LocalDate.now())) {
+                if (store.uid == storePoint.uid && storePoint.date == dateFormat(LocalDate.now())) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    /**
+     * イベント店舗ポイント取得済みか否かを判断
+     *
+     * @param store 店舗
+     * @return 全店舗ユーザーの中にイベント店舗ポイント情報を確保していた場合True、そうでない場合false。
+     */
+    fun isGetEventStorePoint(store: Stores): Boolean {
+        for (storePoint in storePoints) {
+            // 全店舗ユーザーの中にイベント店舗ポイント情報を確保していた場合True。
+            if (storePoint != null) {
+                if (store.uid == storePoint.uid) {
                     return true
                 }
             }
@@ -1916,78 +2029,149 @@ open class ViewModel: ViewModel() {
     /**
      * QRコード読み取り処理
      *
-     * @param chatUserUid 読み取ったQRコードのUID
+     * @param resultUid 読み取ったQRコードのUID
      * @return なし
      */
-    private fun handleScan(chatUserUid: String) {
+    private fun handleScan(resultUid: String) {
         // 同アカウントのQRコードを読み取ってしまった場合、エラーを発動。
-        if(currentUser.value?.uid == chatUserUid) {
-            isQrCodeScanError.value = true
-            return
-        }
-
-        // URL、またはUIDの文字数（28文字）以外を読み取ったら、スキャンエラーを表示する
-        if(chatUserUid.contains("http") || chatUserUid.length != 28) {
+        if(currentUser.value?.uid == resultUid) {
             isQrCodeScanError.value = true
             PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
             return
         }
 
-        // ユーザーを取得
-        FirebaseFirestore
-            .getInstance()
-            .collection(FirebaseConstants.users)
-            .document(chatUserUid)
-            .get()
-            .addOnSuccessListener { document ->
-                Log.d(TAG, document.toString())
-                if (document != null) {
-                    document.toObject(ChatUser::class.java)?.let {
-                        if(it.uid != "") {
-                            chatUser = mutableStateOf(it)
+        // URL、またはUIDの文字数（28文字）以外を読み取ったら、スキャンエラーを表示する
+        if(resultUid.contains("http")) {
+            isQrCodeScanError.value = true
+            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+            return
+        }
+
+        if (resultUid.length == 28) {
+            // ユーザーを取得
+            FirebaseFirestore
+                .getInstance()
+                .collection(FirebaseConstants.users)
+                .document(resultUid)
+                .get()
+                .addOnSuccessListener { document ->
+
+                    if (document != null) {
+                        document.toObject(ChatUser::class.java)?.let {
+                            if(it.uid != "") {
+                                chatUser = mutableStateOf(it)
+                            }
+
+                            // 元店舗QRを読み取った場合、エラーを検出
+                            if(it.isStore) {
+                                isQrCodeScanError.value = true
+                                PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                            } else {
+                                PostOfficeAppRouter.navigateTo(Screen.SendPayScreen)
+                            }
                         }
-                    }
-                    // スキャンしたQRコードからUIDを取得できた場合、店舗ポイント情報を取得。
-                    if(chatUser.value?.uid != "") {
-                        currentUser.value?.let {
-                            // 店舗ポイント情報を取得
-                            FirebaseFirestore
-                                .getInstance()
-                                .collection(FirebaseConstants.storePoints)
-                                .document(it.uid)
-                                .collection(FirebaseConstants.user)
-                                .document(chatUserUid)
-                                .get()
-                                .addOnSuccessListener { document ->
-                                    if (document != null) {
-                                        document.toObject(StorePoint::class.java)?.let {
-                                            storePoint = mutableStateOf(it)
-                                        }
-                                        divideScanProcess()
-                                    } else {
-                                        handleError(title = "", text = Setting.failureFetchStorePoint, exception = null)
-                                    }
-                                }
-                                .addOnFailureListener {
-                                    handleError(title = "", text = Setting.failureFetchStorePoint, exception = it)
-                                }
-                        }
+                        // スキャンしたQRコードからUIDを取得できた場合、店舗ポイント情報を取得。
+//                        if(chatUser.value?.uid != "") {
+//                            currentUser.value?.let {
+//                                // 店舗ポイント情報を取得
+//                                FirebaseFirestore
+//                                    .getInstance()
+//                                    .collection(FirebaseConstants.storePoints)
+//                                    .document(it.uid)
+//                                    .collection(FirebaseConstants.user)
+//                                    .document(resultUid)
+//                                    .get()
+//                                    .addOnSuccessListener { document ->
+//                                        if (document != null) {
+//                                            document.toObject(StorePoint::class.java)?.let {
+//                                                storePoint = mutableStateOf(it)
+//                                            }
+//                                            divideScanProcess()
+//                                        } else {
+//                                            handleError(title = "", text = Setting.failureFetchStorePoint, exception = null)
+//                                        }
+//                                    }
+//                                    .addOnFailureListener {
+//                                        handleError(title = "", text = Setting.failureFetchStorePoint, exception = it)
+//                                    }
+//                            }
+//                        } else {
+//                            // スキャンしたQRコードからUIDを取得できなかった場合、スキャンエラー画面を表示する。
+//                            isQrCodeScanError.value = true
+//                            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+//                        }
                     } else {
-                        // スキャンしたQRコードからUIDを取得できなかった場合、スキャンエラー画面を表示する。
+                        // documentを取得できなかった場合、スキャンエラー画面を表示する。
                         isQrCodeScanError.value = true
                         PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
                     }
-                } else {
-                    // documentを取得できなかった場合、スキャンエラー画面を表示する。
+                }
+                .addOnFailureListener {
+                    // uidを取得できなかった場合、スキャンエラー画面を表示する。
                     isQrCodeScanError.value = true
                     PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
                 }
-            }
-            .addOnFailureListener {
-                // uidを取得できなかった場合、スキャンエラー画面を表示する。
-                isQrCodeScanError.value = true
-                PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
-            }
+        } else if (resultUid.length == 30) {
+            // 店舗を取得
+            FirebaseFirestore
+                .getInstance()
+                .collection(FirebaseConstants.stores)
+                .document(resultUid)
+                .get()
+                .addOnSuccessListener { document ->
+                    Log.d(TAG, document.toString())
+                    if (document != null) {
+                        document.toObject(Stores::class.java)?.let {
+                            if(it.uid != "") {
+                                store = mutableStateOf(it)
+                            }
+                        }
+                        // スキャンしたQRコードからUIDを取得できた場合、店舗ポイント情報を取得。
+                        if(store.value?.uid != "") {
+                            currentUser.value?.let {
+                                // 店舗ポイント情報を取得
+                                FirebaseFirestore
+                                    .getInstance()
+                                    .collection(FirebaseConstants.storePoints)
+                                    .document(it.uid)
+                                    .collection(FirebaseConstants.user)
+                                    .document(resultUid)
+                                    .get()
+                                    .addOnSuccessListener { document ->
+                                        if (document != null) {
+                                            document.toObject(StorePoint::class.java)?.let {
+                                                storePoint = mutableStateOf(it)
+                                            }
+                                            divideScanProcess()
+                                        } else {
+                                            handleError(title = "", text = Setting.failureFetchStorePoint, exception = null)
+                                        }
+                                    }
+                                    .addOnFailureListener {
+                                        handleError(title = "", text = Setting.failureFetchStorePoint, exception = it)
+                                    }
+                            }
+                        } else {
+                            // スキャンしたQRコードからUIDを取得できなかった場合、スキャンエラー画面を表示する。
+                            isQrCodeScanError.value = true
+                            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                        }
+                    } else {
+                        // documentを取得できなかった場合、スキャンエラー画面を表示する。
+                        isQrCodeScanError.value = true
+                        PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                    }
+                }
+                .addOnFailureListener {
+                    // uidを取得できなかった場合、スキャンエラー画面を表示する。
+                    isQrCodeScanError.value = true
+                    PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                }
+        } else {
+            isQrCodeScanError.value = true
+            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+            return
+        }
     }
 
     /**
@@ -1997,9 +2181,9 @@ open class ViewModel: ViewModel() {
      */
     private fun divideScanProcess() {
         // 店舗ポイントアカウントの場合
-        if(chatUser.value?.isStore == true) {
+//        if(chatUser.value?.isStore == true) {
             // スキャン可能である場合。
-            if(chatUser.value?.isEnableScan == true) {
+            if(store.value?.isEnableScan == true) {
                 // 店舗ポイント情報がある場合。
                 storePoint.value?.let {
                     // uidの取得がうまくいかない場合があるので、ここでも条件分岐をする。
@@ -2026,16 +2210,16 @@ open class ViewModel: ViewModel() {
                 isQrCodeScanError.value = true
                 PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
             }
-        } else if(chatUser.value?.isStore == false) {
-//            if(!isQrCodeScanError.value) {
-                // ユーザーにポイントを送る画面に遷移
-                PostOfficeAppRouter.navigateTo(Screen.SendPayScreen)
-//            }
-        } else {
-            // スキャンエラー画面を表示する
-            isQrCodeScanError.value = true
-            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
-        }
+//        } else if(chatUser.value?.isStore == false) {
+////            if(!isQrCodeScanError.value) {
+//                // ユーザーにポイントを送る画面に遷移
+//                PostOfficeAppRouter.navigateTo(Screen.SendPayScreen)
+////            }
+//        } else {
+//            // スキャンエラー画面を表示する
+//            isQrCodeScanError.value = true
+//            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+//        }
     }
 
     /**
@@ -2044,9 +2228,12 @@ open class ViewModel: ViewModel() {
      * @return なし
      */
     private fun handleGetPointFromStore() {
+
+        // TODO: - メェーの声をならす
+
         val intCurrentUserMoney = currentUser.value?.money?.toInt()
         // 残高に取得ポイントを足す
-        var calculatedCurrentUserMoney = chatUser.value?.getPoint?.let { intCurrentUserMoney?.plus(it) }
+        var calculatedCurrentUserMoney = store.value?.getPoint?.let { intCurrentUserMoney?.plus(it) }
 
         // 自身のユーザー情報を更新
         val userData = hashMapOf<String, Any>(
@@ -2058,19 +2245,19 @@ open class ViewModel: ViewModel() {
 
         // 店舗ポイント情報を更新
         val storePointData = hashMapOf<String, Any>(
-            FirebaseConstants.uid to (chatUser.value?.uid ?: ""),
-            FirebaseConstants.email to (chatUser.value?.email ?: ""),
-            FirebaseConstants.profileImageUrl to (chatUser.value?.profileImageUrl ?: ""),
-            FirebaseConstants.getPoint to (chatUser.value?.getPoint.toString() ?: ""),
-            FirebaseConstants.username to (chatUser.value?.username ?: ""),
+            FirebaseConstants.uid to (store.value?.uid ?: ""),
+            FirebaseConstants.email to "",
+            FirebaseConstants.profileImageUrl to (store.value?.profileImageUrl ?: ""),
+            FirebaseConstants.getPoint to (store.value?.getPoint.toString() ?: ""),
+            FirebaseConstants.username to (store.value?.storename ?: ""),
             FirebaseConstants.date to dateFormat(LocalDate.now())
         )
 
-        chatUser.value?.let { chatUser ->
+        store.value?.let { store ->
             currentUser.value?.let { currentUser ->
                 persistStorePoint(
                     document1 = currentUser.uid,
-                    document2 = chatUser.uid,
+                    document2 = store.uid,
                     data = storePointData
                 )
             }
@@ -2090,7 +2277,12 @@ open class ViewModel: ViewModel() {
             val currentUserMoney = currentUser.value?.money?.toInt()
             val sendPayText = sendPayText.value.toInt()
 
-            // TODO: -  互いに友達登録していない場合、新規友達登録をする。
+            // 互いに友達登録していない場合、新規友達登録をする。
+            currentUser.value?.let { currentUser ->
+                chatUser.value?.let { chatUser ->
+                    persistOrUpdateFriend(currentUser = currentUser, chatUser = chatUser)
+                }
+            }
 
             // 各ユーザーの残高を計算
             val calculatedChatUserMoney = chatUserMoney + sendPayText
@@ -2120,6 +2312,34 @@ open class ViewModel: ViewModel() {
 
             navController.navigate(Setting.chatLogScreen)
         }
+    }
+
+    /**
+     * 友達を登録、若しくは更新をする。
+     *
+     * @param currentUser 自身
+     * @param chatUser 送るポイント相手
+     * @return なし
+     */
+    fun persistOrUpdateFriend(currentUser: ChatUser, chatUser: ChatUser) {
+        for (friend in friends) {
+            friend?.let { friend ->
+                if (friend.uid == chatUser.uid) {
+                    if (friend.isApproval) {
+                        // 友達に登録されていて承認済みである場合何もしない。
+                        return
+                    } else {
+                        // 友達に登録されていて承認が済んでいない場合、自身と相手の両方のデータを更新
+                        val data = hashMapOf<String, Any>(
+                            FirebaseConstants.isApproval to true,
+                        )
+                        updateFriend(document1 = currentUser.uid, document2 = chatUser.uid, data = data)
+                        updateFriend(document1 = chatUser.uid, document2 = currentUser.uid, data = data)
+                    }
+                }
+            }
+        }
+        persistFriend(chatUser = chatUser, isApproval = true)
     }
 
     /**

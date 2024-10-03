@@ -237,7 +237,7 @@ fun CreateNewMessageScreen(viewModel: ViewModel, navController: NavHostControlle
                 text = "友達追加リクエストを送信しますか？",
                 okText = "リクエスト送信",
                 onOkButtonClicked = {
-                    viewModel.persistFriend(chatUser = chatUser)
+                    viewModel.persistFriend(chatUser = chatUser, isApproval = false)
                     navController.navigate(Setting.moneyTransferScreen)
                 },
                 onCancelButtonClicked = {

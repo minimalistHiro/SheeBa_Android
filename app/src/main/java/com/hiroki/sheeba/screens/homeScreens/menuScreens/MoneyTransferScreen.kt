@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +28,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,7 +46,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.hiroki.sheeba.R
+import com.hiroki.sheeba.model.ChatMessage
 import com.hiroki.sheeba.model.ChatUser
 import com.hiroki.sheeba.model.Friends
 import com.hiroki.sheeba.model.RecentMessage
@@ -54,18 +59,80 @@ import com.hiroki.sheeba.screens.components.CustomDestructiveTextAlertDialog
 import com.hiroki.sheeba.screens.components.CustomImagePicker
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
 import com.hiroki.sheeba.util.FirebaseConstants
+import com.hiroki.sheeba.util.FirebaseConstants.recentMessages
 import com.hiroki.sheeba.util.FirebaseConstants.uid
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 @ExperimentalMaterial3Api
 @Composable
 fun MoneyTransferScreen(viewModel: ViewModel, navController: NavHostController) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     var approveUserUID: String by remember { mutableStateOf("") }   // 承認してきた相手ユーザーのUID
+
+    // 最新メッセージ
+    val _uiRMState = MutableStateFlow(listOf<RecentMessage>())
+    val uiRMState: StateFlow<List<RecentMessage>> = _uiRMState.asStateFlow()
+    val recentMessages by uiRMState.collectAsState()
+
+    // 友達
+    val _uiFRState = MutableStateFlow(listOf<Friends>())
+    val uiFRState: StateFlow<List<Friends>> = _uiFRState.asStateFlow()
+    val friends by uiFRState.collectAsState()
+
+//    val listState = rememberLazyListState()
     var isShowApproveOrNotAlert = remember {
         mutableStateOf(false)
     }                                                                   // 友達追加か否か確認ダイアログの表示有無
+
+    viewModel.recentMessages.clear()
+
+    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+        return
+    }
+
+    // 全最新メッセージを取得
+    FirebaseFirestore
+        .getInstance()
+        .collection(FirebaseConstants.recentMessages)
+        .document(uid)
+        .collection(FirebaseConstants.message)
+        .orderBy(FirebaseConstants.timestamp, Query.Direction.DESCENDING)
+        .addSnapshotListener { documents, e ->
+            if (e != null) {
+                return@addSnapshotListener
+            }
+            val recentMessages = mutableListOf<RecentMessage>()
+            for (document in documents!!) {
+                document.toObject(RecentMessage::class.java).let {
+                    recentMessages.add(it)
+                }
+            }
+            _uiRMState.value = recentMessages
+        }
+
+    // 全友達を取得
+    FirebaseFirestore
+        .getInstance()
+        .collection(FirebaseConstants.friends)
+        .document(uid)
+        .collection(FirebaseConstants.user)
+        .orderBy(FirebaseConstants.username, Query.Direction.DESCENDING)
+        .addSnapshotListener { documents, e ->
+            if (e != null) {
+                return@addSnapshotListener
+            }
+            val friends = mutableListOf<Friends>()
+            for (document in documents!!) {
+                document.toObject(Friends::class.java).let {
+                    friends.add(it)
+                }
+            }
+            _uiFRState.value = friends
+        }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -120,16 +187,18 @@ fun MoneyTransferScreen(viewModel: ViewModel, navController: NavHostController) 
                     0 -> {
                         // トークユーザー
                         LazyColumn {
-                            items(viewModel.recentMessages) {
-                                if (it != null) {
-                                    CustomListRecentMessage(viewModel = viewModel, rm = it) {
-                                        viewModel.fetchUser(uid = if (viewModel.currentUser.value?.uid == it.fromId ) it.toId else it.fromId)
-                                        navController.navigate(Setting.chatLogScreen)
+                            item {
+                                recentMessages.map {
+                                    if (it != null) {
+                                        CustomListRecentMessage(viewModel = viewModel, rm = it) {
+                                            viewModel.fetchUser(uid = if (viewModel.currentUser.value?.uid == it.fromId ) it.toId else it.fromId)
+                                            navController.navigate(Setting.chatLogScreen)
+                                        }
                                     }
-                                }
-                                // 最後の行のみ空白を入れる
-                                if(viewModel.recentMessages.last() == it) {
-                                    Spacer(modifier = Modifier.height(100.dp))
+                                    // 最後の行のみ空白を入れる
+                                    if(recentMessages.last() == it) {
+                                        Spacer(modifier = Modifier.height(100.dp))
+                                    }
                                 }
                             }
                         }
@@ -137,25 +206,27 @@ fun MoneyTransferScreen(viewModel: ViewModel, navController: NavHostController) 
                     1 -> {
                         // 友達
                         LazyColumn {
-                            items(viewModel.friends) {
-                                if (it != null) {
-                                    CustomListFriends(viewModel = viewModel, fr = it) {
-                                        if (it.isApproval) {
-                                            viewModel.fetchUser(uid = it.uid)
-                                            navController.navigate(Setting.chatLogScreen)
-                                        } else {
-                                            if (it.approveUid == viewModel.currentUser.value?.uid) {
-                                                viewModel.handleError(title = "", text = "相手からのリクエスト許可を待っています。", exception = null)
+                            item {
+                                friends.map {
+                                    if (it != null) {
+                                        CustomListFriends(viewModel = viewModel, fr = it) {
+                                            if (it.isApproval) {
+                                                viewModel.fetchUser(uid = it.uid)
+                                                navController.navigate(Setting.chatLogScreen)
                                             } else {
-                                                approveUserUID = it.uid
-                                                isShowApproveOrNotAlert.value = true
+                                                if (it.approveUid == viewModel.currentUser.value?.uid) {
+                                                    viewModel.handleError(title = "", text = "相手からのリクエスト許可を待っています。", exception = null)
+                                                } else {
+                                                    approveUserUID = it.uid
+                                                    isShowApproveOrNotAlert.value = true
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                // 最後の行のみ空白を入れる
-                                if(viewModel.friends.last() == it) {
-                                    Spacer(modifier = Modifier.height(100.dp))
+                                    // 最後の行のみ空白を入れる
+                                    if(friends.last() == it) {
+                                        Spacer(modifier = Modifier.height(100.dp))
+                                    }
                                 }
                             }
                         }
@@ -168,9 +239,12 @@ fun MoneyTransferScreen(viewModel: ViewModel, navController: NavHostController) 
             viewModel.currentUser.value?.let {
                 if (it.isStoreOwner) {
                     Column(verticalArrangement = Arrangement.Bottom) {
-                        CustomCapsuleButton(text = "削除",
+                        CustomCapsuleButton(text = "友達を追加",
                             onButtonClicked = {
-
+                                viewModel.fetchFriends()
+                                viewModel.fetchRecentMessages()
+                                viewModel.fetchAllUserOtherThanSelf()
+                                navController.navigate(Setting.createNewMessageScreen)
                             },
                             isEnabled = true,
                             color = Color.Blue)

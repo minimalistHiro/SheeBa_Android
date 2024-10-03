@@ -40,6 +40,8 @@ import com.hiroki.sheeba.R
 import com.hiroki.sheeba.model.ChatUser
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import com.hiroki.sheeba.model.Stores
+import com.hiroki.sheeba.util.FirebaseConstants.user
 
 @ExperimentalMaterial3Api
 @Composable
@@ -135,7 +137,7 @@ fun CustomRankingCard(user: ChatUser) {
 
 @ExperimentalMaterial3Api
 @Composable
-fun CustomStoreCard(user: ChatUser, isGetPoint: Boolean, onButtonClicked: () -> Unit) {
+fun CustomStoreCard(store: Stores, isGetPoint: Boolean, onButtonClicked: () -> Unit) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
@@ -180,23 +182,23 @@ fun CustomStoreCard(user: ChatUser, isGetPoint: Boolean, onButtonClicked: () -> 
                 if (isGetPoint) {
                     CustomImagePicker(
                         size = 70,
-                        model = user.profileImageUrl,
+                        model = store.profileImageUrl,
                         isAlpha = false,
-                        conditions = user.profileImageUrl != ""
+                        conditions = store.profileImageUrl != ""
                     ) {}
                 } else {
                     CustomImagePicker(
                         size = 70,
-                        model = user.profileImageUrl,
+                        model = store.profileImageUrl,
                         isAlpha = true,
-                        conditions = user.profileImageUrl != ""
+                        conditions = store.profileImageUrl != ""
                     ) {}
                 }
 
                 Spacer(modifier = Modifier.width((screenWidth / 20).dp))
 
                 Text(
-                    text = user.username,
+                    text = store.storename,
                     fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 20.sp,
@@ -224,5 +226,5 @@ fun DefaultPreviewOfCustomRankingCard() {
 @ExperimentalMaterial3Api
 @Composable
 fun DefaultPreviewOfCustomStoreCard() {
-    CustomStoreCard(user = ChatUser(), isGetPoint = true, onButtonClicked = {})
+    CustomStoreCard(store = Stores(), isGetPoint = true, onButtonClicked = {})
 }

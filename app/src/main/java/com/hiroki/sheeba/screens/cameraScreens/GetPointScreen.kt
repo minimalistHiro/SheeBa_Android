@@ -37,7 +37,6 @@ import com.hiroki.sheeba.viewModel.ViewModel
 @Composable
 fun GetPointScreen(viewModel: ViewModel) {
     val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
 
     Box(modifier = Modifier.fillMaxSize(),
@@ -59,16 +58,16 @@ fun GetPointScreen(viewModel: ViewModel) {
                 if(!viewModel.isQrCodeScanError.value) {
                     CustomImagePicker(
                         size = 120,
-                        model = viewModel.chatUser.value?.profileImageUrl,
+                        model = viewModel.store.value?.profileImageUrl,
                         isAlpha = false,
-                        conditions = (!viewModel.chatUser.value?.profileImageUrl.isNullOrEmpty() && viewModel.chatUser.value != null)) {}
+                        conditions = (!viewModel.store.value?.profileImageUrl.isNullOrEmpty() && viewModel.store.value != null)) {}
                 }
 
                 Spacer(modifier = Modifier.height(15.dp))
 
                 if(!viewModel.isQrCodeScanError.value) {
                     Text(
-                        text = viewModel.chatUser.value?.username?: "エラー",
+                        text = viewModel.store.value?.storename?: "エラー",
                         fontSize = with(LocalDensity.current) { (20 / fontScale).sp },
                         style = TextStyle(
                             fontSize = 20.sp,
@@ -109,7 +108,7 @@ fun GetPointScreen(viewModel: ViewModel) {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = viewModel.chatUser.value?.getPoint.toString(),
+                            text = viewModel.store.value?.getPoint.toString(),
                             fontSize = with(LocalDensity.current) { (70 / fontScale).sp },
                             style = TextStyle(
                                 fontSize = 70.sp,
@@ -158,7 +157,7 @@ fun GetPointScreen(viewModel: ViewModel) {
                         viewModel.isSameStoreScanError.value = false
                         viewModel.isQrCodeScanError.value = false
                         // 取得情報を初期化
-                        viewModel.chatUser.value = null
+                        viewModel.store.value = null
                         viewModel.storePoint.value = null
 
                         PostOfficeAppRouter.navigateTo(Screen.ContentScreen)

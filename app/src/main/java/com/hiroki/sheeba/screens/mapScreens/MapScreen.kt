@@ -23,6 +23,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FirebaseFirestore
 import com.hiroki.sheeba.R
 import com.hiroki.sheeba.model.ChatUser
+import com.hiroki.sheeba.model.Stores
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
 import com.hiroki.sheeba.screens.components.CustomImagePicker
 import com.hiroki.sheeba.util.FirebaseConstants
@@ -35,15 +36,6 @@ data class PinItem(
     val imageUrl: String,
     val storeName: String,
 )
-//@ExperimentalMaterial3Api
-//class MapActivity : ComponentActivity() {
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setContent {
-//            MapView()
-//        }
-//    }
-//}
 @ExperimentalMaterial3Api
 @Composable
 fun MapScreen(viewModel: ViewModel, navController: NavHostController) {
@@ -90,7 +82,7 @@ fun MapScreen(viewModel: ViewModel, navController: NavHostController) {
                         onClick = {
                             isShowStoreInfo = true
                             selectedStoreUid = item.uid
-                            viewModel.storeUser = viewModel.storeUsers.find { it?.uid == selectedStoreUid }
+                            viewModel.store.value = viewModel.stores.find { it?.uid == selectedStoreUid }
                             viewModel.navStoreDetailScreen = NavStoreDetailScreen.MapScreen
                             true
                         },
@@ -108,7 +100,7 @@ fun MapScreen(viewModel: ViewModel, navController: NavHostController) {
                 StoreInfoOverlay(
                     onClose = { isShowStoreInfo = false },
 //                    user = viewModel.storeUsers.find { it?.uid == selectedStoreUid },
-                    user = viewModel.storeUser,
+                    store = viewModel.store.value,
                     navController = navController,
                 )
             }
@@ -120,7 +112,7 @@ fun MapScreen(viewModel: ViewModel, navController: NavHostController) {
 
 @ExperimentalMaterial3Api
 @Composable
-fun StoreInfoOverlay(onClose: () -> Unit, user: ChatUser?, navController: NavHostController) {
+fun StoreInfoOverlay(onClose: () -> Unit, store: Stores?, navController: NavHostController) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -150,7 +142,7 @@ fun StoreInfoOverlay(onClose: () -> Unit, user: ChatUser?, navController: NavHos
             }
 
             // Profile Image and Username
-            user?.let {
+            store?.let {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -176,7 +168,7 @@ fun StoreInfoOverlay(onClose: () -> Unit, user: ChatUser?, navController: NavHos
                     Spacer(modifier = Modifier.weight(1f))
 
                     Text(
-                        text = it.username,
+                        text = it.storename,
                         fontSize = 20.sp,
                         color = Color.Black,
                         modifier = Modifier.padding(horizontal = 8.dp)

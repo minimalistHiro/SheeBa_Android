@@ -197,7 +197,6 @@ fun ChatLogScreen(viewModel: ViewModel, navController: NavHostController) {
                         chatMessages.add(it)
                     }
                 }
-                // StateFlowの値を更新
                 _uiState.value = chatMessages
                 // 画面最下部までスクロール
 //                scope.launch {

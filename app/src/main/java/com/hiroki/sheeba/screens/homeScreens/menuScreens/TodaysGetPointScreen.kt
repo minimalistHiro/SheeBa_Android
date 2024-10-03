@@ -46,7 +46,6 @@ import com.hiroki.sheeba.viewModel.ViewModel
 @Composable
 fun TodaysGetPointScreen(viewModel: ViewModel, navController: NavHostController) {
     val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
 
     Box(modifier = Modifier.fillMaxSize(),
@@ -104,7 +103,7 @@ fun TodaysGetPointScreen(viewModel: ViewModel, navController: NavHostController)
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "${viewModel.countGetStorePointToday()} / ${viewModel.storeUsers.size}",
+                                text = "${viewModel.countGetStorePointToday()} / ${viewModel.stores.size}",
                                 fontSize = with(LocalDensity.current) { (25 / fontScale).sp },
                                 style = TextStyle(
                                     fontSize = 25.sp,
@@ -135,13 +134,13 @@ fun TodaysGetPointScreen(viewModel: ViewModel, navController: NavHostController)
                 Spacer(modifier = Modifier.height((screenHeight / 20).dp))
 
                 // 店舗一覧
-                viewModel.storeUsers.forEach { storeUser ->
-                    if (storeUser != null) {
+                viewModel.stores.forEach { store ->
+                    if (store != null) {
                         CustomStoreCard(
-                            user = storeUser,
-                            isGetPoint = viewModel.isGetStorePointToday(user = storeUser),
+                            store = store,
+                            isGetPoint = viewModel.isGetStorePointToday(store = store),
                             onButtonClicked = {
-                                viewModel.storeUser = storeUser
+                                viewModel.store.value = store
                                 viewModel.navStoreDetailScreen = NavStoreDetailScreen.TodaysGetPointScreen
                                 navController.navigate(Setting.storeDetailScreen)
                             }
