@@ -1,5 +1,6 @@
 package com.hiroki.sheeba.screens.cameraScreens
 
+import android.media.MediaPlayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -27,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hiroki.sheeba.R
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.screens.components.CustomCapsuleButton
@@ -102,7 +105,21 @@ fun GetPointScreen(viewModel: ViewModel) {
                         ),
                         textAlign = TextAlign.Center,
                     )
+                } else if(viewModel.isEventStoreScanError.value) {
+                    Text(
+                        text = "このバッジは既に獲得済みです。",
+                        fontSize = with(LocalDensity.current) { (15 / fontScale).sp },
+                        style = TextStyle(
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Normal,
+                        ),
+                        textAlign = TextAlign.Center,
+                    )
                 } else {
+                    val mediaPlayer = MediaPlayer.create(LocalContext.current, R.raw.sheep1)
+                    mediaPlayer.start()
+
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
@@ -156,6 +173,7 @@ fun GetPointScreen(viewModel: ViewModel) {
                         // エラーを解除する
                         viewModel.isSameStoreScanError.value = false
                         viewModel.isQrCodeScanError.value = false
+                        viewModel.isEventStoreScanError.value = false
                         // 取得情報を初期化
                         viewModel.store.value = null
                         viewModel.storePoint.value = null

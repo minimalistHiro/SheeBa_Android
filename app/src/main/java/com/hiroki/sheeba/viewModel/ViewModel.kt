@@ -1,11 +1,13 @@
 package com.hiroki.sheeba.viewModel
 
 import android.graphics.Bitmap
+import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
@@ -23,6 +25,7 @@ import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.hiroki.sheeba.QrCodeAnalyzer
+import com.hiroki.sheeba.R
 import com.hiroki.sheeba.app.PostOfficeAppRouter
 import com.hiroki.sheeba.app.Screen
 import com.hiroki.sheeba.data.LoginUIEvent
@@ -127,6 +130,7 @@ open class ViewModel: ViewModel() {
     val qrCode: androidx.compose.runtime.State<Barcode?> = _qrCode
     var isQrCodeScanError = mutableStateOf(false)               // QRコード読み取りエラー
     var isSameStoreScanError = mutableStateOf(false)            // 同日同店舗スキャンエラー
+    var isEventStoreScanError = mutableStateOf(false)           // イベント店舗読み取りエラー
     val delayMillis = 300L                                              // 押下後一時的に押下処理を無効化する時間(ms)
     var pushedAt = 0L                                                   // 前回押下時間(タイムスタンプ, ms)
     var isShowHandleScan = mutableStateOf(false)                // スキャン処理を一度したか否か
@@ -493,8 +497,8 @@ open class ViewModel: ViewModel() {
                 for(user in sortUsers) {
                     user?.let { user ->
                         user.money.toInt().let { money ->
-                            // オーナーアカウント以外
-                            if(!user.isOwner) {
+                            // オーナー、店舗オーナーアカウント以外
+                            if(!user.isOwner && !user.isStoreOwner) {
                                 // 指定順位以内であれば、ランキングに加える
                                 if(count < Setting.rankingCount) {
                                     // ポイント数に変更があったら、順位を一つ変えるためカウント数を一つ加える。
@@ -2193,11 +2197,23 @@ open class ViewModel: ViewModel() {
                     } else {
                         // 店舗QRコードが同日に2度以上のスキャンでない場合
                         if(it.date != dateFormat(LocalDate.now())) {
-                            handleGetPointFromStore()
-                            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                            // イベント店舗の場合は、同日2度以上のスキャンでない場合でもエラー
+                            if (store.value?.isEvent == true) {
+                                isEventStoreScanError.value = true
+                                PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                            } else {
+                                handleGetPointFromStore()
+                                PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                            }
                         } else {
-                            isSameStoreScanError.value = true
-                            PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                            // イベント店舗と通常店舗のエラー文を変える
+                            if (store.value?.isEvent == true) {
+                                isEventStoreScanError.value = true
+                                PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                            } else {
+                                isSameStoreScanError.value = true
+                                PostOfficeAppRouter.navigateTo(Screen.GetPointScreen)
+                            }
                         }
                     }
                 }
@@ -2229,11 +2245,13 @@ open class ViewModel: ViewModel() {
      */
     private fun handleGetPointFromStore() {
 
-        // TODO: - メェーの声をならす
+        // メェーの声をならす
+//        var mediaPlayer = MediaPlayer.create(LocalContext.current, R.raw.sheep1)
+//        mediaPlayer.start()
 
         val intCurrentUserMoney = currentUser.value?.money?.toInt()
         // 残高に取得ポイントを足す
-        var calculatedCurrentUserMoney = store.value?.getPoint?.let { intCurrentUserMoney?.plus(it) }
+        val calculatedCurrentUserMoney = store.value?.getPoint?.let { intCurrentUserMoney?.plus(it) }
 
         // 自身のユーザー情報を更新
         val userData = hashMapOf<String, Any>(

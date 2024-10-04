@@ -34,6 +34,7 @@ import com.hiroki.sheeba.screens.accountScreens.UpdateUsernameScreen
 import com.hiroki.sheeba.screens.cameraScreens.CameraScreen
 import com.hiroki.sheeba.screens.cameraScreens.ErrorQRCodeOverlay
 import com.hiroki.sheeba.screens.cameraScreens.QrCodeOverlay
+import com.hiroki.sheeba.screens.fitnessScreens.FitnessScreen
 import com.hiroki.sheeba.screens.homeScreens.HomeScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.ChatLogScreen
 import com.hiroki.sheeba.screens.homeScreens.menuScreens.CreateNewMessageScreen
@@ -73,10 +74,10 @@ fun ContentScreen(viewModel: ViewModel, navController: NavHostController) {
             unselectedIcon = painterResource(id = R.drawable.baseline_qr_code_scanner_24),
         ),
         BottomNavigationItem(
-            title = "マップ",
-            navTitle = Setting.mapScreen,
-            selectedIcon = painterResource(id = R.drawable.baseline_location_pin_24),
-            unselectedIcon = painterResource(id = R.drawable.baseline_location_pin_24),
+            title = "",
+            navTitle = Setting.fitnessScreen,
+            selectedIcon = painterResource(id = R.drawable.baseline_question_mark_24),
+            unselectedIcon = painterResource(id = R.drawable.baseline_question_mark_24),
         ),
         BottomNavigationItem(
             title = "アカウント",
@@ -92,7 +93,6 @@ fun ContentScreen(viewModel: ViewModel, navController: NavHostController) {
 
     // Screen開示処理
     viewModel.fetchCurrentUser()
-//    viewModel.fetchEventStores()
 
     Surface(
         modifier = Modifier
@@ -155,7 +155,7 @@ fun ContentScreen(viewModel: ViewModel, navController: NavHostController) {
                     }
                 }
                 composable(items[3].navTitle) {
-                    MapScreen(viewModel = viewModel, navController = navController)
+                    FitnessScreen(viewModel = viewModel, navController = navController)
                 }
                 composable(items[4].navTitle) {
                     AccountScreen(viewModel = viewModel, padding = padding, navController = navController)

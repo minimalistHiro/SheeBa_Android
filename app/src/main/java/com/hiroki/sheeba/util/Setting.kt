@@ -33,6 +33,7 @@ object Setting {
     val storeDetailScreen = "storeDetailScreen"
     val cameraScreen = "cameraScreen"
     val getPointScreen = "getPointScreen"
+    val fitnessScreen = "fitnessScreen"
     val accountScreen = "accountScreen"
     val createNotificationScreen = "createNotificationScreen"
     val updateUsernameScreen = "updateUsernameScreen"
