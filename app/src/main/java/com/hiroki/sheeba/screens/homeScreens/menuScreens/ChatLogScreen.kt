@@ -554,7 +554,7 @@ fun ChatButtonBar(viewModel: ViewModel) {
                     )
                 },
                 singleLine = false,
-                maxLines = 10,
+                maxLines = 20,
                 colors = TextFieldDefaults.textFieldColors(
                     focusedIndicatorColor = Color.White,
                     unfocusedIndicatorColor = Color.White

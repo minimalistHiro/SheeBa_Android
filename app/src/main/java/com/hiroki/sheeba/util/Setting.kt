@@ -13,7 +13,7 @@ object Setting {
     val IMAGE_SIZE = Size(1080, 1920)   // 画像の解析サイズ
     val privacyPolicyURL = "https://www.shibaginzadori.com/?page_id=1070"   // プライバシーポリシーURL
     val officialSiteURL = "https://www.shibaginzadori.com/?p=970"           // 公式サイトURL
-    const val maxChatTextCount = 70                                         // トークの最大文字数
+    const val maxChatTextCount = 300                                        // トークの最大文字数
 
     // Screens
     val entryScreen = "entryScreen"
@@ -75,6 +75,7 @@ object Setting {
     val failurePersistMessage = "メッセージの保存に失敗しました。"
     val failurePersistFriends = "友達情報の保存に失敗しました。"
     val failureUpdateUser = "ユーザー情報の更新に失敗しました。"
+    val failureUpdateRecentMessage = "最新メッセージの保存に更新しました。"
     val failureUpdateNotification = "お知らせの更新に失敗しました。"
     val failureUpdateImage = "画像の更新に失敗しました。"
     val failureDeleteData = "データ削除に失敗しました。"

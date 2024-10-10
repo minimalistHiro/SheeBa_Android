@@ -150,24 +150,32 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                 // トップバー
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start,
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+//                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
+//                    Spacer(modifier = Modifier.padding(start = 10.dp).size(25.dp))
+
+//                    Spacer(modifier = Modifier.weight(1f))
+
                     Image(
                         painter = painterResource(id = R.drawable.cleartitle),
                         contentDescription = "",
                         modifier = Modifier
-                            .padding(horizontal = 20.dp)
-                            .size(width = 150.dp, height = 60.dp),
+                            .padding(top = 10.dp)
+                            .width(120.dp)
                     )
+
+                    Spacer(modifier = Modifier.weight(1f))
 
                     // お知らせ
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
+//                            .fillMaxSize()
                             .padding(top = 10.dp)
                             .padding(end = 10.dp),
-                        contentAlignment = Alignment.TopEnd
+//                        contentAlignment = Alignment.TopEnd
                     ) {
                         IconButton(
                             modifier = Modifier
@@ -187,6 +195,7 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                                 painter = painterResource(id = R.drawable.baseline_notifications_24),
                                 contentDescription = "",
                                 tint = Color.Black,
+                                modifier = Modifier.size(25.dp),
                             )
                         }
 
@@ -195,8 +204,10 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                             Box(
                                 modifier = Modifier
                                     .size(10.dp)
+                                    .align(Alignment.TopEnd)
                                     .clip(CircleShape)
-                                    .background(Color.Red),
+                                    .background(Color.Red)
+                                    .padding(end = 10.dp, top = 10.dp),
                             )
                         }
                     }
@@ -243,6 +254,13 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                     }
                 }
 
+                Image(
+                    painter = painterResource(id = R.drawable.sheeba1),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(200.dp)
+                )
+
                 // カードスクリーン
                 Box(
                     modifier = Modifier
@@ -250,8 +268,8 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                         .shadow(5.dp, shape = RoundedCornerShape(size = 30.dp))
                         .clip(RoundedCornerShape(size = 30.dp))
                         .background(colorResource(id = R.color.sheebaYellow))
-                        .fillMaxWidth()
-                        .height(200.dp),
+                        .width(270.dp)
+                        .height(180.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Column(

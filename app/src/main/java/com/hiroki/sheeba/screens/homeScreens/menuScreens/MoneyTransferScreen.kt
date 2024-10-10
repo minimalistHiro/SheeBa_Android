@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -59,6 +62,7 @@ import com.hiroki.sheeba.screens.components.CustomDestructiveTextAlertDialog
 import com.hiroki.sheeba.screens.components.CustomImagePicker
 import com.hiroki.sheeba.screens.components.CustomTopAppBar
 import com.hiroki.sheeba.util.FirebaseConstants
+import com.hiroki.sheeba.util.FirebaseConstants.notification
 import com.hiroki.sheeba.util.FirebaseConstants.recentMessages
 import com.hiroki.sheeba.util.FirebaseConstants.uid
 import com.hiroki.sheeba.util.Setting
@@ -191,7 +195,16 @@ fun MoneyTransferScreen(viewModel: ViewModel, navController: NavHostController) 
                                 recentMessages.map {
                                     if (it != null) {
                                         CustomListRecentMessage(viewModel = viewModel, rm = it) {
-                                            viewModel.fetchUser(uid = if (viewModel.currentUser.value?.uid == it.fromId ) it.toId else it.fromId)
+                                            viewModel.currentUser.value?.uid?.let { uid ->
+                                                viewModel.fetchUser(uid = if (uid == it.fromId ) it.toId else it.fromId)
+                                                viewModel.updateRecentMessage(
+                                                    document1 = uid,
+                                                    document2 = if (uid == it.fromId) it.toId else it.fromId,
+                                                    data = hashMapOf(
+                                                        FirebaseConstants.isRead to true,
+                                                    )
+                                                )
+                                            }
                                             navController.navigate(Setting.chatLogScreen)
                                         }
                                     }
@@ -360,6 +373,16 @@ fun CustomListRecentMessage(viewModel: ViewModel, rm: RecentMessage, onButtonCli
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
+
+                // バッジ
+                if(!rm.isRead) {
+                    Box(
+                        modifier = Modifier
+                            .size(15.dp)
+                            .clip(CircleShape)
+                            .background(Color.Red),
+                    )
+                }
             }
         }
     }

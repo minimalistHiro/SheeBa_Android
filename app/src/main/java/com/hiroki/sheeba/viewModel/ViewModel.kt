@@ -1551,6 +1551,7 @@ open class ViewModel: ViewModel() {
             FirebaseConstants.toId to toId,
             FirebaseConstants.profileImageUrl to user.profileImageUrl,
             FirebaseConstants.isSendPay to isSendPay,
+            FirebaseConstants.isRead to isSelf,
             FirebaseConstants.username to user.username,
             FirebaseConstants.timestamp to Timestamp.now(),
         )
@@ -1705,6 +1706,27 @@ open class ViewModel: ViewModel() {
             .update(data)
             .addOnFailureListener {
                 handleError(title = "", text = Setting.failureUpdateUser, exception = it)
+            }
+    }
+
+    /**
+     * 最新メッセージを更新を更新
+     *
+     * @param document1 ドキュメント1
+     * @param document2 ドキュメント2
+     * @param data データ
+     * @return なし
+     */
+    fun updateRecentMessage(document1: String, document2: String, data: HashMap<String, Any>) {
+        FirebaseFirestore
+            .getInstance()
+            .collection(FirebaseConstants.recentMessages)
+            .document(document1)
+            .collection(FirebaseConstants.message)
+            .document(document2)
+            .update(data)
+            .addOnFailureListener {
+                handleError(title = "", text = Setting.failureUpdateRecentMessage, exception = it)
             }
     }
 
