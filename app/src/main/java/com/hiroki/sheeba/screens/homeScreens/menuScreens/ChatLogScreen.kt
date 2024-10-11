@@ -43,6 +43,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
@@ -186,7 +187,7 @@ fun ChatLogScreen(viewModel: ViewModel, navController: NavHostController) {
             .collection(FirebaseConstants.messages)
             .document(fromId)
             .collection(it.uid)
-            .orderBy(FirebaseConstants.timestamp, Query.Direction.ASCENDING)
+            .orderBy(FirebaseConstants.timestamp, Query.Direction.DESCENDING)
             .addSnapshotListener { documents, e ->
                 if (e != null) {
                     return@addSnapshotListener
@@ -239,9 +240,28 @@ fun ChatLogScreen(viewModel: ViewModel, navController: NavHostController) {
                     contentAlignment = Alignment.BottomCenter,
                 ) {
                     // メッセージ
-                    LazyColumn(state = listState) {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            // 上下逆にする
+                            .graphicsLayer { rotationZ = 180f }
+                    ) {
+                        // 最下部のスペーサー（上下反転させている為、一番上に配置）
                         item {
-                            chatMessages.map {
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Spacer(modifier = Modifier.height(160.dp))
+                            }
+                        }
+
+                        items(chatMessages) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 5.dp, vertical = 5.dp)
+                                    .graphicsLayer {
+                                        rotationZ = 180f // 各メッセージを元の向きに戻す
+                                    }
+                            ) {
                                 if (it.isSendPay) {
                                     if (viewModel.currentUser.value?.uid == it.fromId) {
                                         ChatLogPointCom(viewModel = viewModel, point = it.text, isSelf = true)
@@ -255,10 +275,10 @@ fun ChatLogScreen(viewModel: ViewModel, navController: NavHostController) {
                                         ChatLogTextCom(viewModel = viewModel, text = it.text, isSelf = false)
                                     }
                                 }
-                                // 最後の行のみ空白を入れる
-                                if(chatMessages.last() == it) {
-                                    Spacer(modifier = Modifier.height(160.dp))
-                                }
+//                                // 最後の行のみ空白を入れる
+//                                if(chatMessages.last() == it) {
+//                                    Spacer(modifier = Modifier.height(160.dp))
+//                                }
                             }
                         }
                     }

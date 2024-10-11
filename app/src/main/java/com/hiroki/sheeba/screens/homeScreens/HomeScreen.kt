@@ -59,12 +59,15 @@ import com.hiroki.sheeba.R
 import com.hiroki.sheeba.model.ChatMessage
 import com.hiroki.sheeba.model.NotificationModel
 import com.hiroki.sheeba.model.RecentMessage
+import com.hiroki.sheeba.model.StorePoint
 import com.hiroki.sheeba.model.Stores
 import com.hiroki.sheeba.screens.components.CustomAlertDialog
 import com.hiroki.sheeba.screens.components.CustomImagePicker
 import com.hiroki.sheeba.screens.components.CustomRankingCard
 import com.hiroki.sheeba.screens.components.MenuButton
 import com.hiroki.sheeba.util.FirebaseConstants
+import com.hiroki.sheeba.util.FirebaseConstants.storePoints
+import com.hiroki.sheeba.util.FirebaseConstants.uid
 import com.hiroki.sheeba.util.Setting
 import com.hiroki.sheeba.viewModel.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -80,6 +83,11 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
         mutableStateOf(false)
     }                                   // 外部リンクURL
 
+    // 獲得店舗
+    val _uiSPState = MutableStateFlow(listOf<StorePoint>())
+    val uiSPState: StateFlow<List<StorePoint>> = _uiSPState.asStateFlow()
+    val storePoints by uiSPState.collectAsState()
+
     // イベント店舗
     val _uiESState = MutableStateFlow(listOf<Stores>())
     val uiESState: StateFlow<List<Stores>> = _uiESState.asStateFlow()
@@ -89,7 +97,30 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
     viewModel.init()
     viewModel.fetchCurrentUser()
     viewModel.fetchAlerts()
-    viewModel.fetchStorePointsForEventStore()
+//    viewModel.fetchStorePointsForEventStore()
+
+    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+        return
+    }
+
+    // 店舗ポイント情報を取得
+    FirebaseFirestore
+        .getInstance()
+        .collection(FirebaseConstants.storePoints)
+        .document(uid)
+        .collection(FirebaseConstants.user)
+        .addSnapshotListener { documents, e ->
+            if (e != null) {
+                return@addSnapshotListener
+            }
+            val storePoints = mutableListOf<StorePoint>()
+            for(document in documents!!) {
+                document.toObject(StorePoint::class.java)?.let {
+                    storePoints.add(it)
+                }
+            }
+            _uiSPState.value = storePoints
+        }
 
     // 全イベント店舗を取得
     FirebaseFirestore
@@ -112,7 +143,6 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
         }
 
     // 未読のお知らせを確認する。
-    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: run { return }
     FirebaseFirestore
         .getInstance()
         .collection(FirebaseConstants.notifications)
@@ -426,7 +456,7 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                                     CustomImagePicker(
                                         size = 45,
                                         model = store.profileImageUrl,
-                                        isAlpha = !viewModel.isGetEventStorePoint(store),
+                                        isAlpha = !isGetEventStorePoint(store, storePoints),
                                         conditions = (!store.profileImageUrl.isEmpty())) {}
                                 }
                             }
@@ -466,6 +496,24 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
             }
         }
     }
+}
+
+/**
+ * イベント店舗ポイント取得済みか否かを判断
+ *
+ * @param store 店舗
+ * @return 全店舗ユーザーの中にイベント店舗ポイント情報を確保していた場合True、そうでない場合false。
+ */
+fun isGetEventStorePoint(store: Stores, storePoints: List<StorePoint?>): Boolean {
+    for (storePoint in storePoints) {
+        // 全店舗ユーザーの中にイベント店舗ポイント情報を確保していた場合True。
+        if (storePoint != null) {
+            if (store.uid == storePoint.uid) {
+                return true
+            }
+        }
+    }
+    return false
 }
 
 

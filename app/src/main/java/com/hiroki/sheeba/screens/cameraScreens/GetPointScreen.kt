@@ -117,8 +117,15 @@ fun GetPointScreen(viewModel: ViewModel) {
                         textAlign = TextAlign.Center,
                     )
                 } else {
-                    val mediaPlayer = MediaPlayer.create(LocalContext.current, R.raw.sheep1)
-                    mediaPlayer.start()
+                    val index = (1..10).random()
+
+                    if (index == 1) {
+                        val mediaPlayer = MediaPlayer.create(LocalContext.current, R.raw.sheep2)
+                        mediaPlayer.start()
+                    } else {
+                        val mediaPlayer = MediaPlayer.create(LocalContext.current, R.raw.sheep1)
+                        mediaPlayer.start()
+                    }
 
                     Row(
                         horizontalArrangement = Arrangement.Center,

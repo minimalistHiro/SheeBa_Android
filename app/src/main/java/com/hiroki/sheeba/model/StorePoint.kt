@@ -6,5 +6,7 @@ data class StorePoint(
     var profileImageUrl: String = "",
     var getPoint: String = "",
     var username: String = "",
+    @field:JvmField
+    var isEvent: Boolean = false,
     var date: String = "",
 )

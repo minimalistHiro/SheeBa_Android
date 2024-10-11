@@ -2040,11 +2040,14 @@ open class ViewModel: ViewModel() {
      * @return 本日取得済みの店舗ポイント情報数
      */
     fun countGetStorePointToday(): Int {
-        var count: Int = 0
+        var count = 0
+        Log.d("始まり", "始まり")
 
         for (storePoint in storePoints) {
+            Log.d("ストアポイント", "${storePoint?.username ?: ""}")
             if (storePoint != null) {
-                if (storePoint.date == dateFormat(LocalDate.now())) {
+                // 全店舗ユーザーの中に今日取得した店舗ポイント情報を確保していた場合、且つそのポイントがイベント限定でなかった場合True。
+                if (storePoint.date == dateFormat(LocalDate.now()) && !storePoint.isEvent) {
                     count += 1
                 }
             }
@@ -2290,6 +2293,7 @@ open class ViewModel: ViewModel() {
             FirebaseConstants.profileImageUrl to (store.value?.profileImageUrl ?: ""),
             FirebaseConstants.getPoint to (store.value?.getPoint.toString() ?: ""),
             FirebaseConstants.username to (store.value?.storename ?: ""),
+            FirebaseConstants.isEvent to (store.value?.isEvent ?: false),
             FirebaseConstants.date to dateFormat(LocalDate.now())
         )
 
