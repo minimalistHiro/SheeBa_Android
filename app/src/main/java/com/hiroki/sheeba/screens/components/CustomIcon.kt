@@ -43,7 +43,7 @@ fun CustomIcon(size: Int, isAlpha: Boolean) {
             .heightIn((size / 2).dp),
         painter = painterResource(id = R.drawable.baseline_person_24),
         contentDescription = "",
-        tint = Color.Black.copy(alpha = if(isAlpha) 0.3F else 1.0F),
+        tint = Color.Black.copy(alpha = if(isAlpha) 0.15F else 1.0F),
     )
 }
 
@@ -85,7 +85,7 @@ fun CustomImagePicker(size: Int, model: Any?, conditions: Boolean, isAlpha: Bool
             .size(size.dp)
             .border(2.dp, if(isAlpha) Color.Gray else Color.Black, CircleShape)
             .clip(CircleShape)
-            .background(Color(R.color.chatLogBackground))
+            .background(Color(R.color.chatLogBackground).copy(alpha = if(isAlpha) 0.15F else 0.5F),)
     ) {
         IconButton(
             modifier = Modifier

@@ -176,12 +176,12 @@ fun MoneyTransferScreen(viewModel: ViewModel, navController: NavHostController) 
                     Tab(
                         selected = selectedTabIndex == 0,
                         onClick = { selectedTabIndex = 0 },
-                        text = { Text("トーク") }
+                        text = { Text("友達") }
                     )
                     Tab(
                         selected = selectedTabIndex == 1,
                         onClick = { selectedTabIndex = 1 },
-                        text = { Text("友達") }
+                        text = { Text("トーク") }
                     )
                 }
 
@@ -189,34 +189,6 @@ fun MoneyTransferScreen(viewModel: ViewModel, navController: NavHostController) 
 
                 when (selectedTabIndex) {
                     0 -> {
-                        // トークユーザー
-                        LazyColumn {
-                            item {
-                                recentMessages.map {
-                                    if (it != null) {
-                                        CustomListRecentMessage(viewModel = viewModel, rm = it) {
-                                            viewModel.currentUser.value?.uid?.let { uid ->
-                                                viewModel.fetchUser(uid = if (uid == it.fromId ) it.toId else it.fromId)
-                                                viewModel.updateRecentMessage(
-                                                    document1 = uid,
-                                                    document2 = if (uid == it.fromId) it.toId else it.fromId,
-                                                    data = hashMapOf(
-                                                        FirebaseConstants.isRead to true,
-                                                    )
-                                                )
-                                            }
-                                            navController.navigate(Setting.chatLogScreen)
-                                        }
-                                    }
-                                    // 最後の行のみ空白を入れる
-                                    if(recentMessages.last() == it) {
-                                        Spacer(modifier = Modifier.height(100.dp))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    1 -> {
                         // 友達
                         LazyColumn {
                             item {
@@ -244,25 +216,51 @@ fun MoneyTransferScreen(viewModel: ViewModel, navController: NavHostController) 
                             }
                         }
                     }
+                    1 -> {
+                        // トークユーザー
+                        LazyColumn {
+                            item {
+                                recentMessages.map {
+                                    if (it != null) {
+                                        CustomListRecentMessage(viewModel = viewModel, rm = it) {
+                                            viewModel.currentUser.value?.uid?.let { uid ->
+                                                viewModel.fetchUser(uid = if (uid == it.fromId ) it.toId else it.fromId)
+                                                viewModel.updateRecentMessage(
+                                                    document1 = uid,
+                                                    document2 = if (uid == it.fromId) it.toId else it.fromId,
+                                                    data = hashMapOf(
+                                                        FirebaseConstants.isRead to true,
+                                                    )
+                                                )
+                                            }
+                                            navController.navigate(Setting.chatLogScreen)
+                                        }
+                                    }
+                                    // 最後の行のみ空白を入れる
+                                    if(recentMessages.last() == it) {
+                                        Spacer(modifier = Modifier.height(100.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(80.dp))
             }
 
             viewModel.currentUser.value?.let {
-                if (it.isStoreOwner) {
-                    Column(verticalArrangement = Arrangement.Bottom) {
-                        CustomCapsuleButton(text = "友達を追加",
-                            onButtonClicked = {
-                                viewModel.fetchFriends()
-                                viewModel.fetchRecentMessages()
-                                viewModel.fetchAllUserOtherThanSelf()
-                                navController.navigate(Setting.createNewMessageScreen)
-                            },
-                            isEnabled = true,
-                            color = Color.Blue)
-                        Spacer(modifier = Modifier.height(100.dp))
-                    }
+                Column(verticalArrangement = Arrangement.Bottom) {
+                    CustomCapsuleButton(text = "友達を追加",
+                        onButtonClicked = {
+                            viewModel.fetchFriends()
+                            viewModel.fetchRecentMessages()
+                            viewModel.fetchAllUserOtherThanSelf()
+                            navController.navigate(Setting.createNewMessageScreen)
+                        },
+                        isEnabled = true,
+                        color = Color.Blue)
+                    Spacer(modifier = Modifier.height(100.dp))
                 }
             }
         }

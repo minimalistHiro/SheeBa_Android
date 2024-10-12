@@ -132,6 +132,19 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                     textAlign = TextAlign.Center,
                 )
 
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = "バージョン：2.0.3",
+                    fontSize = with(LocalDensity.current) { (12 / fontScale).sp },
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal,
+                        fontStyle = FontStyle.Normal,
+                    ),
+                    textAlign = TextAlign.Center,
+                )
+
                 Spacer(modifier = Modifier.height((screenHeight / 15).dp))
 
                 Column(

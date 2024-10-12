@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
@@ -428,14 +429,25 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                     contentAlignment = Alignment.TopCenter,
                 ) {
                     Column(
+                        modifier = Modifier.background(colorResource(id = R.color.sheebaOrange)),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Spacer(modifier = Modifier.height(20.dp))
 
                         Text(
-                            text = "獲得したバッジ",
+                            text = "ハロウィンスタンプ",
                             style = TextStyle(
-                                fontSize = 15.sp,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontStyle = FontStyle.Normal,
+                            ),
+                            textAlign = TextAlign.Center,
+                        )
+
+                        Text(
+                            text = "獲得可能期間10月25日〜10月31日",
+                            style = TextStyle(
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Normal,
                                 fontStyle = FontStyle.Normal,
                             ),

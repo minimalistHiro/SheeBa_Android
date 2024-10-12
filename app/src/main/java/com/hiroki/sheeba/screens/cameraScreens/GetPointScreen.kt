@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -52,7 +53,8 @@ fun GetPointScreen(viewModel: ViewModel) {
                 .verticalScroll(rememberScrollState()),
         ) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize()
+                    .background(if (viewModel.store.value?.isEvent == true) colorResource(id = R.color.sheebaOrange) else Color.White),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height((screenHeight / 15).dp))
@@ -127,47 +129,73 @@ fun GetPointScreen(viewModel: ViewModel) {
                         mediaPlayer.start()
                     }
 
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
+                    if (viewModel.store.value?.isEvent == true) {
                         Text(
-                            text = viewModel.store.value?.getPoint.toString(),
-                            fontSize = with(LocalDensity.current) { (70 / fontScale).sp },
+                            text = "ハロウィンイベント",
+                            fontSize = with(LocalDensity.current) { (35 / fontScale).sp },
                             style = TextStyle(
-                                fontSize = 70.sp,
+                                fontSize = 35.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontStyle = FontStyle.Normal,
                             ),
                             textAlign = TextAlign.Center,
                         )
 
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.height(15.dp))
 
                         Text(
-                            text = "pt",
-                            fontSize = with(LocalDensity.current) { (30 / fontScale).sp },
+                            text = "ゲット！",
+                            fontSize = with(LocalDensity.current) { (35 / fontScale).sp },
                             style = TextStyle(
-                                fontSize = 30.sp,
-                                fontWeight = FontWeight.Normal,
+                                fontSize = 35.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontStyle = FontStyle.Normal,
+                            ),
+                            textAlign = TextAlign.Center,
+                        )
+                    } else {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = viewModel.store.value?.getPoint.toString(),
+                                fontSize = with(LocalDensity.current) { (70 / fontScale).sp },
+                                style = TextStyle(
+                                    fontSize = 70.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontStyle = FontStyle.Normal,
+                                ),
+                                textAlign = TextAlign.Center,
+                            )
+
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Text(
+                                text = "pt",
+                                fontSize = with(LocalDensity.current) { (30 / fontScale).sp },
+                                style = TextStyle(
+                                    fontSize = 30.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    fontStyle = FontStyle.Normal,
+                                ),
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(15.dp))
+
+                        Text(
+                            text = "ゲット！",
+                            fontSize = with(LocalDensity.current) { (35 / fontScale).sp },
+                            style = TextStyle(
+                                fontSize = 35.sp,
+                                fontWeight = FontWeight.Bold,
                                 fontStyle = FontStyle.Normal,
                             ),
                             textAlign = TextAlign.Center,
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(15.dp))
-
-                    Text(
-                        text = "ゲット！",
-                        fontSize = with(LocalDensity.current) { (35 / fontScale).sp },
-                        style = TextStyle(
-                            fontSize = 35.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontStyle = FontStyle.Normal,
-                        ),
-                        textAlign = TextAlign.Center,
-                    )
                 }
 
                 Spacer(modifier = Modifier.height((screenHeight / 10).dp))
