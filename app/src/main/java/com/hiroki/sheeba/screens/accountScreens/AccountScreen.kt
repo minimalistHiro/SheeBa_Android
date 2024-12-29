@@ -135,7 +135,7 @@ fun AccountScreen(viewModel: ViewModel, padding: PaddingValues, navController: N
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "バージョン：2.0.3",
+                    text = "バージョン：2.0.4",
                     fontSize = with(LocalDensity.current) { (12 / fontScale).sp },
                     style = TextStyle(
                         fontSize = 12.sp,

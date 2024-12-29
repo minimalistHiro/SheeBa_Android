@@ -418,65 +418,65 @@ fun HomeScreen(viewModel: ViewModel, padding: PaddingValues, navController: NavH
                 Spacer(modifier = Modifier.height(25.dp))
 
                 // イベントバッジ
-                Box(
-                    modifier = Modifier
-                        .padding(horizontal = 40.dp)
-                        .shadow(5.dp, shape = RoundedCornerShape(size = 30.dp))
-                        .clip(RoundedCornerShape(size = 30.dp))
-                        .background(Color.White)
-                        .width(300.dp)
-                        .height(400.dp),
-                    contentAlignment = Alignment.TopCenter,
-                ) {
-                    Column(
-                        modifier = Modifier.background(colorResource(id = R.color.sheebaOrange)),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Text(
-                            text = "ハロウィンスタンプ",
-                            style = TextStyle(
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                fontStyle = FontStyle.Normal,
-                            ),
-                            textAlign = TextAlign.Center,
-                        )
-
-                        Text(
-                            text = "獲得可能期間10月25日〜10月31日",
-                            style = TextStyle(
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Normal,
-                                fontStyle = FontStyle.Normal,
-                            ),
-                            textAlign = TextAlign.Center,
-                        )
-
+//                Box(
+//                    modifier = Modifier
+//                        .padding(horizontal = 40.dp)
+//                        .shadow(5.dp, shape = RoundedCornerShape(size = 30.dp))
+//                        .clip(RoundedCornerShape(size = 30.dp))
+//                        .background(Color.White)
+//                        .width(300.dp)
+//                        .height(400.dp),
+//                    contentAlignment = Alignment.TopCenter,
+//                ) {
+//                    Column(
+//                        modifier = Modifier.background(colorResource(id = R.color.sheebaOrange)),
+//                        horizontalAlignment = Alignment.CenterHorizontally,
+//                    ) {
 //                        Spacer(modifier = Modifier.height(20.dp))
-
-                        LazyVerticalGrid(
-                            verticalArrangement = Arrangement.spacedBy(20.dp),
-                            horizontalArrangement = Arrangement.spacedBy(30.dp),
-                            columns = GridCells.Fixed(count = 4),
-                            contentPadding = PaddingValues(top = 20.dp, start = 15.dp, end = 15.dp),
-//                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            eventStores.forEach { store ->
-                                item {
-                                    CustomImagePicker(
-                                        size = 45,
-                                        model = store.profileImageUrl,
-                                        isAlpha = !isGetEventStorePoint(store, storePoints),
-                                        conditions = (!store.profileImageUrl.isEmpty())) {}
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.weight(1f))          // 空白のスペースを追加
-                    }
-                }
+//
+//                        Text(
+//                            text = "ハロウィンスタンプ",
+//                            style = TextStyle(
+//                                fontSize = 18.sp,
+//                                fontWeight = FontWeight.Bold,
+//                                fontStyle = FontStyle.Normal,
+//                            ),
+//                            textAlign = TextAlign.Center,
+//                        )
+//
+//                        Text(
+//                            text = "獲得可能期間10月25日〜10月31日",
+//                            style = TextStyle(
+//                                fontSize = 12.sp,
+//                                fontWeight = FontWeight.Normal,
+//                                fontStyle = FontStyle.Normal,
+//                            ),
+//                            textAlign = TextAlign.Center,
+//                        )
+//
+////                        Spacer(modifier = Modifier.height(20.dp))
+//
+//                        LazyVerticalGrid(
+//                            verticalArrangement = Arrangement.spacedBy(20.dp),
+//                            horizontalArrangement = Arrangement.spacedBy(30.dp),
+//                            columns = GridCells.Fixed(count = 4),
+//                            contentPadding = PaddingValues(top = 20.dp, start = 15.dp, end = 15.dp),
+////                            modifier = Modifier.fillMaxWidth()
+//                        ) {
+//                            eventStores.forEach { store ->
+//                                item {
+//                                    CustomImagePicker(
+//                                        size = 45,
+//                                        model = store.profileImageUrl,
+//                                        isAlpha = !isGetEventStorePoint(store, storePoints),
+//                                        conditions = (!store.profileImageUrl.isEmpty())) {}
+//                                }
+//                            }
+//                        }
+//
+//                        Spacer(modifier = Modifier.weight(1f))          // 空白のスペースを追加
+//                    }
+//                }
 
                 Spacer(modifier = Modifier.height(80.dp))
             }
